@@ -2,7 +2,10 @@ package com.example.danguen.service.service;
 
 import com.example.danguen.domain.infra.UserRepository;
 import com.example.danguen.domain.user.User;
-import com.example.danguen.domain.user.dto.RequestUserPageDto;
+import com.example.danguen.domain.user.dto.request.RequestUserJoinDto;
+import com.example.danguen.domain.user.dto.request.RequestUserReviewDto;
+import com.example.danguen.domain.user.dto.request.RequestUserUpdateDto;
+import com.example.danguen.domain.user.dto.response.ResponseUserPageDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,12 +16,32 @@ public class UserService {
 
     private final UserRepository userRepository;
 
+    @Transactional
+    public void join(RequestUserJoinDto request){
+        User user = request.toEntity();
+
+        userRepository.save(user);
+    }
     @Transactional(readOnly = true)
-    public RequestUserPageDto getUserPage(Long id){
+    public ResponseUserPageDto getUserPage(Long id){
         User user = userRepository.getReferenceById(id);
 
-        RequestUserPageDto request = new RequestUserPageDto(user);
+        ResponseUserPageDto response = new ResponseUserPageDto(user);
 
-        return request;
+        return response;
+    }
+
+    @Transactional
+    public void update(RequestUserUpdateDto request, Long id){
+        User user = userRepository.getReferenceById(id);
+
+        user.updateUser(request);
+    }
+
+    @Transactional
+    public void review(RequestUserReviewDto request, Long id){
+        User user = userRepository.getReferenceById(id);
+
+        user.reviewUser(request);
     }
 }

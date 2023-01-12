@@ -1,16 +1,13 @@
-package com.example.danguen.domain.user.dto;
+package com.example.danguen.domain.user.dto.response;
 
 import com.example.danguen.domain.user.User;
-import lombok.Builder;
 import lombok.Data;
 
-import java.awt.*;
-
 @Data
-public class RequestUserPageDto {
+public class ResponseUserPageDto {
 
-    public RequestUserPageDto(User user){
-      this.nickname = user.getNickname();
+    public ResponseUserPageDto(User user){
+      this.name = user.getName();
       this.address = user.getAddress();
       this.dealTemperature = user.getDealTemperature();
       this.reDealHopePercent = user.getReDealHopePercent();
@@ -18,7 +15,7 @@ public class RequestUserPageDto {
     }
 
     //Image profileImage;
-    String nickname;
+    String name;
     String address;
 
     float dealTemperature;

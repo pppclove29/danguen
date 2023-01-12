@@ -1,17 +1,14 @@
 package com.example.danguen.ui;
 
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
-public class TestController {
+public class FormController {
+    // 임시
 
     @GetMapping("/")
-    public String index(Model model){
-
-        model.addAttribute("test", "아 나이스");
-
+    public String index(){
         return "home";
     }
 }
