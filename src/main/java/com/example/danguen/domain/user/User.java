@@ -12,6 +12,7 @@ import java.util.List;
 
 @Getter
 @NoArgsConstructor
+@Table(name = "USERS")
 @Entity
 public class User {
 
@@ -45,6 +46,8 @@ public class User {
         this.email = email;
         this.address = address;
         this.picture = picture;
+
+        role = Role.ROLE_USER;
     }
 
 
