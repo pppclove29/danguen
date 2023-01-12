@@ -19,11 +19,6 @@ public class UserApiController {
 
     private final UserService userService;
 
-    @PostMapping("/user")
-    public void join(RequestUserJoinDto request){
-        userService.join(request);
-    }
-
     @GetMapping("/user/{userId}")
     public ModelAndView getInfo(@PathVariable Long userId) {
         // if userId 가 없거나 잘못되면 redirect or error

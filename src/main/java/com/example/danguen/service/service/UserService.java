@@ -13,15 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Service
 public class UserService {
-
     private final UserRepository userRepository;
 
-    @Transactional
-    public void join(RequestUserJoinDto request){
-        User user = request.toEntity();
-
-        userRepository.save(user);
-    }
     @Transactional(readOnly = true)
     public ResponseUserPageDto getUserPage(Long id){
         User user = userRepository.getReferenceById(id);

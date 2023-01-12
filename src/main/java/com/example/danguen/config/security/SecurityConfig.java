@@ -1,4 +1,4 @@
-package com.example.danguen.config;
+package com.example.danguen.config.security;
 
 import com.example.danguen.config.oauth.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
