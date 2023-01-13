@@ -1,0 +1,79 @@
+package com.example.danguen.service.service;
+
+import com.example.danguen.config.exception.ArticleNotFoundException;
+import com.example.danguen.domain.Address;
+import com.example.danguen.domain.article.Article;
+import com.example.danguen.domain.article.dto.request.RequestArticleSaveOrUpdateDto;
+import com.example.danguen.domain.article.dto.response.ResponseArticleDto;
+import com.example.danguen.domain.infra.ArticleRepository;
+import com.example.danguen.domain.infra.UserRepository;
+import com.example.danguen.domain.user.User;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@RequiredArgsConstructor
+@Service
+public class ArticleService {
+
+    private final UserRepository userRepository;
+    private final ArticleRepository articleRepository;
+
+    @Transactional(readOnly = true)
+    public ResponseArticleDto getArticle(Long articleId) {
+        Article article = articleRepository.findById(articleId).orElseThrow(ArticleNotFoundException::new);
+
+        return article.toResponse();
+    }
+
+    @Transactional(readOnly = true)
+    public List<ResponseArticleDto> getArticlePage(Pageable pageable, Address address) {
+        Page<Article> page = articleRepository.findAllByOrderByCreatedTimeDesc(pageable);
+
+        return page.stream().map(Article::toResponse).collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<ResponseArticleDto> getHotArticlePage(Pageable pageable) {
+        return null;
+    }
+
+    @Transactional(readOnly = true)
+    public List<ResponseArticleDto> getSearchArticlePage(Pageable pageable, String keyword){
+        Page<Article> page = articleRepository.findAllByTitleLikeKeywordOrContentLikeKeyword(pageable, keyword);
+
+        return page.stream().map(Article::toResponse).collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void register(RequestArticleSaveOrUpdateDto request, Long userId) {
+        User user = userRepository.getReferenceById(userId);
+        Article article = request.toEntity();
+
+        user.addSellArticle(article);
+
+        articleRepository.save(article);
+    }
+
+    @Transactional
+    public void update(RequestArticleSaveOrUpdateDto request, Long articleId) {
+        Article article = articleRepository.findById(articleId).orElseThrow(ArticleNotFoundException::new);
+
+        article.updateArticle(request);
+    }
+
+    @Transactional
+    public void delete(Long articleId, Long userId) {
+        User user = userRepository.getReferenceById(userId);
+        Article article = articleRepository.findById(articleId).orElseThrow(ArticleNotFoundException::new);
+
+        user.removeSellArticle(article);
+
+        articleRepository.deleteById(articleId);
+    }
+}

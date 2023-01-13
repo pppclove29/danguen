@@ -13,7 +13,7 @@ import javax.servlet.http.HttpSession;
 
 @RequiredArgsConstructor
 @Component
-public class LoginUserArgumentResolver implements HandlerMethodArgumentResolver {
+public class LoginUserNameArgumentResolver implements HandlerMethodArgumentResolver {
     private final HttpSession httpSession;
 
     @Override

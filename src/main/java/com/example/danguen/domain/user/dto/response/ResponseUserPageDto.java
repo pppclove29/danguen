@@ -1,25 +1,22 @@
 package com.example.danguen.domain.user.dto.response;
 
+import com.example.danguen.domain.Address;
 import com.example.danguen.domain.user.User;
+import com.example.danguen.domain.user.UserRate;
 import lombok.Data;
 
 @Data
 public class ResponseUserPageDto {
 
-    public ResponseUserPageDto(User user){
-      this.name = user.getName();
-      this.address = user.getAddress();
-      this.dealTemperature = user.getDealTemperature();
-      this.reDealHopePercent = user.getReDealHopePercent();
-      this.responseRate = user.getResponseRate();
-    }
-
     //Image profileImage;
-    String name;
-    String address;
+    private String name;
+    private Address address;
+    private UserRate rate;
 
-    float dealTemperature;
-    float reDealHopePercent;
-    float responseRate;
+    public ResponseUserPageDto(User user) {
+        this.name = user.getName();
+        this.address = user.getAddress();
+        this.rate = user.getRate();
+    }
 
 }

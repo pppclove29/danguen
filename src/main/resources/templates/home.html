@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
@@ -8,12 +8,12 @@
 
 </body>
 
-<div sec:authorize="isAnonymous()">
+<div th:if="${userName == ''}">
     <h1 class="nav-link"> 로그인 전입니다</h1>
     <a href="/oauth2/authorization/google" class="btn btn-success active" role="button">Google Login</a>
 </div>
 
-<div sec:authorize="isAuthenticated()">
+<div th:unless="${userName == ''}">
     <a class="nav-link" href="/logout"> 로그아웃</a>
     <h1 th:text="${userName}">??</h1>
 </div>
