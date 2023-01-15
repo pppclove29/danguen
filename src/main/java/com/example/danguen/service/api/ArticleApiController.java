@@ -9,13 +9,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RequiredArgsConstructor
-@Controller
+@RestController
 public class ArticleApiController {
 
     private final ArticleService articleService;
@@ -64,10 +63,9 @@ public class ArticleApiController {
 
     @GetMapping("/search")
     public List<ResponseArticleDto> getSearchPage(@PageableDefault(size = 6) Pageable pageable,
-                                                  @RequestParam("keyword") String keyword) {
-        articleService.getSearchArticlePage(pageable, keyword);
+                                                  @RequestParam("keyword") String title) {
 
-        return null;
+        return articleService.getSearchArticlePage(pageable, title);
     }
 
 }

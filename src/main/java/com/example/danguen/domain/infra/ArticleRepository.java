@@ -9,6 +9,6 @@ import org.springframework.data.repository.query.Param;
 public interface ArticleRepository extends JpaRepository<Article, Long> {
     Page<Article> findAllByOrderByCreatedTimeDesc(Pageable pageable);
 
-    Page<Article> findAllByTitleLikeKeywordOrContentLikeKeyword(Pageable pageable, String keyword);
+    Page<Article> findByTitleContaining(Pageable pageable, String title);
 
 }

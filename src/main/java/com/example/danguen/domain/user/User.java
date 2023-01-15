@@ -3,8 +3,8 @@ package com.example.danguen.domain.user;
 import com.example.danguen.domain.Address;
 import com.example.danguen.domain.BaseTimeEntity;
 import com.example.danguen.domain.article.Article;
-import com.example.danguen.domain.article.dto.request.RequestArticleSaveOrUpdateDto;
-import com.example.danguen.domain.user.dto.request.RequestSellerReviewDto;
+import com.example.danguen.domain.user.dto.request.review.RequestBuyerReviewDto;
+import com.example.danguen.domain.user.dto.request.review.RequestSellerReviewDto;
 import com.example.danguen.domain.user.dto.request.RequestUserUpdateDto;
 import lombok.Builder;
 import lombok.Getter;
@@ -60,7 +60,7 @@ public class User extends BaseTimeEntity {
 
     public void updateUser(RequestUserUpdateDto request) {
 //현 유저에 대한 정보를 변경한다
-        this.address= request.getAddress();
+        this.address = request.getAddress();
         this.name = request.getName();
     }
 
@@ -71,17 +71,23 @@ public class User extends BaseTimeEntity {
         return this;
     }
 
-    public void reviewUser(RequestSellerReviewDto request) {
-//현 유저에 대한 평가를 추가한다
-
+    public void reviewSeller(RequestSellerReviewDto request) {
+//현 유저가 판매자였을때의  평가를 추가한다
+        rate.applyReview(request);
     }
 
-    public void addSellArticle(Article article){
+    public void reviewBuyer(RequestBuyerReviewDto request) {
+//현 유저가 구매자였을때의 평가를 추가한다
+        rate.applyReview(request);
+    }
+
+    public void addSellArticle(Article article) {
         sellArticles.add(article);
 
         article.setSeller(this);
     }
-    public void removeSellArticle(Article article){
+
+    public void removeSellArticle(Article article) {
         sellArticles.remove(article);
     }
 }

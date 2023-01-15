@@ -44,8 +44,8 @@ public class ArticleService {
     }
 
     @Transactional(readOnly = true)
-    public List<ResponseArticleDto> getSearchArticlePage(Pageable pageable, String keyword){
-        Page<Article> page = articleRepository.findAllByTitleLikeKeywordOrContentLikeKeyword(pageable, keyword);
+    public List<ResponseArticleDto> getSearchArticlePage(Pageable pageable, String title) {
+        Page<Article> page = articleRepository.findByTitleContaining(pageable, title);
 
         return page.stream().map(Article::toResponse).collect(Collectors.toList());
     }

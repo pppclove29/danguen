@@ -39,6 +39,8 @@ public class SessionUserIdArgumentResolver implements HandlerMethodArgumentResol
 
         Long id = userService.getUserIdByEmail(user.getEmail());
 
+        System.out.println("리졸버ㅏ" + id);
+
         return id;
     }
 }

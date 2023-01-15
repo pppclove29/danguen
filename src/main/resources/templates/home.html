@@ -16,6 +16,13 @@
 <div th:unless="${userName == ''}">
     <a class="nav-link" href="/logout"> 로그아웃</a>
     <h1 th:text="${userName}">??</h1>
+    <a href="/test"> 물건 팔기 </a>
+</div>
+
+<div th:each="article : ${articles}">
+    <h1 th:text="${article.name}"></h1>
+    <h1 th:text="${article.price}"></h1>
+    <h1 th:text="${article.address.city}"></h1>
 </div>
 
 </html>

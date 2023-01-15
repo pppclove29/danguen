@@ -5,8 +5,10 @@ import com.example.danguen.domain.user.User;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
+import java.io.Serializable;
+
 @Data
-public class RequestUserUpdateDto {
+public class RequestUserUpdateDto{
     //Image profileImage;
     private String name;
     private Address address;
