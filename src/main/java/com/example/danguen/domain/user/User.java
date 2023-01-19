@@ -64,8 +64,9 @@ public class User extends BaseTimeEntity {
         this.name = request.getName();
     }
 
-    public User updateOAuth(String name, String picture) {
+    public User updateOAuth(String name, String picture, String email) {
         this.name = name;
+        this.email = email;
         this.picture = picture;
 
         return this;
