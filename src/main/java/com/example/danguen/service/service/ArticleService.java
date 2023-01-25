@@ -27,6 +27,7 @@ public class ArticleService {
     @Transactional(readOnly = true)
     public ResponseArticleDto getArticle(Long articleId) {
         Article article = articleRepository.findById(articleId).orElseThrow(ArticleNotFoundException::new);
+        article.addViewCount();
 
         return article.toResponse();
     }
@@ -40,7 +41,9 @@ public class ArticleService {
 
     @Transactional(readOnly = true)
     public List<ResponseArticleDto> getHotArticlePage(Pageable pageable) {
-        return null;
+        Page<Article> page = articleRepository.findByHot(pageable);
+
+        return page.stream().map(Article::toResponse).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)

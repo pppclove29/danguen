@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class RequestSellerReviewDto extends Review {
+public class RequestSellerReviewDto implements Review {
 
     int dealScore; // 거래자와의 거래에 대한 점수를 매긴다 1 ~ 10
 

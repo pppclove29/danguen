@@ -14,10 +14,11 @@ public class PrincipalUserDetails implements UserDetails, OAuth2User {
     private User user;
     private OAuth2User oAuth2User;
 
-    public PrincipalUserDetails(User user){
+    public PrincipalUserDetails(User user) {
         this.user = user;
     }
-    public PrincipalUserDetails(User user, OAuth2User oAuth2User){
+
+    public PrincipalUserDetails(User user, OAuth2User oAuth2User) {
         this.user = user;
         this.oAuth2User = oAuth2User;
     }
@@ -43,6 +44,10 @@ public class PrincipalUserDetails implements UserDetails, OAuth2User {
     @Override
     public String getUsername() {
         return user.getName();
+    }
+
+    public String getUserEmail() {
+        return user.getEmail();
     }
 
     @Override

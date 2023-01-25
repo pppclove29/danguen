@@ -11,6 +11,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -40,7 +41,7 @@ public class User extends BaseTimeEntity {
     //List<User> interestUser;
 
     @OneToMany(mappedBy = "seller", cascade = CascadeType.ALL)
-    List<Article> sellArticles; // 판매상품
+    List<Article> sellArticles = new ArrayList<>(); // 판매상품
 
     //@OneToMany(cascade = CascadeType.ALL) -> OneToMany일까 ManyToMany일까?
     //List<Article> interestArticles; // 관심상품
@@ -59,7 +60,7 @@ public class User extends BaseTimeEntity {
 
 
     public void updateUser(RequestUserUpdateDto request) {
-//현 유저에 대한 정보를 변경한다
+        //현 유저에 대한 정보를 변경한다
         this.address = request.getAddress();
         this.name = request.getName();
     }
@@ -73,12 +74,12 @@ public class User extends BaseTimeEntity {
     }
 
     public void reviewSeller(RequestSellerReviewDto request) {
-//현 유저가 판매자였을때의  평가를 추가한다
+        //현 유저가 판매자였을때의  평가를 추가한다
         rate.applyReview(request);
     }
 
     public void reviewBuyer(RequestBuyerReviewDto request) {
-//현 유저가 구매자였을때의 평가를 추가한다
+        //현 유저가 구매자였을때의 평가를 추가한다
         rate.applyReview(request);
     }
 

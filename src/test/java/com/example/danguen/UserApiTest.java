@@ -40,6 +40,7 @@ public class UserApiTest extends BaseTest {
 
         userRepository.save(user);
 
+
         mockMvc = MockMvcBuilders.webAppContextSetup(ctx)
                 .addFilters(new CharacterEncodingFilter("UTF-8", true))  // 필터 추가
                 .alwaysDo(print())
@@ -75,9 +76,10 @@ public class UserApiTest extends BaseTest {
         assertThat(user.getAddress().getZipcode()).isEqualTo("서울로");
         assertThat(user.getRole()).isEqualTo(Role.ROLE_USER);
     }
+
     @WithMockUser
     @Test
-    public void 없는유저정보검색() throws Exception{
+    public void 없는유저정보검색() throws Exception {
         //given
         Long userId = -1L;
 
@@ -127,14 +129,14 @@ public class UserApiTest extends BaseTest {
                 .name("박판매")
                 .email("seller@temp.com")
                 .picture("picture")
-                .address(new Address("1","2","3"))
+                .address(new Address("1", "2", "3"))
                 .build();
 
         User buyer = User.builder()
                 .name("김구매")
                 .email("buyer@temp.com")
                 .picture("picture")
-                .address(new Address("1","2","3"))
+                .address(new Address("1", "2", "3"))
                 .build();
 
         userRepository.save(seller);
@@ -146,21 +148,21 @@ public class UserApiTest extends BaseTest {
         // 구매자에 대한 판매자의 긍정적 리뷰
         RequestSellerReviewDto sdto = new RequestSellerReviewDto();
         sdto.setDealScore(8);
-        sdto.setPositiveAnswer(new boolean[]{true,true,true,true,true,true,true,true,true,true});
-        sdto.setNegativeAnswer(new boolean[]{false,false,false,false,false,false,false,false,false,false});
+        sdto.setPositiveAnswer(new boolean[]{true, true, true, true, true, true, true, true, true, true});
+        sdto.setNegativeAnswer(new boolean[]{false, false, false, false, false, false, false, false, false, false});
 
         // 판매자에 대한 구매자의 부정적 리뷰
         RequestBuyerReviewDto bdto = new RequestBuyerReviewDto();
         bdto.setDealScore(2);
-        bdto.setPositiveAnswer(new boolean[]{false,false,false,false,false,false,false,false,false,false});
-        bdto.setNegativeAnswer(new boolean[]{true,true,true,true,true,true,true,true,true,true});
+        bdto.setPositiveAnswer(new boolean[]{false, false, false, false, false, false, false, false, false, false});
+        bdto.setNegativeAnswer(new boolean[]{true, true, true, true, true, true, true, true, true, true});
 
         //when
-        mockMvc.perform(post(baseURL + "/user/"+sellerId+"/review-seller")
+        mockMvc.perform(post(baseURL + "/user/" + sellerId + "/review-seller")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(new ObjectMapper().writeValueAsString(sdto)));
 
-        mockMvc.perform(post(baseURL + "/user/"+buyerId+"/review-buyer")
+        mockMvc.perform(post(baseURL + "/user/" + buyerId + "/review-buyer")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(new ObjectMapper().writeValueAsString(bdto)));
 
@@ -177,4 +179,5 @@ public class UserApiTest extends BaseTest {
         assertThat(buyer.getRate().getTotalDealCount()).isEqualTo(1);
         assertThat(buyer.getRate().getReDealHopePercent()).isLessThan(50);
     }
+
 }

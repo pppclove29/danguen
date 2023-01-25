@@ -1,10 +1,13 @@
 package com.example.danguen.service.api;
 
 import com.example.danguen.argumentResolver.SessionUserId;
+import com.example.danguen.config.exception.ArticleNotFoundException;
+import com.example.danguen.config.exception.UserNotFoundException;
 import com.example.danguen.domain.Address;
 import com.example.danguen.domain.article.dto.request.RequestArticleSaveOrUpdateDto;
 import com.example.danguen.domain.article.dto.response.ResponseArticleDto;
 import com.example.danguen.service.service.ArticleService;
+import com.example.danguen.service.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -20,13 +23,13 @@ public class ArticleApiController {
     private final ArticleService articleService;
 
     @PostMapping("/article")
-    public void register(RequestArticleSaveOrUpdateDto request,
+    public void register(@RequestBody RequestArticleSaveOrUpdateDto request,
                          @SessionUserId Long userId) {
         articleService.register(request, userId);
     }
 
     @PutMapping("/article/{articleId}")
-    public void update(RequestArticleSaveOrUpdateDto request,
+    public void update(@RequestBody RequestArticleSaveOrUpdateDto request,
                        @PathVariable Long articleId) {
         articleService.update(request, articleId);
     }
@@ -56,9 +59,7 @@ public class ArticleApiController {
 
     @GetMapping("/hot-articles")
     public List<ResponseArticleDto> getHotArticlePage(@PageableDefault(size = 6) Pageable pageable) {
-        articleService.getHotArticlePage(pageable);
-
-        return null;
+        return articleService.getHotArticlePage(pageable);
     }
 
     @GetMapping("/search")
@@ -68,4 +69,6 @@ public class ArticleApiController {
         return articleService.getSearchArticlePage(pageable, title);
     }
 
+    @ExceptionHandler(ArticleNotFoundException.class)
+    public String handleArticleNotFound(){return "articleNotFound";}
 }

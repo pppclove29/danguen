@@ -3,7 +3,7 @@ package com.example.danguen.domain.user.dto.request.review;
 import lombok.Data;
 
 @Data
-public class RequestBuyerReviewDto  extends  Review{
+public class RequestBuyerReviewDto implements Review {
 
     int dealScore; // 거래자와의 거래에 대한 점수를 매긴다 1 ~ 10
 
