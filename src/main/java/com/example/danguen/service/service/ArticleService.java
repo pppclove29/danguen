@@ -34,7 +34,9 @@ public class ArticleService {
 
     @Transactional(readOnly = true)
     public List<ResponseArticleDto> getArticlePage(Pageable pageable, Address address) {
-        Page<Article> page = articleRepository.findAllByOrderByCreatedTimeDesc(pageable);
+        Page<Article> page = articleRepository.findAllByAddress(pageable, address.getCity(), address.getStreet(), address.getZipcode());
+
+        System.out.println(page.stream().count());
 
         return page.stream().map(Article::toResponse).collect(Collectors.toList());
     }
@@ -48,7 +50,7 @@ public class ArticleService {
 
     @Transactional(readOnly = true)
     public List<ResponseArticleDto> getSearchArticlePage(Pageable pageable, String title) {
-        Page<Article> page = articleRepository.findByTitleContaining(pageable, title);
+        Page<Article> page = articleRepository.findByTitleContainingOrderByIdDesc(pageable, title);
 
         return page.stream().map(Article::toResponse).collect(Collectors.toList());
     }

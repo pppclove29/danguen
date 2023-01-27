@@ -19,12 +19,8 @@ public class SessionUserIdArgumentResolver implements HandlerMethodArgumentResol
 
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
-        boolean result = false;
 
-        if (parameter.hasParameterAnnotation(SessionUserId.class))
-            result = true;
-
-        return result;
+        return parameter.hasParameterAnnotation(SessionUserId.class);
     }
 
     @Override
@@ -35,8 +31,6 @@ public class SessionUserIdArgumentResolver implements HandlerMethodArgumentResol
         if (user == null)
             throw new UserNotFoundException();
 
-        Long id = userService.getUserIdByEmail(user.getUserEmail());
-
-        return id;
+        return userService.getUserIdByEmail(user.getUserEmail());
     }
 }

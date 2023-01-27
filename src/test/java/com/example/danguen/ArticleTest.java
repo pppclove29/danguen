@@ -22,6 +22,8 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.filter.CharacterEncodingFilter;
 
+import java.util.Arrays;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -51,23 +53,21 @@ public class ArticleTest extends BaseTest {
     }
 
     @AfterEach
-    void 초기화() {
-        jdbcTemplate.update("set FOREIGN_KEY_CHECKS = 0");
-        jdbcTemplate.update("truncate table users");
-        jdbcTemplate.update("truncate table article");
-        jdbcTemplate.update("set FOREIGN_KEY_CHECKS = 1");
+    public void 초기화() {
+        userRepository.deleteAll();
+        articleRepository.deleteAll();
     }
 
     @WithMockUser
     @Test
     public void 정상적인물품등록하기() throws Exception {
         //given & when
-        articleRegisterProc();
+        articleRegisterProc(0);
 
         //then
         Article article = articleRepository.findAll().get(0);
 
-        assertThat(article.getTitle()).isEqualTo("제목");
+        assertThat(article.getTitle()).isEqualTo("제목 0");
         assertThat(article.getCategory()).isEqualTo("카테고리");
         assertThat(article.getContent()).isEqualTo("내용");
         assertThat(article.getPicture()).isEqualTo("사진");
@@ -82,7 +82,7 @@ public class ArticleTest extends BaseTest {
     @Test
     public void 물품정보수정() throws Exception {
         //given
-        articleRegisterProc();
+        articleRegisterProc(0);
 
         RequestArticleSaveOrUpdateDto dto = new RequestArticleSaveOrUpdateDto();
         dto.setTitle("new제목");
@@ -114,7 +114,7 @@ public class ArticleTest extends BaseTest {
     @Test
     public void 물품삭제() throws Exception {
         //given
-        articleRegisterProc();
+        articleRegisterProc(0);
         Long articleId = articleRepository.findAll().get(0).getId();
 
         //when
@@ -130,7 +130,7 @@ public class ArticleTest extends BaseTest {
     @Test
     public void 물품페이지로딩() throws Exception {
         //given
-        articleRegisterProc();
+        articleRegisterProc(0);
         Long articleId = articleRepository.findAll().get(0).getId();
 
         //when & then
@@ -152,7 +152,7 @@ public class ArticleTest extends BaseTest {
     @Test
     public void 잘못된물품페이지로딩() throws Exception {
         //given
-        articleRegisterProc();
+        articleRegisterProc(0);
         Long articleId = articleRepository.findAll().get(0).getId();
 
         //when & then
@@ -166,30 +166,67 @@ public class ArticleTest extends BaseTest {
     public void 주소에맞는물품리스트로딩() throws Exception {
         //given
         for (int i = 0; i < 10; i++) {
-            RequestArticleSaveOrUpdateDto dto = articleRegisterProc();
-            dto.setDealHopeAddress(new Address("희망주소" + i / 3, "희망주소" + i / 3, "희망주소" + i / 3));
+            articleRegisterProc(i);
         }
         /*
         물품 지역 리스트
-        000
-        111
-        222
-        3
+        idx     address
+        0       000
+        1       001
+        2       002
+        3       113
+        4       114
+        5       115
+        6       226
+        7       227
+        8       228
+        9       339
          */
 
-        // 검색 로직 미완성으로 보류
-        //    @GetMapping("/articles/{city}/{street}/{zipcode}")
-        //    public List<ResponseArticleDto> getArticlePage(@PageableDefault(sort = "createdTime", size = 6, direction = Sort.Direction.DESC) Pageable pageable,
-        //                                                   @PathVariable(required = false) String city,
-        //                                                   @PathVariable(required = false) String street,
-        //                                                   @PathVariable(required = false) String zipcode) {
+        //when
+        mockMvc.perform(get("/address"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0]").exists())
+                .andExpect(jsonPath("$[5]").exists()) // 6개의 검색 결과가 존재해야한다
+                .andExpect(jsonPath("$[6]").doesNotExist())
+                .andExpect(jsonPath("$[0].title").value("제목 9"))
+                .andExpect(jsonPath("$[5].title").value("제목 4")); // 검색 결과는 최신순으로 내림차순한다
+
+        //같은 검색결과를 반환하는지 확인
+        mockMvc.perform(get("/address/희망주소1/희망주소1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0]").exists())
+                .andExpect(jsonPath("$[2]").exists()) // 3개의 검색 결과가 존재해야한다
+                .andExpect(jsonPath("$[3]").doesNotExist())
+                .andExpect(jsonPath("$[0].title").value("제목 5"))
+                .andExpect(jsonPath("$[2].title").value("제목 3")); // 검색 결과는 최신순으로 내림차순한다
+
+        //단 하나의 단독결과만 반환하는지 확인
+        mockMvc.perform(get("/address/희망주소1/희망주소1/희망주소3"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0]").exists()) // 단 하나의 결과만 출력해야한다
+                .andExpect(jsonPath("$[1]").doesNotExist())
+                .andExpect(jsonPath("$[0].title").value("제목 3")); // 검색 결과는 최신순으로 내림차순한다
+
+        //없는 주소를 입력시 반환값이 없는지 확인
+        mockMvc.perform(get("/address/희망주소99999"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0]").doesNotExist()); // 아무 결과도 있어선 안된다
+    }
+
+    @Test
+    public void 리스트페이지분할테스트() throws Exception {
+        //given
+        for (int i = 0; i < 10; i++) {
+            articleRegisterProc(i);
+        }
     }
 
     @Test
     public void 인기순위검색() throws Exception {
         //given
         for (int i = 0; i < 10; i++) {
-            articleRegisterProc();
+            articleRegisterProc(i);
         }
         // 물품 리스트 0 ~ 9
         // 이 중에 1 4 5 8의 조회수를 높혀보자 높은 순서대로 5 8 1 4이다
@@ -200,33 +237,103 @@ public class ArticleTest extends BaseTest {
 
         //when
         MvcResult result = mockMvc.perform(get("/hot-articles"))
-                                .andExpect(status().isOk())
-                                .andReturn();
+                .andExpect(status().isOk())
+                .andReturn();
 
         //then
-        String str = result.getResponse().getContentAsString();
-        String[] strs = str.split(",{");
+        String[] articles = result.getResponse().getContentAsString().split("false},");
+
+        assertThat(articles[0]).contains("제목 5");
+        assertThat(articles[1]).contains("제목 8");
+        assertThat(articles[2]).contains("제목 1");
+        assertThat(articles[3]).contains("제목 4");
+
+        assertThat(Arrays.stream(articles).count()).isEqualTo(6); // page size
     }
 
-//    @GetMapping("/hot-articles")
-//    public List<ResponseArticleDto> getHotArticlePage(@PageableDefault(size = 6) Pageable pageable) {
-//    @GetMapping("/search")
-//    public List<ResponseArticleDto> getSearchPage(@PageableDefault(size = 6) Pageable pageable,
-//                                                  @RequestParam("keyword") String title) {
 
-    public RequestArticleSaveOrUpdateDto articleRegisterProc() throws Exception {
+    @Test
+    public void 제목연관검색() throws Exception {
+        //given
+        for (int i = 0; i < 5; i++) {
+            articleRegisterProc(7777);
+        } // 검색 결과가 5개 나오는가?
+        for (int i = 0; i < 10; i++) {
+            articleRegisterProc(10000);
+        } // 검색 결과가 6개로 나뉘어 나오는가?
+        for (int i = 0; i < 3; i++) {
+            articleRegisterProc(777);
+        } // 검색 결과가 777 3개 + 7777 3개 이렇게 나오는가? 아니면 어떻게 나오는가? -> 최신순으로 정렬하자
+
+        String keyword = "7777";
+        //when
+        this.mockMvc.perform(get("/search?keyword=" + keyword))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0]").exists())
+                .andExpect(jsonPath("$[1]").exists())
+                .andExpect(jsonPath("$[2]").exists())
+                .andExpect(jsonPath("$[3]").exists())
+                .andExpect(jsonPath("$[4]").exists())
+                .andExpect(jsonPath("$[5]").doesNotExist())
+                .andExpect(jsonPath("$[0].title").value("제목 7777"))
+                .andExpect(jsonPath("$[1].title").value("제목 7777"))
+                .andExpect(jsonPath("$[2].title").value("제목 7777"))
+                .andExpect(jsonPath("$[3].title").value("제목 7777"))
+                .andExpect(jsonPath("$[4].title").value("제목 7777"))
+                .andReturn();
+
+        keyword = "10000";
+
+        this.mockMvc.perform(get("/search?keyword=" + keyword))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0]").exists())
+                .andExpect(jsonPath("$[1]").exists())
+                .andExpect(jsonPath("$[2]").exists())
+                .andExpect(jsonPath("$[3]").exists())
+                .andExpect(jsonPath("$[4]").exists())
+                .andExpect(jsonPath("$[5]").exists())
+                .andExpect(jsonPath("$[0].title").value("제목 10000"))
+                .andExpect(jsonPath("$[1].title").value("제목 10000"))
+                .andExpect(jsonPath("$[2].title").value("제목 10000"))
+                .andExpect(jsonPath("$[3].title").value("제목 10000"))
+                .andExpect(jsonPath("$[4].title").value("제목 10000"))
+                .andExpect(jsonPath("$[5].title").value("제목 10000"))
+                .andReturn();
+
+        keyword = "777";
+
+        MvcResult result777 = mockMvc.perform(get("/search?keyword=" + keyword))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0]").exists())
+                .andExpect(jsonPath("$[1]").exists())
+                .andExpect(jsonPath("$[2]").exists())
+                .andExpect(jsonPath("$[3]").exists())
+                .andExpect(jsonPath("$[4]").exists())
+                .andExpect(jsonPath("$[5]").exists())
+                .andExpect(jsonPath("$[0].title").value("제목 777"))
+                .andExpect(jsonPath("$[1].title").value("제목 777"))
+                .andExpect(jsonPath("$[2].title").value("제목 777"))
+                .andExpect(jsonPath("$[3].title").value("제목 7777"))
+                .andExpect(jsonPath("$[4].title").value("제목 7777"))
+                .andExpect(jsonPath("$[5].title").value("제목 7777"))
+                .andReturn();
+    }
+
+
+    public void articleRegisterProc(int idx) throws Exception {
         RequestArticleSaveOrUpdateDto dto = new RequestArticleSaveOrUpdateDto();
-        dto.setTitle("제목");
+        dto.setTitle("제목 " + idx);
         dto.setCategory("카테고리");
         dto.setContent("내용");
         dto.setPicture("사진");
-        dto.setDealHopeAddress(new Address("희망주소1", "희망주소2", "희망주소3"));
+        dto.setDealHopeAddress(new Address("희망주소" + idx / 3, "희망주소" + idx / 3, "희망주소" + idx));
         dto.setPrice(10000);
 
         //when
-        mockMvc.perform(post("/article").contentType(MediaType.APPLICATION_JSON).content(new ObjectMapper().writeValueAsString(dto))).andExpect(status().isOk());
-
-        return dto;
+        mockMvc.perform(post("/article")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(dto)))
+                .andExpect(status().isOk());
     }
 
     public void watchArticle(int idx, int count) throws Exception { // 조회수 증가

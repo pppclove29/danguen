@@ -9,6 +9,8 @@ import com.example.danguen.domain.article.dto.response.ResponseArticleDto;
 import com.example.danguen.service.service.ArticleService;
 import com.example.danguen.service.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.apache.el.stream.Optional;
+import org.springframework.aop.scope.ScopedProxyUtils;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -46,11 +48,22 @@ public class ArticleApiController {
         return articleService.getArticle(articleId);
     }
 
-    @GetMapping("/articles/{city}/{street}/{zipcode}")
+    @GetMapping("/address/{*addresses}")
     public List<ResponseArticleDto> getArticlePage(@PageableDefault(sort = "createdTime", size = 6, direction = Sort.Direction.DESC) Pageable pageable,
-                                                   @PathVariable(required = false) String city,
-                                                   @PathVariable(required = false) String street,
-                                                   @PathVariable(required = false) String zipcode) {
+                                                   @PathVariable String addresses) {
+
+        String[] str = addresses.split("/");
+        int cnt = str.length;
+        // -> "", "city", "street", "zipcode"
+
+        String city = (cnt > 2)?str[1]:"";
+        String street = str[2];
+        String zipcode = str[3];
+
+        System.out.println("add : " + city);
+        System.out.println(street);
+        System.out.println(zipcode);
+
 
         Address address = new Address(city, street, zipcode);
 
@@ -70,5 +83,7 @@ public class ArticleApiController {
     }
 
     @ExceptionHandler(ArticleNotFoundException.class)
-    public String handleArticleNotFound(){return "articleNotFound";}
+    public String handleArticleNotFound() {
+        return "articleNotFound";
+    }
 }

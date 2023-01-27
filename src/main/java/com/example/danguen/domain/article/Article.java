@@ -29,6 +29,7 @@ public class Article extends BaseTimeEntity {
     private Address dealHopeAddress; // 거래 희망 장소
 
     @ManyToOne
+    @JoinColumn(name = "USER_ID")
     private User seller; // 판매자
 
     //@ManyToMany(mappedBy = "")
