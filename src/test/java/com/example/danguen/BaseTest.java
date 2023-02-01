@@ -27,6 +27,4 @@ public class BaseTest {
     protected JdbcTemplate jdbcTemplate;
     @Autowired
     protected WebApplicationContext ctx;
-
-    protected String baseURL = "http://localhost:8080";
 }

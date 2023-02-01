@@ -2,12 +2,12 @@ package com.example.danguen.service.service;
 
 import com.example.danguen.config.exception.ArticleNotFoundException;
 import com.example.danguen.domain.Address;
-import com.example.danguen.domain.article.Article;
-import com.example.danguen.domain.article.dto.request.RequestArticleSaveOrUpdateDto;
-import com.example.danguen.domain.article.dto.response.ResponseArticleDto;
-import com.example.danguen.domain.infra.ArticleRepository;
-import com.example.danguen.domain.infra.UserRepository;
-import com.example.danguen.domain.user.User;
+import com.example.danguen.domain.model.article.Article;
+import com.example.danguen.domain.model.article.dto.request.RequestArticleSaveOrUpdateDto;
+import com.example.danguen.domain.model.article.dto.response.ResponseArticleDto;
+import com.example.danguen.domain.repository.ArticleRepository;
+import com.example.danguen.domain.repository.UserRepository;
+import com.example.danguen.domain.model.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -35,8 +35,6 @@ public class ArticleService {
     @Transactional(readOnly = true)
     public List<ResponseArticleDto> getArticlePage(Pageable pageable, Address address) {
         Page<Article> page = articleRepository.findAllByAddress(pageable, address.getCity(), address.getStreet(), address.getZipcode());
-
-        System.out.println(page.stream().count());
 
         return page.stream().map(Article::toResponse).collect(Collectors.toList());
     }

@@ -1,7 +1,7 @@
 package com.example.danguen.config.oauth;
 
-import com.example.danguen.domain.infra.UserRepository;
-import com.example.danguen.domain.user.User;
+import com.example.danguen.domain.repository.UserRepository;
+import com.example.danguen.domain.model.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;

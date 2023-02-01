@@ -1,12 +1,12 @@
 package com.example.danguen;
 
 import com.example.danguen.domain.Address;
-import com.example.danguen.domain.infra.UserRepository;
-import com.example.danguen.domain.user.Role;
-import com.example.danguen.domain.user.User;
-import com.example.danguen.domain.user.dto.request.RequestUserUpdateDto;
-import com.example.danguen.domain.user.dto.request.review.RequestBuyerReviewDto;
-import com.example.danguen.domain.user.dto.request.review.RequestSellerReviewDto;
+import com.example.danguen.domain.repository.UserRepository;
+import com.example.danguen.domain.model.user.Role;
+import com.example.danguen.domain.model.user.User;
+import com.example.danguen.domain.model.user.dto.request.RequestUserUpdateDto;
+import com.example.danguen.domain.model.user.dto.request.review.RequestBuyerReviewDto;
+import com.example.danguen.domain.model.user.dto.request.review.RequestSellerReviewDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,7 +28,7 @@ public class UserApiTest extends BaseTest {
     private UserRepository userRepository;
 
     @BeforeEach
-    public void 임의유저생성() {
+    public void 임의유저_생성() {
         Address address = new Address("서울시", "서울구", "서울로");
 
         User user = User.builder()
@@ -39,7 +39,6 @@ public class UserApiTest extends BaseTest {
                 .build();
 
         userRepository.save(user);
-
 
         mockMvc = MockMvcBuilders.webAppContextSetup(ctx)
                 .addFilters(new CharacterEncodingFilter("UTF-8", true))  // 필터 추가
@@ -56,12 +55,12 @@ public class UserApiTest extends BaseTest {
 
     @WithMockUser
     @Test
-    public void 특정유저불러오기() throws Exception {
+    public void 특정_유저_불러오기() throws Exception {
         //given
         Long userId = userRepository.findAll().get(0).getId();
 
         //where & then
-        mockMvc.perform(get(baseURL + "/user/" + userId))
+        mockMvc.perform(get("/user/" + userId))
                 .andExpect(jsonPath("$.name").value("박이름"))
                 .andExpect(jsonPath("$.address.city").value("서울시"))
                 .andExpect(jsonPath("$.rate.dealTemperature").value(36.5));
@@ -79,12 +78,12 @@ public class UserApiTest extends BaseTest {
 
     @WithMockUser
     @Test
-    public void 없는유저정보검색() throws Exception {
+    public void 없는_유저_정보_검색() throws Exception {
         //given
         Long userId = -1L;
 
         //when
-        MvcResult result = mockMvc.perform(get(baseURL + "/user/" + userId))
+        MvcResult result = mockMvc.perform(get("/user/" + userId))
                 .andReturn();
 
         //then
@@ -93,7 +92,7 @@ public class UserApiTest extends BaseTest {
 
     @WithMockUser
     @Test
-    public void 특정유저정보업데이트() throws Exception {
+    public void 특정유저_정보_업데이트() throws Exception {
         //given
         Long userId = userRepository.findAll().get(0).getId();
 
@@ -102,7 +101,7 @@ public class UserApiTest extends BaseTest {
         dto.setAddress(new Address("부산시", "부산동", "부산로"));
 
         //where & then
-        mockMvc.perform(put(baseURL + "/user/" + userId)
+        mockMvc.perform(put("/user/" + userId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(dto)))
                 .andExpect(jsonPath("$.name").value("김개똥"))
@@ -120,10 +119,23 @@ public class UserApiTest extends BaseTest {
         assertThat(user.getRole()).isEqualTo(Role.ROLE_USER);
     }
 
+    @WithMockUser
+    @Test
+    public void 회원탈퇴() throws Exception{
+        //given
+        Long userId = userRepository.findAll().get(0).getId();
+
+        //when
+        mockMvc.perform(delete("/user/" + userId));
+
+        //then
+        assertThat(userRepository.findAll().size()).isEqualTo(0);
+    }
+
 
     @WithMockUser
     @Test
-    public void 구매자및판매자리뷰() throws Exception {
+    public void 구매자_및_판매자리뷰() throws Exception {
         //given
         User seller = User.builder()
                 .name("박판매")
@@ -158,11 +170,11 @@ public class UserApiTest extends BaseTest {
         bdto.setNegativeAnswer(new boolean[]{true, true, true, true, true, true, true, true, true, true});
 
         //when
-        mockMvc.perform(post(baseURL + "/user/" + sellerId + "/review-seller")
+        mockMvc.perform(post("/user/" + sellerId + "/review-seller")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(new ObjectMapper().writeValueAsString(sdto)));
 
-        mockMvc.perform(post(baseURL + "/user/" + buyerId + "/review-buyer")
+        mockMvc.perform(post("/user/" + buyerId + "/review-buyer")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(new ObjectMapper().writeValueAsString(bdto)));
 

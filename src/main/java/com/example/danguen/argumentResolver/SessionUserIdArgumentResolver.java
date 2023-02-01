@@ -19,7 +19,6 @@ public class SessionUserIdArgumentResolver implements HandlerMethodArgumentResol
 
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
-
         return parameter.hasParameterAnnotation(SessionUserId.class);
     }
 

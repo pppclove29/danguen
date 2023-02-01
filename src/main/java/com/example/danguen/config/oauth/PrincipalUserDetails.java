@@ -1,6 +1,6 @@
 package com.example.danguen.config.oauth;
 
-import com.example.danguen.domain.user.User;
+import com.example.danguen.domain.model.user.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.OAuth2User;

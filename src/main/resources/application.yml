@@ -5,10 +5,20 @@ spring:
     url: jdbc:mysql://localhost:3306/board?useUnicode=true&serverTimezone=Asia/Seoul
     username: root
     password: root1234
-    driver-class-name : com.mysql.cj.jdbc.Driver
+    driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     show-sql: false
     hibernate:
       ddl-auto: update
     generate-ddl: true
+
+server:
+  servlet:
+    encoding:
+      charset: UTF-8
+      force: true
+file:
+  dir: src/main/resources/articleimage/
+
+
 

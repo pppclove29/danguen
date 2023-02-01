@@ -3,17 +3,18 @@ package com.example.danguen;
 
 import com.example.danguen.config.oauth.PrincipalUserDetails;
 import com.example.danguen.domain.Address;
-import com.example.danguen.domain.article.Article;
-import com.example.danguen.domain.article.dto.request.RequestArticleSaveOrUpdateDto;
-import com.example.danguen.domain.infra.ArticleRepository;
-import com.example.danguen.domain.infra.UserRepository;
-import com.example.danguen.domain.user.User;
+import com.example.danguen.domain.model.article.Article;
+import com.example.danguen.domain.model.article.dto.request.RequestArticleSaveOrUpdateDto;
+import com.example.danguen.domain.repository.ArticleRepository;
+import com.example.danguen.domain.repository.UserRepository;
+import com.example.danguen.domain.model.user.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -22,6 +23,8 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.filter.CharacterEncodingFilter;
 
+import java.io.FileInputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,7 +40,7 @@ public class ArticleTest extends BaseTest {
     private ArticleRepository articleRepository;
 
     @BeforeEach
-    public void 임의유저생성및세션등록() {
+    public void 임의유저_생성_및_세션등록() {
         Address address = new Address("서울시", "서울구", "서울로");
 
         User user = User.builder().name("박이름").email("email@temp.com").picture("picture").address(address).build();
@@ -48,8 +51,11 @@ public class ArticleTest extends BaseTest {
         SecurityContext context = SecurityContextHolder.getContext();
         context.setAuthentication(new UsernamePasswordAuthenticationToken(userDetails, userDetails.getPassword(), userDetails.getAuthorities()));
 
-        mockMvc = MockMvcBuilders.webAppContextSetup(ctx).addFilters(new CharacterEncodingFilter("UTF-8", true))  // 필터 추가
-                .alwaysDo(print()).build();
+        mockMvc = MockMvcBuilders
+                .webAppContextSetup(ctx)
+                .addFilters(new CharacterEncodingFilter("UTF-8", true))  // 필터 추가
+                .alwaysDo(print())
+                .build();
     }
 
     @AfterEach
@@ -60,7 +66,7 @@ public class ArticleTest extends BaseTest {
 
     @WithMockUser
     @Test
-    public void 정상적인물품등록하기() throws Exception {
+    public void 정상적인_물품_등록하기() throws Exception {
         //given & when
         articleRegisterProc(0);
 
@@ -71,16 +77,16 @@ public class ArticleTest extends BaseTest {
         assertThat(article.getCategory()).isEqualTo("카테고리");
         assertThat(article.getContent()).isEqualTo("내용");
         assertThat(article.getPicture()).isEqualTo("사진");
-        assertThat(article.getDealHopeAddress().getCity()).isEqualTo("희망주소1");
-        assertThat(article.getDealHopeAddress().getStreet()).isEqualTo("희망주소2");
-        assertThat(article.getDealHopeAddress().getZipcode()).isEqualTo("희망주소3");
+        assertThat(article.getDealHopeAddress().getCity()).isEqualTo("희망주소0");
+        assertThat(article.getDealHopeAddress().getStreet()).isEqualTo("희망주소0");
+        assertThat(article.getDealHopeAddress().getZipcode()).isEqualTo("희망주소0");
         assertThat(article.getPrice()).isEqualTo(10000);
         assertThat(article.getSeller().getEmail()).isEqualTo("email@temp.com");
     }
 
     @WithMockUser
     @Test
-    public void 물품정보수정() throws Exception {
+    public void 물품_정보수정() throws Exception {
         //given
         articleRegisterProc(0);
 
@@ -112,10 +118,11 @@ public class ArticleTest extends BaseTest {
 
     @WithMockUser
     @Test
-    public void 물품삭제() throws Exception {
+    public void 물품_삭제() throws Exception {
         //given
         articleRegisterProc(0);
         Long articleId = articleRepository.findAll().get(0).getId();
+
 
         //when
         mockMvc.perform(delete("/article/" + articleId));
@@ -128,7 +135,21 @@ public class ArticleTest extends BaseTest {
     }
 
     @Test
-    public void 물품페이지로딩() throws Exception {
+    public void 등록자_회원탈퇴시_중고물품_처리테스트() throws Exception {
+        //given
+        articleRegisterProc(0);
+        Long userId = userRepository.findAll().get(0).getId();
+
+        //when
+        mockMvc.perform(delete("/user/" + userId));
+
+        //then
+        assertThat(articleRepository.findAll().size()).isEqualTo(0);
+        assertThat(userRepository.findAll().size()).isEqualTo(0);
+    }
+
+    @Test
+    public void 물품_페이지로딩() throws Exception {
         //given
         articleRegisterProc(0);
         Long articleId = articleRepository.findAll().get(0).getId();
@@ -136,38 +157,39 @@ public class ArticleTest extends BaseTest {
         //when & then
         mockMvc.perform(get("/article/" + articleId))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.title").value("제목"))
+                .andExpect(jsonPath("$.title").value("제목 0"))
                 .andExpect(jsonPath("$.content").value("내용"))
                 .andExpect(jsonPath("$.price").value(10000))
                 .andExpect(jsonPath("$.picture").value("사진"))
                 .andExpect(jsonPath("$.category").value("카테고리"))
                 .andExpect(jsonPath("$.views").value(1))
                 .andExpect(jsonPath("$.sold").value(false))
-                .andExpect(jsonPath("$.dealHopeAddress.city").value("희망주소1"))
-                .andExpect(jsonPath("$.dealHopeAddress.street").value("희망주소2"))
-                .andExpect(jsonPath("$.dealHopeAddress.zipcode").value("희망주소3"))
+                .andExpect(jsonPath("$.dealHopeAddress.city").value("희망주소0"))
+                .andExpect(jsonPath("$.dealHopeAddress.street").value("희망주소0"))
+                .andExpect(jsonPath("$.dealHopeAddress.zipcode").value("희망주소0"))
                 .andExpect(jsonPath("$.seller").value("박이름"));
     }
 
     @Test
-    public void 잘못된물품페이지로딩() throws Exception {
+    public void 잘못된_물품페이지로딩() throws Exception {
         //given
         articleRegisterProc(0);
         Long articleId = articleRepository.findAll().get(0).getId();
 
-        //when & then
-
+        //when
         MvcResult result = mockMvc.perform(get("/article/" + articleId + 1)).andReturn();
 
+        //then
         assertThat(result.getResponse().getContentAsString()).contains("articleNotFound");
     }
 
     @Test
-    public void 주소에맞는물품리스트로딩() throws Exception {
+    public void 주소에_맞는_물품_리스트로딩() throws Exception {
         //given
         for (int i = 0; i < 10; i++) {
             articleRegisterProc(i);
         }
+
         /*
         물품 지역 리스트
         idx     address
@@ -209,17 +231,83 @@ public class ArticleTest extends BaseTest {
                 .andExpect(jsonPath("$[0].title").value("제목 3")); // 검색 결과는 최신순으로 내림차순한다
 
         //없는 주소를 입력시 반환값이 없는지 확인
-        mockMvc.perform(get("/address/희망주소99999"))
+        mockMvc.perform(get("/address/없는주소"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0]").doesNotExist()); // 아무 결과도 있어선 안된다
+
+        //영어 url도 확인, 역시 없음
+        mockMvc.perform(get("/address/no-address"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0]").doesNotExist()); // 아무 결과도 있어선 안된다
     }
 
     @Test
-    public void 리스트페이지분할테스트() throws Exception {
+    public void 리스트_페이지_분할테스트() throws Exception {
         //given
         for (int i = 0; i < 10; i++) {
             articleRegisterProc(i);
         }
+
+        // 첫번째 페이지
+        mockMvc.perform(get("/search?size=3&page=0&keyword="))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].title").value(("제목 9")))
+                .andExpect(jsonPath("$[1].title").value(("제목 8")))
+                .andExpect(jsonPath("$[2].title").value(("제목 7")))
+                .andExpect(jsonPath("$[3]").doesNotExist());
+
+        // 두번째 페이지
+        mockMvc.perform(get("/search?size=3&page=1&keyword="))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].title").value(("제목 6")))
+                .andExpect(jsonPath("$[1].title").value(("제목 5")))
+                .andExpect(jsonPath("$[2].title").value(("제목 4")))
+                .andExpect(jsonPath("$[3]").doesNotExist());
+
+        // 세번째 페이지
+        mockMvc.perform(get("/search?size=3&page=2&keyword="))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].title").value(("제목 3")))
+                .andExpect(jsonPath("$[1].title").value(("제목 2")))
+                .andExpect(jsonPath("$[2].title").value(("제목 1")))
+                .andExpect(jsonPath("$[3]").doesNotExist());
+
+        // 마지막 페이지
+        mockMvc.perform(get("/search?size=3&page=3&keyword="))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].title").value(("제목 0")))
+                .andExpect(jsonPath("$[1]").doesNotExist());
+    }
+
+    @Test
+    public void 이미지_업로드_및_저장테스트() throws Exception {
+        //given
+        MockMultipartFile image = new MockMultipartFile(
+                "images",
+                "input.png",
+                "image/png",
+                new FileInputStream("src/test/java/testImage/input.png"));
+
+        // 간략한 정보만 함께 넘기자
+        RequestArticleSaveOrUpdateDto dto = new RequestArticleSaveOrUpdateDto();
+        dto.setTitle("제목");
+        dto.setContent("내용");
+        dto.setPrice(10000);
+
+        String dtoJson = new ObjectMapper().writeValueAsString(dto);
+        MockMultipartFile request = new MockMultipartFile(
+                "request",
+                "request",
+                "application/json",
+                dtoJson.getBytes(StandardCharsets.UTF_8)
+        );
+
+        //when
+        mockMvc.perform(multipart("/article")
+                        .file(image)
+                        .file(request)
+                .contentType(MediaType.MULTIPART_FORM_DATA))
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -292,6 +380,7 @@ public class ArticleTest extends BaseTest {
                 .andExpect(jsonPath("$[3]").exists())
                 .andExpect(jsonPath("$[4]").exists())
                 .andExpect(jsonPath("$[5]").exists())
+                .andExpect(jsonPath("$[6]").doesNotExist())
                 .andExpect(jsonPath("$[0].title").value("제목 10000"))
                 .andExpect(jsonPath("$[1].title").value("제목 10000"))
                 .andExpect(jsonPath("$[2].title").value("제목 10000"))
@@ -310,6 +399,7 @@ public class ArticleTest extends BaseTest {
                 .andExpect(jsonPath("$[3]").exists())
                 .andExpect(jsonPath("$[4]").exists())
                 .andExpect(jsonPath("$[5]").exists())
+                .andExpect(jsonPath("$[6]").doesNotExist())
                 .andExpect(jsonPath("$[0].title").value("제목 777"))
                 .andExpect(jsonPath("$[1].title").value("제목 777"))
                 .andExpect(jsonPath("$[2].title").value("제목 777"))
@@ -320,7 +410,7 @@ public class ArticleTest extends BaseTest {
     }
 
 
-    public void articleRegisterProc(int idx) throws Exception {
+    public void articleRegisterProc(int idx) throws Exception { // 중고 물품 등록
         RequestArticleSaveOrUpdateDto dto = new RequestArticleSaveOrUpdateDto();
         dto.setTitle("제목 " + idx);
         dto.setCategory("카테고리");
@@ -329,7 +419,6 @@ public class ArticleTest extends BaseTest {
         dto.setDealHopeAddress(new Address("희망주소" + idx / 3, "희망주소" + idx / 3, "희망주소" + idx));
         dto.setPrice(10000);
 
-        //when
         mockMvc.perform(post("/article")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(dto)))

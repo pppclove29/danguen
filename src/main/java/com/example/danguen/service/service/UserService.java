@@ -1,12 +1,12 @@
 package com.example.danguen.service.service;
 
 import com.example.danguen.config.exception.UserNotFoundException;
-import com.example.danguen.domain.infra.UserRepository;
-import com.example.danguen.domain.user.User;
-import com.example.danguen.domain.user.dto.request.review.RequestBuyerReviewDto;
-import com.example.danguen.domain.user.dto.request.review.RequestSellerReviewDto;
-import com.example.danguen.domain.user.dto.request.RequestUserUpdateDto;
-import com.example.danguen.domain.user.dto.response.ResponseUserPageDto;
+import com.example.danguen.domain.repository.UserRepository;
+import com.example.danguen.domain.model.user.User;
+import com.example.danguen.domain.model.user.dto.request.review.RequestBuyerReviewDto;
+import com.example.danguen.domain.model.user.dto.request.review.RequestSellerReviewDto;
+import com.example.danguen.domain.model.user.dto.request.RequestUserUpdateDto;
+import com.example.danguen.domain.model.user.dto.response.ResponseUserPageDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +37,10 @@ public class UserService {
         user.updateUser(request);
 
         return new ResponseUserPageDto(user);
+    }
+    @Transactional
+    public void delete(Long id){
+        userRepository.deleteById(id);
     }
 
     @Transactional
