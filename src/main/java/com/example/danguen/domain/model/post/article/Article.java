@@ -1,14 +1,15 @@
-package com.example.danguen.domain.model.article;
+package com.example.danguen.domain.model.post.article;
 
 import com.example.danguen.domain.Address;
 import com.example.danguen.domain.BaseTimeEntity;
-import com.example.danguen.domain.model.article.dto.request.RequestArticleSaveOrUpdateDto;
-import com.example.danguen.domain.model.article.dto.response.ResponseArticleDto;
 import com.example.danguen.domain.model.comment.ArticleComment;
+import com.example.danguen.domain.model.post.article.dto.request.RequestArticleSaveOrUpdateDto;
+import com.example.danguen.domain.model.post.article.dto.response.ResponseArticleDto;
 import com.example.danguen.domain.model.user.User;
 import lombok.Getter;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -38,7 +39,7 @@ public class Article extends BaseTimeEntity {
     //List<User> interests;
 
     @OneToMany(mappedBy = "article", cascade = CascadeType.ALL)
-    List<ArticleComment> comments;
+    List<ArticleComment> comments = new ArrayList<>();
 
     public Article() {
         isSold = false;
@@ -77,8 +78,8 @@ public class Article extends BaseTimeEntity {
         comments.add(articleComment);
     }
 
-    public void removeComment() {
-
+    public void removeComment(ArticleComment articleComment) {
+        comments.remove(articleComment);
     }
 
     public ResponseArticleDto toResponse() {

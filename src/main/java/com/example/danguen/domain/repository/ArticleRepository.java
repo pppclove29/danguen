@@ -1,6 +1,6 @@
 package com.example.danguen.domain.repository;
 
-import com.example.danguen.domain.model.article.Article;
+import com.example.danguen.domain.model.post.article.Article;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

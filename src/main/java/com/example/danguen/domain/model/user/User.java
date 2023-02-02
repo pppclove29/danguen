@@ -2,7 +2,7 @@ package com.example.danguen.domain.model.user;
 
 import com.example.danguen.domain.Address;
 import com.example.danguen.domain.BaseTimeEntity;
-import com.example.danguen.domain.model.article.Article;
+import com.example.danguen.domain.model.post.article.Article;
 import com.example.danguen.domain.model.user.dto.request.RequestUserUpdateDto;
 import com.example.danguen.domain.model.user.dto.request.review.RequestBuyerReviewDto;
 import com.example.danguen.domain.model.user.dto.request.review.RequestSellerReviewDto;
@@ -41,7 +41,7 @@ public class User extends BaseTimeEntity {
     //List<User> interestUser;
 
     @OneToMany(mappedBy = "seller", cascade = CascadeType.ALL)
-    List<Article> sellArticles = new ArrayList<>(); // 판매상품
+    private List<Article> sellArticles = new ArrayList<>(); // 판매상품
 
     //@OneToMany(cascade = CascadeType.ALL) -> OneToMany일까 ManyToMany일까?
     //List<Article> interestArticles; // 관심상품

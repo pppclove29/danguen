@@ -3,8 +3,8 @@ package com.example.danguen.service.api;
 import com.example.danguen.argumentResolver.SessionUserId;
 import com.example.danguen.config.exception.ArticleNotFoundException;
 import com.example.danguen.domain.Address;
-import com.example.danguen.domain.model.article.dto.request.RequestArticleSaveOrUpdateDto;
-import com.example.danguen.domain.model.article.dto.response.ResponseArticleDto;
+import com.example.danguen.domain.model.post.article.dto.request.RequestArticleSaveOrUpdateDto;
+import com.example.danguen.domain.model.post.article.dto.response.ResponseArticleDto;
 import com.example.danguen.service.service.ArticleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,13 +27,11 @@ public class ArticleController {
     private final ArticleService articleService;
 
     @PostMapping(value = "/article", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
-    public void register(@RequestPart("request") RequestArticleSaveOrUpdateDto request,
-                         @RequestPart("images") List<MultipartFile> images,
-                         @SessionUserId Long userId) {
+    public void save(@RequestPart("request") RequestArticleSaveOrUpdateDto request,
+                     @RequestPart("images") List<MultipartFile> images,
+                     @SessionUserId Long userId) {
 
-        System.out.println(images.size());
-
-        articleService.register(request, userId);
+        articleService.save(request, userId);
     }
 
     @PutMapping("/article/{articleId}")
@@ -56,12 +54,12 @@ public class ArticleController {
 
     @GetMapping("/address/**")
     public List<ResponseArticleDto> getArticlePage(@PageableDefault(size = 6) Pageable pageable,
-                                                   HttpServletRequest request) {
+                                                   HttpServletRequest servletRequest) {
 
         Address address = new Address(
-                (String) request.getAttribute("city"),
-                (String) request.getAttribute("street"),
-                (String) request.getAttribute("zipcode"));
+                (String) servletRequest.getAttribute("city"),
+                (String) servletRequest.getAttribute("street"),
+                (String) servletRequest.getAttribute("zipcode"));
 
         System.out.println(address.getCity());
         System.out.println(address.getStreet());

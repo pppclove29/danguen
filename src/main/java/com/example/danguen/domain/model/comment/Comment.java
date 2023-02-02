@@ -14,11 +14,11 @@ public class Comment extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "COMMENT_ID", nullable = false)
-    private Long id;
+    protected Long id;
 
-    String content;
+    protected String content;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "USER_ID")
-    User writer;
+    protected User writer;
 }

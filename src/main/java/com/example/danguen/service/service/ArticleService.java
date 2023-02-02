@@ -2,9 +2,9 @@ package com.example.danguen.service.service;
 
 import com.example.danguen.config.exception.ArticleNotFoundException;
 import com.example.danguen.domain.Address;
-import com.example.danguen.domain.model.article.Article;
-import com.example.danguen.domain.model.article.dto.request.RequestArticleSaveOrUpdateDto;
-import com.example.danguen.domain.model.article.dto.response.ResponseArticleDto;
+import com.example.danguen.domain.model.post.article.Article;
+import com.example.danguen.domain.model.post.article.dto.request.RequestArticleSaveOrUpdateDto;
+import com.example.danguen.domain.model.post.article.dto.response.ResponseArticleDto;
 import com.example.danguen.domain.repository.ArticleRepository;
 import com.example.danguen.domain.repository.UserRepository;
 import com.example.danguen.domain.model.user.User;
@@ -54,7 +54,7 @@ public class ArticleService {
     }
 
     @Transactional
-    public void register(RequestArticleSaveOrUpdateDto request, Long userId) {
+    public void save(RequestArticleSaveOrUpdateDto request, Long userId) {
         User user = userRepository.getReferenceById(userId);
         Article article = request.toEntity();
 

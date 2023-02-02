@@ -1,4 +1,4 @@
-package com.example.danguen.domain.model.article.dto.response;
+package com.example.danguen.domain.model.post.article.dto.response;
 
 import com.example.danguen.domain.Address;
 import lombok.Data;

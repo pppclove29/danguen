@@ -1,7 +1,7 @@
-package com.example.danguen.domain.model.article.dto.request;
+package com.example.danguen.domain.model.post.article.dto.request;
 
 import com.example.danguen.domain.Address;
-import com.example.danguen.domain.model.article.Article;
+import com.example.danguen.domain.model.post.article.Article;
 import lombok.Data;
 
 @Data

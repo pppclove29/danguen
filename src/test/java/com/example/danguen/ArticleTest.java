@@ -3,11 +3,11 @@ package com.example.danguen;
 
 import com.example.danguen.config.oauth.PrincipalUserDetails;
 import com.example.danguen.domain.Address;
-import com.example.danguen.domain.model.article.Article;
-import com.example.danguen.domain.model.article.dto.request.RequestArticleSaveOrUpdateDto;
+import com.example.danguen.domain.model.post.article.Article;
+import com.example.danguen.domain.model.post.article.dto.request.RequestArticleSaveOrUpdateDto;
+import com.example.danguen.domain.model.user.User;
 import com.example.danguen.domain.repository.ArticleRepository;
 import com.example.danguen.domain.repository.UserRepository;
-import com.example.danguen.domain.model.user.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -280,37 +280,6 @@ public class ArticleTest extends BaseTest {
     }
 
     @Test
-    public void 이미지_업로드_및_저장테스트() throws Exception {
-        //given
-        MockMultipartFile image = new MockMultipartFile(
-                "images",
-                "input.png",
-                "image/png",
-                new FileInputStream("src/test/java/testImage/input.png"));
-
-        // 간략한 정보만 함께 넘기자
-        RequestArticleSaveOrUpdateDto dto = new RequestArticleSaveOrUpdateDto();
-        dto.setTitle("제목");
-        dto.setContent("내용");
-        dto.setPrice(10000);
-
-        String dtoJson = new ObjectMapper().writeValueAsString(dto);
-        MockMultipartFile request = new MockMultipartFile(
-                "request",
-                "request",
-                "application/json",
-                dtoJson.getBytes(StandardCharsets.UTF_8)
-        );
-
-        //when
-        mockMvc.perform(multipart("/article")
-                        .file(image)
-                        .file(request)
-                .contentType(MediaType.MULTIPART_FORM_DATA))
-                .andExpect(status().isOk());
-    }
-
-    @Test
     public void 인기순위검색() throws Exception {
         //given
         for (int i = 0; i < 10; i++) {
@@ -419,9 +388,24 @@ public class ArticleTest extends BaseTest {
         dto.setDealHopeAddress(new Address("희망주소" + idx / 3, "희망주소" + idx / 3, "희망주소" + idx));
         dto.setPrice(10000);
 
-        mockMvc.perform(post("/article")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(new ObjectMapper().writeValueAsString(dto)))
+        MockMultipartFile image = new MockMultipartFile(
+                "images",
+                "input.png",
+                "image/png",
+                new FileInputStream("src/test/java/testImage/input.png"));
+
+        String dtoJson = new ObjectMapper().writeValueAsString(dto);
+        MockMultipartFile request = new MockMultipartFile(
+                "request",
+                "request",
+                "application/json",
+                dtoJson.getBytes(StandardCharsets.UTF_8)
+        );
+
+        mockMvc.perform(multipart("/article")
+                        .file(image)
+                        .file(request)
+                        .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isOk());
     }
 

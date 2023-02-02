@@ -1,7 +1,7 @@
 package com.example.danguen.service.api;
 
+import com.example.danguen.argumentResolver.SessionUserId;
 import com.example.danguen.config.exception.CommentNotFoundException;
-import com.example.danguen.config.exception.UserNotFoundException;
 import com.example.danguen.domain.model.comment.dto.request.RequestCommentSaveDto;
 import com.example.danguen.service.service.CommentService;
 import lombok.RequiredArgsConstructor;
@@ -13,9 +13,13 @@ public class CommentController {
 
     private final CommentService commentService;
 
-    @PostMapping("/comment")
-    public void register(@RequestBody RequestCommentSaveDto request) {
-        commentService.register(request);
+    @GetMapping("/{post}/{postId}/comment") // 댓글이 달릴 객체 필요
+    public void save(@RequestBody RequestCommentSaveDto request,
+                     @PathVariable String post,
+                     @PathVariable Long postId,
+                     @SessionUserId Long userId) {
+
+        commentService.save(request, post, postId, userId);
     }
 
     @PutMapping("/comment/{commentId}")
@@ -24,7 +28,7 @@ public class CommentController {
         commentService.update(request, commentId);
     }
 
-    @DeleteMapping("/comment/{commentId}")
+    @DeleteMapping("/comment/{commentId}") // 댓글이 달린 객체 필요, 이미 저장되어있으니 내부의
     public void delete(@PathVariable Long commentId) {
         commentService.delete(commentId);
     }
