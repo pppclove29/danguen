@@ -17,8 +17,8 @@ public class UserService {
     private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
-    public ResponseUserPageDto getUserPage(Long id) {
-        User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException());
+    public ResponseUserPageDto getUserPage(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException());
 
         return new ResponseUserPageDto(user);
     }
@@ -31,27 +31,27 @@ public class UserService {
     }
 
     @Transactional
-    public ResponseUserPageDto update(RequestUserUpdateDto request, Long id) {
-        User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException());
+    public ResponseUserPageDto update(RequestUserUpdateDto request, Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException());
 
         user.updateUser(request);
 
         return new ResponseUserPageDto(user);
     }
     @Transactional
-    public void delete(Long id){
-        userRepository.deleteById(id);
+    public void delete(Long userId){
+        userRepository.deleteById(userId);
     }
 
     @Transactional
-    public void reviewSeller(RequestSellerReviewDto request, Long id) {
-        User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException());
+    public void reviewSeller(RequestSellerReviewDto request, Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException());
 
             user.reviewSeller(request);
     }
     @Transactional
-    public void reviewBuyer(RequestBuyerReviewDto request, Long id) {
-        User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException());
+    public void reviewBuyer(RequestBuyerReviewDto request, Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException());
 
         user.reviewBuyer(request);
     }

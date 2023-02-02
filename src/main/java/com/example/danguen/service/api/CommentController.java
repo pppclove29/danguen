@@ -1,11 +1,11 @@
 package com.example.danguen.service.api;
 
+import com.example.danguen.config.exception.CommentNotFoundException;
+import com.example.danguen.config.exception.UserNotFoundException;
 import com.example.danguen.domain.model.comment.dto.request.RequestCommentSaveDto;
 import com.example.danguen.service.service.CommentService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
 @RestController
@@ -14,19 +14,28 @@ public class CommentController {
     private final CommentService commentService;
 
     @PostMapping("/comment")
-    public void register(@RequestParam RequestCommentSaveDto request) {
+    public void register(@RequestBody RequestCommentSaveDto request) {
         commentService.register(request);
     }
 
-    public void update() {
-        commentService.update();
+    @PutMapping("/comment/{commentId}")
+    public void update(@RequestBody RequestCommentSaveDto request,
+                       @PathVariable Long commentId) {
+        commentService.update(request, commentId);
     }
 
-    public void delete() {
-        commentService.delete();
+    @DeleteMapping("/comment/{commentId}")
+    public void delete(@PathVariable Long commentId) {
+        commentService.delete(commentId);
     }
 
-    public void like() {
-        commentService.like();
+    @PostMapping("/comment/{commentId}/like")
+    public void like(@PathVariable Long commentId) {
+        commentService.like(commentId);
+    }
+
+    @ExceptionHandler(CommentNotFoundException.class)
+    public String handleCommentNotFound() {
+        return "commentNotFound";
     }
 }
