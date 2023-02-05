@@ -18,21 +18,21 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public ResponseUserPageDto getUserPage(Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException());
+        User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
 
         return new ResponseUserPageDto(user);
     }
 
     @Transactional(readOnly = true)
     public Long getUserIdByEmail(String email) {
-        Long id = userRepository.findByEmail(email).get().getId();
+        Long id = userRepository.findByEmail(email).orElseThrow(UserNotFoundException::new).getId();
 
         return id;
     }
 
     @Transactional
     public ResponseUserPageDto update(RequestUserUpdateDto request, Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException());
+        User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
 
         user.updateUser(request);
 
@@ -45,13 +45,13 @@ public class UserService {
 
     @Transactional
     public void reviewSeller(RequestSellerReviewDto request, Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException());
+        User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
 
             user.reviewSeller(request);
     }
     @Transactional
     public void reviewBuyer(RequestBuyerReviewDto request, Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException());
+        User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
 
         user.reviewBuyer(request);
     }

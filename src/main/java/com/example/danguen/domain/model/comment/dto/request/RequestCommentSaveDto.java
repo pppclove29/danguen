@@ -10,7 +10,7 @@ import lombok.Data;
 public class RequestCommentSaveDto {
     String content;
 
-    public ArticleComment toArticleCommentEntity(User user, Article article) {
+    public Comment toArticleComment(User user, Article article) {
         return ArticleComment.builder()
                 .writer(user)
                 .article(article)

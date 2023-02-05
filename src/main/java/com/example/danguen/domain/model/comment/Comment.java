@@ -5,6 +5,9 @@ import com.example.danguen.domain.model.user.User;
 import lombok.Getter;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
+
 
 @Getter
 @Entity
@@ -21,4 +24,19 @@ public class Comment extends BaseTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "USER_ID")
     protected User writer;
+
+    //@OneToMany
+    //@JoinColumn(name = "COMMENT_ID")
+    //private List<User> likedUser = new ArrayList<>(); // 좋아요을 누른 유저를 저장한다.
+
+    public void updateComment(String content) {
+        this.content = content;
+    }
+
+    public void likesComment(User user) {
+//        if (likedUser.contains(user))
+//            likedUser.remove(user);
+//        else
+//            likedUser.add(user);
+    }
 }

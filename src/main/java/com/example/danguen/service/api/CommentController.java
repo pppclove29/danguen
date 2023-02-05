@@ -13,13 +13,13 @@ public class CommentController {
 
     private final CommentService commentService;
 
-    @GetMapping("/{post}/{postId}/comment") // 댓글이 달릴 객체 필요
+    @GetMapping("/{postName}/{postId}/comment") // 댓글이 달릴 객체 필요
     public void save(@RequestBody RequestCommentSaveDto request,
-                     @PathVariable String post,
+                     @PathVariable String postName,
                      @PathVariable Long postId,
                      @SessionUserId Long userId) {
 
-        commentService.save(request, post, postId, userId);
+        commentService.save(request, postName, postId, userId);
     }
 
     @PutMapping("/comment/{commentId}")
@@ -34,8 +34,9 @@ public class CommentController {
     }
 
     @PostMapping("/comment/{commentId}/like")
-    public void like(@PathVariable Long commentId) {
-        commentService.like(commentId);
+    public int like(@PathVariable Long commentId,
+                    @SessionUserId Long userId) {
+        return commentService.like(commentId, userId);
     }
 
     @ExceptionHandler(CommentNotFoundException.class)

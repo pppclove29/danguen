@@ -1,57 +1,41 @@
 package com.example.danguen;
 
 import com.example.danguen.domain.Address;
-import com.example.danguen.domain.repository.UserRepository;
 import com.example.danguen.domain.model.user.Role;
 import com.example.danguen.domain.model.user.User;
 import com.example.danguen.domain.model.user.dto.request.RequestUserUpdateDto;
 import com.example.danguen.domain.model.user.dto.request.review.RequestBuyerReviewDto;
 import com.example.danguen.domain.model.user.dto.request.review.RequestSellerReviewDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.filter.CharacterEncodingFilter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 public class UserApiTest extends BaseTest {
-    @Autowired
-    private UserRepository userRepository;
 
-    @BeforeEach
-    public void 임의유저_생성() {
-        Address address = new Address("서울시", "서울구", "서울로");
-
-        User user = User.builder()
-                .name("박이름")
-                .email("email@temp.com")
-                .picture("picture")
-                .address(address)
-                .build();
-
-        userRepository.save(user);
-
-        mockMvc = MockMvcBuilders.webAppContextSetup(ctx)
-                .addFilters(new CharacterEncodingFilter("UTF-8", true))  // 필터 추가
-                .alwaysDo(print())
-                .build();
-    }
-
-    @AfterEach
-    void 초기화() {
-        jdbcTemplate.update("set FOREIGN_KEY_CHECKS = 0");
-        jdbcTemplate.update("truncate table users");
-        jdbcTemplate.update("set FOREIGN_KEY_CHECKS = 1");
-    }
+//    @BeforeEach
+//    public void 임의유저_생성() {
+//        Address address = new Address("서울시", "서울구", "서울로");
+//
+//        User user = User.builder()
+//                .name("박이름")
+//                .email("email@temp.com")
+//                .picture("picture")
+//                .address(address)
+//                .build();
+//
+//        userRepository.save(user);
+//
+//        mockMvc = MockMvcBuilders.webAppContextSetup(ctx)
+//                .addFilters(new CharacterEncodingFilter("UTF-8", true))  // 필터 추가
+//                .alwaysDo(print())
+//                .build();
+//    }
 
     @WithMockUser
     @Test
@@ -121,7 +105,7 @@ public class UserApiTest extends BaseTest {
 
     @WithMockUser
     @Test
-    public void 회원탈퇴() throws Exception{
+    public void 회원탈퇴() throws Exception {
         //given
         Long userId = userRepository.findAll().get(0).getId();
 

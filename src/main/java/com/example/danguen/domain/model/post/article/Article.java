@@ -14,7 +14,7 @@ import java.util.List;
 
 @Getter
 @Entity
-public class Article extends BaseTimeEntity {
+public class Article extends BaseTimeEntity implements Post {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "ARTICLE_ID", nullable = false)

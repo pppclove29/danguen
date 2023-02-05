@@ -3,10 +3,12 @@ package com.example.danguen.domain.model.comment;
 import com.example.danguen.domain.model.post.article.Article;
 import com.example.danguen.domain.model.user.User;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 
+@Getter
 @NoArgsConstructor
 @Entity
 @DiscriminatorValue("A")
