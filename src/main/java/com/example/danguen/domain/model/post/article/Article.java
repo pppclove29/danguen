@@ -82,19 +82,5 @@ public class Article extends BaseTimeEntity implements Post {
         comments.remove(articleComment);
     }
 
-    public ResponseArticleDto toResponse() {
-        ResponseArticleDto dto = new ResponseArticleDto();
 
-        dto.setTitle(title);
-        dto.setContent(content);
-        dto.setPrice(price);
-        dto.setPicture(picture);
-        dto.setCategory(category);
-        dto.setViews(views);
-        dto.setSold(isSold);
-        dto.setDealHopeAddress(dealHopeAddress);
-        dto.setSeller(seller.getName());
-
-        return dto;
-    }
 }

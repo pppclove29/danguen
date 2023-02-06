@@ -1,13 +1,17 @@
 package com.example.danguen.service.api;
 
+import com.example.danguen.argumentResolver.SessionUserId;
 import com.example.danguen.config.exception.UserNotFoundException;
-import com.example.danguen.domain.model.user.dto.request.RequestUserUpdateDto;
-import com.example.danguen.domain.model.user.dto.request.review.RequestBuyerReviewDto;
-import com.example.danguen.domain.model.user.dto.request.review.RequestSellerReviewDto;
-import com.example.danguen.domain.model.user.dto.response.ResponseUserPageDto;
+import com.example.danguen.domain.model.comment.dto.request.RequestUserUpdateDto;
+import com.example.danguen.domain.model.comment.dto.request.review.RequestBuyerReviewDto;
+import com.example.danguen.domain.model.comment.dto.request.review.RequestSellerReviewDto;
+import com.example.danguen.domain.model.comment.dto.response.ResponseUserPageDto;
+import com.example.danguen.domain.model.comment.dto.response.ResponseUserSimpleDto;
 import com.example.danguen.service.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
@@ -25,8 +29,9 @@ public class UserController {
                                       @PathVariable Long userId) {
         return userService.update(request, userId);
     }
+
     @DeleteMapping("/user/{userId}")
-    public void delete(@PathVariable Long userId){
+    public void delete(@PathVariable Long userId) {
         userService.delete(userId);
     }
 
@@ -42,9 +47,23 @@ public class UserController {
         userService.reviewBuyer(request, userId);
     }
 
+    @GetMapping("/user/iuser")
+    public List<ResponseUserSimpleDto> getIUsers(@SessionUserId Long userId) {
+        return userService.getIUsers(userId);
+    }
+
+    @PutMapping("/user/iuser/{iuserId}")
+    public void addInterestUser(@PathVariable Long iuserId) {
+        userService.addInterestUser(iuserId);
+    }
+
+    @DeleteMapping("/user/iuser/{iuserId}")
+    public void deleteInterestUser(@PathVariable Long iuserId) {
+        userService.deleteInterestUser(iuserId);
+    }
 
     @ExceptionHandler(UserNotFoundException.class)
     public String handleUserNotFound() {
-        return "userNotFound";
+        return UserNotFoundException.message;
     }
 }

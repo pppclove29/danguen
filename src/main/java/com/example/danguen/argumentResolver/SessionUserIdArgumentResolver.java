@@ -27,9 +27,6 @@ public class SessionUserIdArgumentResolver implements HandlerMethodArgumentResol
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         PrincipalUserDetails user = (PrincipalUserDetails) principal;
 
-        if (user == null)
-            throw new UserNotFoundException();
-
         return userService.getUserIdByEmail(user.getUserEmail());
     }
 }

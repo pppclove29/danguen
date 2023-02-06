@@ -1,4 +1,4 @@
-package com.example.danguen.domain.model.user.dto.request.review;
+package com.example.danguen.domain.model.comment.dto.request.review;
 
 public interface Review {
 

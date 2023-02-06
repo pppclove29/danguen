@@ -1,6 +1,7 @@
 package com.example.danguen.service.api;
 
 import com.example.danguen.argumentResolver.SessionUserId;
+import com.example.danguen.config.exception.AlreadyDeletedCommentException;
 import com.example.danguen.config.exception.CommentNotFoundException;
 import com.example.danguen.domain.model.comment.dto.request.RequestCommentSaveDto;
 import com.example.danguen.service.service.CommentService;
@@ -41,6 +42,11 @@ public class CommentController {
 
     @ExceptionHandler(CommentNotFoundException.class)
     public String handleCommentNotFound() {
-        return "commentNotFound";
+        return CommentNotFoundException.message;
+    }
+
+    @ExceptionHandler(AlreadyDeletedCommentException.class)
+    public String handleArticleDeleted() {
+        return AlreadyDeletedCommentException.message;
     }
 }

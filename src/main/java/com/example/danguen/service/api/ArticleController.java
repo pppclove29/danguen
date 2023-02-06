@@ -5,6 +5,7 @@ import com.example.danguen.config.exception.ArticleNotFoundException;
 import com.example.danguen.domain.Address;
 import com.example.danguen.domain.model.post.article.dto.request.RequestArticleSaveOrUpdateDto;
 import com.example.danguen.domain.model.post.article.dto.response.ResponseArticleDto;
+import com.example.danguen.domain.model.post.article.dto.response.ResponseArticleSimpleDto;
 import com.example.danguen.service.service.ArticleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -48,40 +49,39 @@ public class ArticleController {
 
     @GetMapping("/article/{articleId}")
     public ResponseArticleDto getArticle(@PathVariable Long articleId) {
-
         return articleService.getArticle(articleId);
     }
 
     @GetMapping("/address/**")
-    public List<ResponseArticleDto> getArticlePage(@PageableDefault(size = 6) Pageable pageable,
-                                                   HttpServletRequest servletRequest) {
-
+    public List<ResponseArticleSimpleDto> getArticlePage(@PageableDefault(size = 6) Pageable pageable,
+                                                         HttpServletRequest servletRequest) {
         Address address = new Address(
                 (String) servletRequest.getAttribute("city"),
                 (String) servletRequest.getAttribute("street"),
                 (String) servletRequest.getAttribute("zipcode"));
 
-        System.out.println(address.getCity());
-        System.out.println(address.getStreet());
-        System.out.println(address.getZipcode());
-
         return articleService.getArticlePage(pageable, address);
     }
 
     @GetMapping("/hot-articles")
-    public List<ResponseArticleDto> getHotArticlePage(@PageableDefault(size = 6) Pageable pageable) {
+    public List<ResponseArticleSimpleDto> getHotArticlePage(@PageableDefault(size = 6) Pageable pageable) {
         return articleService.getHotArticlePage(pageable);
     }
 
     @GetMapping("/search")
-    public List<ResponseArticleDto> getSearchPage(@PageableDefault(size = 6) Pageable pageable,
-                                                  @RequestParam("keyword") String title) {
-
+    public List<ResponseArticleSimpleDto> getSearchPage(@PageableDefault(size = 6) Pageable pageable,
+                                                        @RequestParam("keyword") String title) {
         return articleService.getSearchArticlePage(pageable, title);
+    }
+
+    @GetMapping("/interest")
+    public List<ResponseArticleSimpleDto> getInterestPage(@PageableDefault(size = 6) Pageable pageable,
+                                                          @SessionUserId Long userId) {
+        return articleService.getInterestPage(pageable, userId);
     }
 
     @ExceptionHandler(ArticleNotFoundException.class)
     public String handleArticleNotFound() {
-        return "articleNotFound";
+        return ArticleNotFoundException.message;
     }
 }

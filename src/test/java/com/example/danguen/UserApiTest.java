@@ -1,11 +1,12 @@
 package com.example.danguen;
 
+import com.example.danguen.config.exception.UserNotFoundException;
 import com.example.danguen.domain.Address;
+import com.example.danguen.domain.model.comment.dto.request.RequestUserUpdateDto;
+import com.example.danguen.domain.model.comment.dto.request.review.RequestBuyerReviewDto;
+import com.example.danguen.domain.model.comment.dto.request.review.RequestSellerReviewDto;
 import com.example.danguen.domain.model.user.Role;
 import com.example.danguen.domain.model.user.User;
-import com.example.danguen.domain.model.user.dto.request.RequestUserUpdateDto;
-import com.example.danguen.domain.model.user.dto.request.review.RequestBuyerReviewDto;
-import com.example.danguen.domain.model.user.dto.request.review.RequestSellerReviewDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
@@ -15,27 +16,9 @@ import org.springframework.test.web.servlet.MvcResult;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 public class UserApiTest extends BaseTest {
-
-//    @BeforeEach
-//    public void 임의유저_생성() {
-//        Address address = new Address("서울시", "서울구", "서울로");
-//
-//        User user = User.builder()
-//                .name("박이름")
-//                .email("email@temp.com")
-//                .picture("picture")
-//                .address(address)
-//                .build();
-//
-//        userRepository.save(user);
-//
-//        mockMvc = MockMvcBuilders.webAppContextSetup(ctx)
-//                .addFilters(new CharacterEncodingFilter("UTF-8", true))  // 필터 추가
-//                .alwaysDo(print())
-//                .build();
-//    }
 
     @WithMockUser
     @Test
@@ -45,18 +28,18 @@ public class UserApiTest extends BaseTest {
 
         //where & then
         mockMvc.perform(get("/user/" + userId))
-                .andExpect(jsonPath("$.name").value("박이름"))
-                .andExpect(jsonPath("$.address.city").value("서울시"))
+                .andExpect(jsonPath("$.name").value(sessionName))
+                .andExpect(jsonPath("$.address.city").value(city))
                 .andExpect(jsonPath("$.rate.dealTemperature").value(36.5));
 
         //then
         User user = userRepository.getReferenceById(userId);
 
         assertThat(user.getId()).isEqualTo(userId);
-        assertThat(user.getName()).isEqualTo("박이름");
-        assertThat(user.getAddress().getCity()).isEqualTo("서울시");
-        assertThat(user.getAddress().getStreet()).isEqualTo("서울구");
-        assertThat(user.getAddress().getZipcode()).isEqualTo("서울로");
+        assertThat(user.getName()).isEqualTo(sessionName);
+        assertThat(user.getAddress().getCity()).isEqualTo(city);
+        assertThat(user.getAddress().getStreet()).isEqualTo(street);
+        assertThat(user.getAddress().getZipcode()).isEqualTo(zipcode);
         assertThat(user.getRole()).isEqualTo(Role.ROLE_USER);
     }
 
@@ -71,7 +54,7 @@ public class UserApiTest extends BaseTest {
                 .andReturn();
 
         //then
-        assertThat(result.getResponse().getContentAsString()).contains("userNotFound");
+        assertThat(result.getResponse().getContentAsString()).contains(UserNotFoundException.message);
     }
 
     @WithMockUser
@@ -176,4 +159,52 @@ public class UserApiTest extends BaseTest {
         assertThat(buyer.getRate().getReDealHopePercent()).isLessThan(50);
     }
 
+    @WithMockUser
+    @Test
+    public void 관심유저_등록() throws Exception {
+        //given
+        // 관심유저의 정보, 주소는 생략
+        String iName = "이관심";
+        String iEmail = "interest@temp.net";
+
+        User iUser = User.builder().name(iName).email(iEmail).picture(picture).build();
+        userRepository.save(iUser);
+
+        Long iUserId = userRepository.findByEmail(iEmail).get().getId();
+
+        //when
+        mockMvc.perform(put("/user/iuser/" + iUserId))
+                .andExpect(status().isOk());
+
+        //then
+        User user = userRepository.findByEmail(sessionEmail).get();
+
+        assertThat(user.getInterestUser()).contains(iUser);
+    }
+
+    @WithMockUser
+    @Test
+    public void 관심유저_제거() throws Exception {
+        //given
+        // 관심유저의 정보, 주소는 생략
+        String iName = "이관심";
+        String iEmail = "interest@temp.net";
+
+        User iUser = User.builder().name(iName).email(iEmail).picture(picture).build();
+        userRepository.save(iUser);
+
+        Long iUserId = userRepository.findByEmail(iEmail).get().getId();
+
+        mockMvc.perform(put("/user/iuser/" + iUserId))
+                .andExpect(status().isOk());
+
+        //when
+        mockMvc.perform(delete("/user/iuser/" + iUserId))
+                .andExpect(status().isOk());
+
+        //then
+        User user = userRepository.findByEmail(sessionEmail).get();
+
+        assertThat(user.getInterestUser().size()).isEqualTo(0);
+    }
 }

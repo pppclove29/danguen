@@ -3,6 +3,7 @@ package com.example.danguen;
 import com.example.danguen.config.oauth.PrincipalUserDetails;
 import com.example.danguen.domain.Address;
 import com.example.danguen.domain.model.comment.dto.request.RequestCommentSaveDto;
+import com.example.danguen.domain.model.post.article.Article;
 import com.example.danguen.domain.model.post.article.dto.request.RequestArticleSaveOrUpdateDto;
 import com.example.danguen.domain.model.user.User;
 import com.example.danguen.domain.repository.ArticleRepository;
@@ -46,27 +47,25 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class BaseTest {
 
     @Autowired
-    protected MockMvc mockMvc;
+    MockMvc mockMvc;
     @Autowired
-    protected MockHttpSession session;
+    MockHttpSession session;
     @Autowired
-    protected JdbcTemplate jdbcTemplate;
+    JdbcTemplate jdbcTemplate;
     @Autowired
-    protected WebApplicationContext ctx;
+    WebApplicationContext ctx;
     @Autowired
-    protected UserRepository userRepository;
+    UserRepository userRepository;
     @Autowired
-    protected ArticleRepository articleRepository;
+    ArticleRepository articleRepository;
     @Autowired
-    protected CommentRepository commentRepository;
+    CommentRepository commentRepository;
 
+    String sessionName = "박이름";
+    String sessionEmail = "email@temp.com";
     @BeforeEach
     public void 임의유저_생성_및_세션등록() {
-        Address address = new Address("서울시", "서울구", "서울로");
-
-        User user = User.builder().name("박이름").email("email@temp.com").picture("picture").address(address).build();
-
-        userRepository.save(user);
+        User user = makeUserProc(sessionName, sessionEmail);
 
         PrincipalUserDetails userDetails = new PrincipalUserDetails(user);
         SecurityContext context = SecurityContextHolder.getContext();
@@ -86,13 +85,34 @@ public class BaseTest {
         commentRepository.deleteAll();
     }
 
-    public void articleRegisterProc(int idx) throws Exception { // 중고 물품 등록
+    String city = "서울시";
+    String street = "길로";
+    String zipcode = "1234";
+    String picture = "picture";
+
+    public User makeUserProc(String name, String email) {
+        Address address = new Address(city, street, zipcode);
+
+        User user = User.builder().name(name).email(email).picture(picture).address(address).build();
+
+        userRepository.save(user);
+
+        return user;
+    }
+
+    String title = "제목 ";
+    String category = "카테고리";
+    String articleContent = "내용";
+    String hopeCity = "희망주소";
+    String hopeStreet = "희망주소";
+    String hopeZipcode = "희망주소";
+
+    public void articleSaveProc(int idx) throws Exception { // 중고 물품 등록
         RequestArticleSaveOrUpdateDto dto = new RequestArticleSaveOrUpdateDto();
-        dto.setTitle("제목 " + idx);
-        dto.setCategory("카테고리");
-        dto.setContent("내용");
-        dto.setPicture("사진");
-        dto.setDealHopeAddress(new Address("희망주소" + idx / 3, "희망주소" + idx / 3, "희망주소" + idx));
+        dto.setTitle(title + idx);
+        dto.setCategory(category);
+        dto.setContent(articleContent);
+        dto.setDealHopeAddress(new Address(hopeCity + idx / 3, hopeStreet + idx / 3, hopeZipcode + idx));
         dto.setPrice(10000);
 
         MockMultipartFile image = new MockMultipartFile(
@@ -116,14 +136,34 @@ public class BaseTest {
                 .andExpect(status().isOk());
     }
 
-    public void commentRegisterProc() throws Exception {
-        articleRegisterProc(0);
+    public void noneSessionsArticleSaveProc(User noneSessionUser, int idx) {
+        RequestArticleSaveOrUpdateDto dto = new RequestArticleSaveOrUpdateDto();
+        dto.setTitle(title + noneSessionUser.getName());
+        dto.setCategory(category);
+        dto.setContent(articleContent);
+        dto.setDealHopeAddress(new Address(
+                noneSessionUser.getAddress().getCity(),
+                noneSessionUser.getAddress().getStreet(),
+                noneSessionUser.getAddress().getZipcode()));
+        dto.setPrice(10000 * idx);
+
+        Article article = dto.toEntity();
+
+        noneSessionUser.addSellArticle(article);
+
+        articleRepository.save(article);
+    }
+
+    String commentContent = "댓글 내용";
+
+    public void commentSaveProc() throws Exception { // 댓글 등록
+        articleSaveProc(0);
 
         Long articleId = articleRepository.findAll().get(0).getId();
 
         RequestCommentSaveDto dto = new RequestCommentSaveDto();
 
-        dto.setContent("댓글 내용");
+        dto.setContent(commentContent);
 
         mockMvc.perform(get("/article/" + articleId + "/comment")
                         .contentType(MediaType.APPLICATION_JSON)

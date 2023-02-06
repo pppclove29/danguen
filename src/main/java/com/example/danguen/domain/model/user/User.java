@@ -2,10 +2,11 @@ package com.example.danguen.domain.model.user;
 
 import com.example.danguen.domain.Address;
 import com.example.danguen.domain.BaseTimeEntity;
+import com.example.danguen.domain.model.comment.Comment;
+import com.example.danguen.domain.model.comment.dto.request.RequestUserUpdateDto;
+import com.example.danguen.domain.model.comment.dto.request.review.RequestBuyerReviewDto;
+import com.example.danguen.domain.model.comment.dto.request.review.RequestSellerReviewDto;
 import com.example.danguen.domain.model.post.article.Article;
-import com.example.danguen.domain.model.user.dto.request.RequestUserUpdateDto;
-import com.example.danguen.domain.model.user.dto.request.review.RequestBuyerReviewDto;
-import com.example.danguen.domain.model.user.dto.request.review.RequestSellerReviewDto;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -37,11 +38,14 @@ public class User extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    //@ManyToMany // 수정 필요 -> OneToMany & ManyToOne
-    //List<User> interestUser;
+    @OneToMany
+    private List<User> interestUser = new ArrayList<>();
 
     @OneToMany(mappedBy = "seller", cascade = CascadeType.ALL)
     private List<Article> sellArticles = new ArrayList<>(); // 판매상품
+
+    @OneToMany(mappedBy = "writer")
+    private List<Comment> comments = new ArrayList<>();
 
     //@OneToMany(cascade = CascadeType.ALL) -> OneToMany일까 ManyToMany일까?
     //List<Article> interestArticles; // 관심상품
@@ -91,5 +95,27 @@ public class User extends BaseTimeEntity {
 
     public void removeSellArticle(Article article) {
         sellArticles.remove(article);
+    }
+
+    public void addInterestUser(User iUser) {
+        interestUser.add(iUser);
+    }
+
+    public void deleteInterestUser(User iUser) {
+        interestUser.remove(iUser);
+    }
+
+    public void addComment(Comment comment) {
+        comments.add(comment);
+    }
+
+    public void removeComment(Comment comment) {
+        comments.remove(comment);
+    }
+
+    public void giveUpComments() {
+        for (Comment comment : comments) {
+            comment.deleteUser();
+        }
     }
 }

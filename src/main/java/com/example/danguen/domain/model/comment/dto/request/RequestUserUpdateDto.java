@@ -1,4 +1,4 @@
-package com.example.danguen.domain.model.user.dto.request;
+package com.example.danguen.domain.model.comment.dto.request;
 
 import com.example.danguen.domain.Address;
 import lombok.Data;

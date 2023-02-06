@@ -1,5 +1,6 @@
 package com.example.danguen.service.service;
 
+import com.example.danguen.config.exception.AlreadyDeletedCommentException;
 import com.example.danguen.config.exception.ArticleNotFoundException;
 import com.example.danguen.config.exception.CommentNotFoundException;
 import com.example.danguen.domain.model.comment.Comment;
@@ -42,15 +43,22 @@ public class CommentService {
     }
 
     @Transactional
-    public void update(RequestCommentSaveDto request, Long commentId) {
+    public void update(RequestCommentSaveDto request, Long commentId) throws AlreadyDeletedCommentException {
         Comment comment = commentRepository.findById(commentId).orElseThrow(CommentNotFoundException::new);
+
+        if(comment.isDeleted()) // 삭제된 댓글에 대해서는 수정을 막는다
+            throw new AlreadyDeletedCommentException();
 
         comment.updateComment(request.getContent());
     }
 
     @Transactional
     public void delete(Long commentId) {
-        commentRepository.deleteById(commentId);
+        Comment comment = commentRepository.findById(commentId).orElseThrow(CommentNotFoundException::new);
+        comment.getWriter().removeComment(comment);
+
+        comment.updateComment("삭제된 메세지입니다.");
+        comment.delete();
     }
 
     @Transactional

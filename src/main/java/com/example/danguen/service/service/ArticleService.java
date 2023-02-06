@@ -1,13 +1,15 @@
 package com.example.danguen.service.service;
 
 import com.example.danguen.config.exception.ArticleNotFoundException;
+import com.example.danguen.config.exception.UserNotFoundException;
 import com.example.danguen.domain.Address;
 import com.example.danguen.domain.model.post.article.Article;
 import com.example.danguen.domain.model.post.article.dto.request.RequestArticleSaveOrUpdateDto;
 import com.example.danguen.domain.model.post.article.dto.response.ResponseArticleDto;
+import com.example.danguen.domain.model.post.article.dto.response.ResponseArticleSimpleDto;
+import com.example.danguen.domain.model.user.User;
 import com.example.danguen.domain.repository.ArticleRepository;
 import com.example.danguen.domain.repository.UserRepository;
-import com.example.danguen.domain.model.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -29,28 +31,37 @@ public class ArticleService {
         Article article = articleRepository.findById(articleId).orElseThrow(ArticleNotFoundException::new);
         article.addViewCount();
 
-        return article.toResponse();
+        return ResponseArticleDto.toResponse(article);
     }
 
     @Transactional(readOnly = true)
-    public List<ResponseArticleDto> getArticlePage(Pageable pageable, Address address) {
+    public List<ResponseArticleSimpleDto> getArticlePage(Pageable pageable, Address address) {
         Page<Article> page = articleRepository.findAllByAddress(pageable, address.getCity(), address.getStreet(), address.getZipcode());
 
-        return page.stream().map(Article::toResponse).collect(Collectors.toList());
+        return page.stream().map(ResponseArticleSimpleDto::toResponse).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
-    public List<ResponseArticleDto> getHotArticlePage(Pageable pageable) {
+    public List<ResponseArticleSimpleDto> getHotArticlePage(Pageable pageable) {
         Page<Article> page = articleRepository.findByHot(pageable);
 
-        return page.stream().map(Article::toResponse).collect(Collectors.toList());
+        return page.stream().map(ResponseArticleSimpleDto::toResponse).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
-    public List<ResponseArticleDto> getSearchArticlePage(Pageable pageable, String title) {
+    public List<ResponseArticleSimpleDto> getSearchArticlePage(Pageable pageable, String title) {
         Page<Article> page = articleRepository.findByTitleContainingOrderByIdDesc(pageable, title);
 
-        return page.stream().map(Article::toResponse).collect(Collectors.toList());
+        return page.stream().map(ResponseArticleSimpleDto::toResponse).collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<ResponseArticleSimpleDto> getInterestPage(Pageable pageable, Long userId) {
+        List<User> interestUser = userRepository.findById(userId).orElseThrow(UserNotFoundException::new).getInterestUser();
+
+        Page<Article> page = articleRepository.findByInterestUser(pageable, interestUser);
+
+        return page.stream().map(ResponseArticleSimpleDto::toResponse).collect(Collectors.toList());
     }
 
     @Transactional

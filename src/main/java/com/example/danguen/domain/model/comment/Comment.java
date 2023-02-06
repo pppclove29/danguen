@@ -17,20 +17,29 @@ public class Comment extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "COMMENT_ID", nullable = false)
-    protected Long id;
+    Long id;
 
-    protected String content;
+    String content;
+    boolean isDeleted = false;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "USER_ID")
-    protected User writer;
+    User writer;
 
-    //@OneToMany
-    //@JoinColumn(name = "COMMENT_ID")
-    //private List<User> likedUser = new ArrayList<>(); // 좋아요을 누른 유저를 저장한다.
+    @OneToMany
+    @JoinColumn(name = "COMMENT_ID")
+    private List<User> likedUser = new ArrayList<>(); // 좋아요을 누른 유저를 저장한다.
 
     public void updateComment(String content) {
         this.content = content;
+    }
+
+    public void delete() {
+        this.isDeleted = true;
+    }
+
+    public void deleteUser() {
+        this.writer = null;
     }
 
     public void likesComment(User user) {

@@ -24,6 +24,7 @@ public class ArticleComment extends Comment {
         this.article = article;
         this.content = content;
 
+        writer.addComment(this);
         article.addComment(this);
     }
 }
