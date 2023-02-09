@@ -3,6 +3,7 @@ package com.example.danguen;
 
 import com.example.danguen.config.exception.ArticleNotFoundException;
 import com.example.danguen.domain.Address;
+import com.example.danguen.domain.model.image.Image;
 import com.example.danguen.domain.model.post.article.Article;
 import com.example.danguen.domain.model.post.article.dto.request.RequestArticleSaveOrUpdateDto;
 import com.example.danguen.domain.model.user.User;
@@ -27,16 +28,19 @@ public class ArticleTest extends BaseTest {
 
         //then
         Article article = articleRepository.findAll().get(0);
+        Image image = imageRepository.findAll().get(0);
 
         assertThat(article.getTitle()).isEqualTo(title + 0);
         assertThat(article.getCategory()).isEqualTo(category);
         assertThat(article.getContent()).isEqualTo(articleContent);
+        assertThat(article.getImages().size()).isEqualTo(1);
         assertThat(article.getDealHopeAddress().getCity()).isEqualTo(hopeCity + 0);
         assertThat(article.getDealHopeAddress().getStreet()).isEqualTo(hopeStreet + 0);
         assertThat(article.getDealHopeAddress().getZipcode()).isEqualTo(hopeZipcode + 0);
         assertThat(article.getPrice()).isEqualTo(10000);
         assertThat(article.getSeller().getName()).isEqualTo(sessionName);
         assertThat(article.getSeller().getEmail()).isEqualTo(sessionEmail);
+        assertThat(article.getImages().get(0).getName()).isEqualTo(image.getName());
     }
 
     @WithMockUser

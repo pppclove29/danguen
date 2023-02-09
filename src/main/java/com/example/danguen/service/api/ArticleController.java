@@ -3,11 +3,13 @@ package com.example.danguen.service.api;
 import com.example.danguen.argumentResolver.SessionUserId;
 import com.example.danguen.config.exception.ArticleNotFoundException;
 import com.example.danguen.domain.Address;
+import com.example.danguen.domain.model.image.dto.ImageDto;
 import com.example.danguen.domain.model.post.article.dto.request.RequestArticleSaveOrUpdateDto;
 import com.example.danguen.domain.model.post.article.dto.response.ResponseArticleDto;
 import com.example.danguen.domain.model.post.article.dto.response.ResponseArticleSimpleDto;
 import com.example.danguen.service.service.ArticleService;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -16,13 +18,16 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @RestController
 public class ArticleController {
 
-    @Value("${file.dir}")
+    @Value("${file.article.image.path}")
     private String savePath;
 
     private final ArticleService articleService;
@@ -30,9 +35,18 @@ public class ArticleController {
     @PostMapping(value = "/article", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
     public void save(@RequestPart("request") RequestArticleSaveOrUpdateDto request,
                      @RequestPart("images") List<MultipartFile> images,
-                     @SessionUserId Long userId) {
+                     @SessionUserId Long userId) throws IOException {
 
-        articleService.save(request, userId);
+        List<ImageDto> imageList = images.stream()
+                .map(ImageDto::toDto)
+                .map(dto -> dto.setUrl(savePath))
+                .collect(Collectors.toList());
+
+        for(MultipartFile image : images){ // 로컬에 저장
+            image.transferTo(new File(savePath + image.getName()));
+        }
+
+        articleService.save(request, userId, imageList);
     }
 
     @PutMapping("/article/{articleId}")
@@ -55,12 +69,13 @@ public class ArticleController {
     @GetMapping("/address/**")
     public List<ResponseArticleSimpleDto> getArticlePage(@PageableDefault(size = 6) Pageable pageable,
                                                          HttpServletRequest servletRequest) {
-        Address address = new Address(
-                (String) servletRequest.getAttribute("city"),
-                (String) servletRequest.getAttribute("street"),
-                (String) servletRequest.getAttribute("zipcode"));
-
-        return articleService.getArticlePage(pageable, address);
+        return articleService.getArticlePage(pageable,
+                new Address(
+                        (String) servletRequest.getAttribute("city"),
+                        (String) servletRequest.getAttribute("street"),
+                        (String) servletRequest.getAttribute("zipcode")
+                )
+        );
     }
 
     @GetMapping("/hot-articles")
@@ -84,4 +99,6 @@ public class ArticleController {
     public String handleArticleNotFound() {
         return ArticleNotFoundException.message;
     }
+
+
 }

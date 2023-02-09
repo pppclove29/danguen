@@ -3,9 +3,10 @@ package com.example.danguen.domain.model.user;
 import com.example.danguen.domain.Address;
 import com.example.danguen.domain.BaseTimeEntity;
 import com.example.danguen.domain.model.comment.Comment;
-import com.example.danguen.domain.model.comment.dto.request.RequestUserUpdateDto;
-import com.example.danguen.domain.model.comment.dto.request.review.RequestBuyerReviewDto;
-import com.example.danguen.domain.model.comment.dto.request.review.RequestSellerReviewDto;
+import com.example.danguen.domain.model.user.dto.request.RequestUserUpdateDto;
+import com.example.danguen.domain.model.user.dto.request.review.RequestBuyerReviewDto;
+import com.example.danguen.domain.model.user.dto.request.review.RequestSellerReviewDto;
+import com.example.danguen.domain.model.image.UserImage;
 import com.example.danguen.domain.model.post.article.Article;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,7 +18,7 @@ import java.util.List;
 
 @Getter
 @NoArgsConstructor
-@Table(name = "USERS")
+@Table(name = "USERS") // H2때문에 선언
 @Entity
 public class User extends BaseTimeEntity {
 
@@ -28,7 +29,6 @@ public class User extends BaseTimeEntity {
 
     private String name;
     private String email;
-    private String picture;
 
     @Embedded
     private Address address;
@@ -47,14 +47,16 @@ public class User extends BaseTimeEntity {
     @OneToMany(mappedBy = "writer")
     private List<Comment> comments = new ArrayList<>();
 
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
+    private UserImage image;
+
     //@OneToMany(cascade = CascadeType.ALL) -> OneToMany일까 ManyToMany일까?
     //List<Article> interestArticles; // 관심상품
 
     @Builder
-    private User(String name, String email, String picture, Address address) {
+    private User(String name, String email, Address address) {
         this.name = name;
         this.email = email;
-        this.picture = picture;
         this.address = address;
 
         rate = new UserRate();
@@ -69,10 +71,9 @@ public class User extends BaseTimeEntity {
         this.name = request.getName();
     }
 
-    public User updateOAuth(String name, String picture, String email) {
+    public User updateOAuth(String name, String email) {
         this.name = name;
         this.email = email;
-        this.picture = picture;
 
         return this;
     }

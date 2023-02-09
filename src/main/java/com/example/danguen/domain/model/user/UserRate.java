@@ -1,6 +1,6 @@
 package com.example.danguen.domain.model.user;
 
-import com.example.danguen.domain.model.comment.dto.request.review.Review;
+import com.example.danguen.domain.model.user.dto.request.review.Review;
 import lombok.Getter;
 
 import javax.persistence.Embeddable;

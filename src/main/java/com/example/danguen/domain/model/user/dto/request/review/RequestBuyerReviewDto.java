@@ -1,11 +1,9 @@
-package com.example.danguen.domain.model.comment.dto.request.review;
+package com.example.danguen.domain.model.user.dto.request.review;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
-@Getter
-@Setter
-public class RequestSellerReviewDto implements Review {
+@Data
+public class RequestBuyerReviewDto implements Review {
 
     int dealScore; // 거래자와의 거래에 대한 점수를 매긴다 1 ~ 10
 

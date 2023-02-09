@@ -18,7 +18,12 @@ server:
       charset: UTF-8
       force: true
 file:
-  dir: src/main/resources/articleimage/
+  user:
+    image:
+      path: src/main/resources/userImage/
+  article:
+    image:
+      path: src/main/resources/articleImage/
 
 
 

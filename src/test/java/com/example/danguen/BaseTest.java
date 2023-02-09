@@ -8,6 +8,7 @@ import com.example.danguen.domain.model.post.article.dto.request.RequestArticleS
 import com.example.danguen.domain.model.user.User;
 import com.example.danguen.domain.repository.ArticleRepository;
 import com.example.danguen.domain.repository.CommentRepository;
+import com.example.danguen.domain.repository.ImageRepository;
 import com.example.danguen.domain.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
@@ -60,9 +61,12 @@ public class BaseTest {
     ArticleRepository articleRepository;
     @Autowired
     CommentRepository commentRepository;
+    @Autowired
+    ImageRepository imageRepository;
 
     String sessionName = "박이름";
     String sessionEmail = "email@temp.com";
+
     @BeforeEach
     public void 임의유저_생성_및_세션등록() {
         User user = makeUserProc(sessionName, sessionEmail);
@@ -83,6 +87,7 @@ public class BaseTest {
         userRepository.deleteAll();
         articleRepository.deleteAll();
         commentRepository.deleteAll();
+        imageRepository.deleteAll();
     }
 
     String city = "서울시";
@@ -117,7 +122,7 @@ public class BaseTest {
 
         MockMultipartFile image = new MockMultipartFile(
                 "images",
-                "input.png",
+                " ",
                 "image/png",
                 new FileInputStream("src/test/java/testImage/input.png"));
 

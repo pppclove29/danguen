@@ -2,11 +2,11 @@ package com.example.danguen.service.api;
 
 import com.example.danguen.argumentResolver.SessionUserId;
 import com.example.danguen.config.exception.UserNotFoundException;
-import com.example.danguen.domain.model.comment.dto.request.RequestUserUpdateDto;
-import com.example.danguen.domain.model.comment.dto.request.review.RequestBuyerReviewDto;
-import com.example.danguen.domain.model.comment.dto.request.review.RequestSellerReviewDto;
-import com.example.danguen.domain.model.comment.dto.response.ResponseUserPageDto;
-import com.example.danguen.domain.model.comment.dto.response.ResponseUserSimpleDto;
+import com.example.danguen.domain.model.user.dto.request.RequestUserUpdateDto;
+import com.example.danguen.domain.model.user.dto.request.review.RequestBuyerReviewDto;
+import com.example.danguen.domain.model.user.dto.request.review.RequestSellerReviewDto;
+import com.example.danguen.domain.model.user.dto.response.ResponseUserPageDto;
+import com.example.danguen.domain.model.user.dto.response.ResponseUserSimpleDto;
 import com.example.danguen.service.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;

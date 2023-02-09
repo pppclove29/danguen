@@ -2,9 +2,9 @@ package com.example.danguen;
 
 import com.example.danguen.config.exception.UserNotFoundException;
 import com.example.danguen.domain.Address;
-import com.example.danguen.domain.model.comment.dto.request.RequestUserUpdateDto;
-import com.example.danguen.domain.model.comment.dto.request.review.RequestBuyerReviewDto;
-import com.example.danguen.domain.model.comment.dto.request.review.RequestSellerReviewDto;
+import com.example.danguen.domain.model.user.dto.request.RequestUserUpdateDto;
+import com.example.danguen.domain.model.user.dto.request.review.RequestBuyerReviewDto;
+import com.example.danguen.domain.model.user.dto.request.review.RequestSellerReviewDto;
 import com.example.danguen.domain.model.user.Role;
 import com.example.danguen.domain.model.user.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -107,14 +107,12 @@ public class UserApiTest extends BaseTest {
         User seller = User.builder()
                 .name("박판매")
                 .email("seller@temp.com")
-                .picture("picture")
                 .address(new Address("1", "2", "3"))
                 .build();
 
         User buyer = User.builder()
                 .name("김구매")
                 .email("buyer@temp.com")
-                .picture("picture")
                 .address(new Address("1", "2", "3"))
                 .build();
 
@@ -167,7 +165,7 @@ public class UserApiTest extends BaseTest {
         String iName = "이관심";
         String iEmail = "interest@temp.net";
 
-        User iUser = User.builder().name(iName).email(iEmail).picture(picture).build();
+        User iUser = User.builder().name(iName).email(iEmail).build();
         userRepository.save(iUser);
 
         Long iUserId = userRepository.findByEmail(iEmail).get().getId();
@@ -190,7 +188,7 @@ public class UserApiTest extends BaseTest {
         String iName = "이관심";
         String iEmail = "interest@temp.net";
 
-        User iUser = User.builder().name(iName).email(iEmail).picture(picture).build();
+        User iUser = User.builder().name(iName).email(iEmail).build();
         userRepository.save(iUser);
 
         Long iUserId = userRepository.findByEmail(iEmail).get().getId();

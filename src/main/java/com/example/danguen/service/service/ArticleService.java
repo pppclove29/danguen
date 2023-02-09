@@ -3,14 +3,18 @@ package com.example.danguen.service.service;
 import com.example.danguen.config.exception.ArticleNotFoundException;
 import com.example.danguen.config.exception.UserNotFoundException;
 import com.example.danguen.domain.Address;
+import com.example.danguen.domain.model.image.ArticleImage;
+import com.example.danguen.domain.model.image.dto.ImageDto;
 import com.example.danguen.domain.model.post.article.Article;
 import com.example.danguen.domain.model.post.article.dto.request.RequestArticleSaveOrUpdateDto;
 import com.example.danguen.domain.model.post.article.dto.response.ResponseArticleDto;
 import com.example.danguen.domain.model.post.article.dto.response.ResponseArticleSimpleDto;
 import com.example.danguen.domain.model.user.User;
 import com.example.danguen.domain.repository.ArticleRepository;
+import com.example.danguen.domain.repository.ImageRepository;
 import com.example.danguen.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -25,6 +29,8 @@ public class ArticleService {
 
     private final UserRepository userRepository;
     private final ArticleRepository articleRepository;
+    private final ImageRepository imageRepository;
+
 
     @Transactional(readOnly = true)
     public ResponseArticleDto getArticle(Long articleId) {
@@ -65,11 +71,24 @@ public class ArticleService {
     }
 
     @Transactional
-    public void save(RequestArticleSaveOrUpdateDto request, Long userId) {
-        User user = userRepository.getReferenceById(userId);
+    public void save(RequestArticleSaveOrUpdateDto request, Long userId, List<ImageDto> images) {
         Article article = request.toEntity();
 
+        User user = userRepository.getReferenceById(userId);
         user.addSellArticle(article);
+
+//        images.stream()
+//                .map(imageDto -> imageDto.toArticleImage(article))
+//                .map(article::addImage)
+//                .map(imageRepository::save)
+//                .collect(Collectors.toList()); // 이점이 있을까?
+
+
+        for (ImageDto image : images) {
+            ArticleImage articleImage = image.toArticleImage(article);
+            article.addImage(articleImage);
+            imageRepository.save(articleImage); // DB연결을 몇번을 할까? 여러번 한다면 한번에 할 수 있는 방법을 찾아야겠다
+        }
 
         articleRepository.save(article);
     }

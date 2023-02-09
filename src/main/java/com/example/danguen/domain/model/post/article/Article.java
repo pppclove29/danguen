@@ -3,8 +3,8 @@ package com.example.danguen.domain.model.post.article;
 import com.example.danguen.domain.Address;
 import com.example.danguen.domain.BaseTimeEntity;
 import com.example.danguen.domain.model.comment.ArticleComment;
+import com.example.danguen.domain.model.image.ArticleImage;
 import com.example.danguen.domain.model.post.article.dto.request.RequestArticleSaveOrUpdateDto;
-import com.example.danguen.domain.model.post.article.dto.response.ResponseArticleDto;
 import com.example.danguen.domain.model.user.User;
 import lombok.Getter;
 
@@ -39,7 +39,10 @@ public class Article extends BaseTimeEntity implements Post {
     //List<User> interests;
 
     @OneToMany(mappedBy = "article", cascade = CascadeType.ALL)
-    List<ArticleComment> comments = new ArrayList<>();
+    private List<ArticleComment> comments = new ArrayList<>();
+
+    @OneToMany(mappedBy = "article", cascade = CascadeType.ALL)
+    private List<ArticleImage> images = new ArrayList<>();
 
     public Article() {
         isSold = false;
@@ -82,5 +85,9 @@ public class Article extends BaseTimeEntity implements Post {
         comments.remove(articleComment);
     }
 
+    public ArticleImage addImage(ArticleImage image) {
+        images.add(image);
 
+        return image;
+    }
 }
