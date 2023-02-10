@@ -25,5 +25,7 @@ public class UserImage extends Image{
         this.name = name;
         this.url = url;
         this.user = user;
+
+        user.setImage(this);
     }
 }

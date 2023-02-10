@@ -10,7 +10,6 @@ public class RequestArticleSaveOrUpdateDto {
     private String title;
     private String content;
     private int price;
-    private String picture;
     private String category;
     private Address dealHopeAddress;
 

@@ -10,8 +10,12 @@ import com.example.danguen.domain.model.user.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MvcResult;
+
+import java.io.FileInputStream;
+import java.nio.charset.StandardCharsets;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -28,7 +32,7 @@ public class ArticleTest extends BaseTest {
 
         //then
         Article article = articleRepository.findAll().get(0);
-        Image image = imageRepository.findAll().get(0);
+        Image image1 = articleImageRepository.findAll().get(0);
 
         assertThat(article.getTitle()).isEqualTo(title + 0);
         assertThat(article.getCategory()).isEqualTo(category);
@@ -40,7 +44,59 @@ public class ArticleTest extends BaseTest {
         assertThat(article.getPrice()).isEqualTo(10000);
         assertThat(article.getSeller().getName()).isEqualTo(sessionName);
         assertThat(article.getSeller().getEmail()).isEqualTo(sessionEmail);
-        assertThat(article.getImages().get(0).getName()).isEqualTo(image.getName());
+        assertThat(article.getImages().get(0).getName()).isEqualTo(image1.getName());
+        assertThat(article.getImages().size()).isEqualTo(1);
+    }
+
+    @WithMockUser
+    @Test
+    public void 이미지_다수_포함_물품등록() throws Exception {
+        //given
+        RequestArticleSaveOrUpdateDto dto = new RequestArticleSaveOrUpdateDto();
+        String dtoJson = new ObjectMapper().writeValueAsString(dto);
+        MockMultipartFile request = new MockMultipartFile(
+                "request",
+                "request",
+                "application/json",
+                dtoJson.getBytes(StandardCharsets.UTF_8)
+        );
+
+        MockMultipartFile image1 = new MockMultipartFile(
+                "images",
+                "input1.png",
+                "image/png",
+                new FileInputStream("src/test/java/testImage/input.png"));
+
+        MockMultipartFile image2 = new MockMultipartFile(
+                "images",
+                "input2.png",
+                "image/png",
+                new FileInputStream("src/test/java/testImage/input.png"));
+
+        MockMultipartFile image3 = new MockMultipartFile(
+                "images",
+                "input3.png",
+                "image/png",
+                new FileInputStream("src/test/java/testImage/input.png"));
+
+
+        //when
+        mockMvc.perform(multipart("/article")
+                        .file(image1)
+                        .file(image2)
+                        .file(image3)
+                        .file(request)
+                        .contentType(MediaType.MULTIPART_FORM_DATA))
+                .andExpect(status().isOk());
+
+        //then
+        Article article = articleRepository.findAll().get(0);
+
+        assertThat(article.getImages().size()).isEqualTo(3);
+        assertThat(article.getImages().get(0).getName()).isEqualTo("input1.png");
+        assertThat(article.getImages().get(1).getName()).isEqualTo("input2.png");
+        assertThat(article.getImages().get(2).getName()).isEqualTo("input3.png");
+        assertThat(articleImageRepository.findAll().size()).isEqualTo(3); // article 3
     }
 
     @WithMockUser

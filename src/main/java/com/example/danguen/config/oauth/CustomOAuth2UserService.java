@@ -1,7 +1,10 @@
 package com.example.danguen.config.oauth;
 
+import com.example.danguen.domain.model.image.UserImage;
+import com.example.danguen.domain.model.image.dto.ImageDto;
 import com.example.danguen.domain.model.user.User;
 import com.example.danguen.domain.repository.UserRepository;
+import com.example.danguen.domain.repository.image.UserImageRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -24,10 +27,14 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     @Value("${file.user.image.path}")
     private String savePath;
     private final UserRepository userRepository;
+    private final UserImageRepository userImageRepository;
 
     // oAuth 로그인 버튼 클릭 후 자동 호출, 세션에 저장할 값 반환
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
+
+        //여기 들어오네?
+        System.out.println("야호~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 
         OAuth2User oAuth2User = super.loadUser(userRequest);
 
@@ -42,12 +49,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                         .email(email)
                         .build());
 
-        userRepository.save(user);
-
         if (user.getImage() == null) {
             String imageUrl = oAuth2User.getAttribute("picture");
-            System.out.println(imageUrl);
-            System.out.println(savePath);
 
             try {
                 URL url = new URL(Objects.requireNonNull(imageUrl));
@@ -56,12 +59,16 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                 File file = new File(savePath + user.getName() + ".jpg");
 
                 ImageIO.write(image, "jpg", file);
+
+                UserImage userImage = new ImageDto(user.getName() + ".jpg", savePath).toUserImage(user);
+
+                userImageRepository.save(userImage);
+
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
 
-            //UserImage userImage = UserImage.builder()
-            //        .name().build();
+            userRepository.save(user);
         }
 
         return new PrincipalUserDetails(user, oAuth2User);

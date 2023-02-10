@@ -65,14 +65,16 @@ public class UserApiTest extends BaseTest {
 
         RequestUserUpdateDto dto = new RequestUserUpdateDto();
         dto.setName("김개똥");
-        dto.setAddress(new Address("부산시", "부산동", "부산로"));
+        dto.setAddress(new Address("부산광역시", "화지로", "52"));
 
         //where & then
         mockMvc.perform(put("/user/" + userId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(dto)))
                 .andExpect(jsonPath("$.name").value("김개똥"))
-                .andExpect(jsonPath("$.address.city").value("부산시"))
+                .andExpect(jsonPath("$.address.city").value("부산광역시"))
+                .andExpect(jsonPath("$.address.street").value("화지로"))
+                .andExpect(jsonPath("$.address.zipcode").value("52"))
                 .andExpect(jsonPath("$.rate.dealTemperature").value(36.5));
 
         //then
@@ -80,9 +82,9 @@ public class UserApiTest extends BaseTest {
 
         assertThat(user.getId()).isEqualTo(userId);
         assertThat(user.getName()).isEqualTo("김개똥");
-        assertThat(user.getAddress().getCity()).isEqualTo("부산시");
-        assertThat(user.getAddress().getStreet()).isEqualTo("부산동");
-        assertThat(user.getAddress().getZipcode()).isEqualTo("부산로");
+        assertThat(user.getAddress().getCity()).isEqualTo("부산광역시");
+        assertThat(user.getAddress().getStreet()).isEqualTo("화지로");
+        assertThat(user.getAddress().getZipcode()).isEqualTo("52");
         assertThat(user.getRole()).isEqualTo(Role.ROLE_USER);
     }
 
@@ -104,23 +106,8 @@ public class UserApiTest extends BaseTest {
     @Test
     public void 구매자_및_판매자리뷰() throws Exception {
         //given
-        User seller = User.builder()
-                .name("박판매")
-                .email("seller@temp.com")
-                .address(new Address("1", "2", "3"))
-                .build();
-
-        User buyer = User.builder()
-                .name("김구매")
-                .email("buyer@temp.com")
-                .address(new Address("1", "2", "3"))
-                .build();
-
-        userRepository.save(seller);
-        userRepository.save(buyer);
-
-        Long sellerId = userRepository.findByEmail("seller@temp.com").get().getId();
-        Long buyerId = userRepository.findByEmail("buyer@temp.com").get().getId();
+        Long sellerId = makeUserProc("박판매", "seller@temp.com").getId();
+        Long buyerId = makeUserProc("김구매", "buyer@temp.com").getId();
 
         // 구매자에 대한 판매자의 긍정적 리뷰
         RequestSellerReviewDto sdto = new RequestSellerReviewDto();
@@ -144,13 +131,13 @@ public class UserApiTest extends BaseTest {
                 .content(new ObjectMapper().writeValueAsString(bdto)));
 
         //then
-        seller = userRepository.getReferenceById(sellerId);
+        User seller = userRepository.getReferenceById(sellerId);
         assertThat(seller.getRate().getDealTemperature()).isGreaterThan(36.5f);
         assertThat(seller.getRate().getTotalReviewScore()).isEqualTo(8);
         assertThat(seller.getRate().getTotalDealCount()).isEqualTo(1);
         assertThat(seller.getRate().getReDealHopePercent()).isGreaterThan(50);
 
-        buyer = userRepository.getReferenceById(buyerId);
+        User buyer = userRepository.getReferenceById(buyerId);
         assertThat(buyer.getRate().getDealTemperature()).isLessThan(36.5f);
         assertThat(buyer.getRate().getTotalReviewScore()).isEqualTo(2);
         assertThat(buyer.getRate().getTotalDealCount()).isEqualTo(1);
@@ -161,17 +148,10 @@ public class UserApiTest extends BaseTest {
     @Test
     public void 관심유저_등록() throws Exception {
         //given
-        // 관심유저의 정보, 주소는 생략
-        String iName = "이관심";
-        String iEmail = "interest@temp.net";
-
-        User iUser = User.builder().name(iName).email(iEmail).build();
-        userRepository.save(iUser);
-
-        Long iUserId = userRepository.findByEmail(iEmail).get().getId();
+        User iUser = makeUserProc("이관심", "interest@temp.net");
 
         //when
-        mockMvc.perform(put("/user/iuser/" + iUserId))
+        mockMvc.perform(put("/user/iuser/" + iUser.getId()))
                 .andExpect(status().isOk());
 
         //then
@@ -184,25 +164,70 @@ public class UserApiTest extends BaseTest {
     @Test
     public void 관심유저_제거() throws Exception {
         //given
-        // 관심유저의 정보, 주소는 생략
-        String iName = "이관심";
-        String iEmail = "interest@temp.net";
+        User iUser = makeUserProc("이관심", "interest@temp.net");
 
-        User iUser = User.builder().name(iName).email(iEmail).build();
-        userRepository.save(iUser);
-
-        Long iUserId = userRepository.findByEmail(iEmail).get().getId();
-
-        mockMvc.perform(put("/user/iuser/" + iUserId))
+        mockMvc.perform(put("/user/iuser/" + iUser.getId()))
                 .andExpect(status().isOk());
 
         //when
-        mockMvc.perform(delete("/user/iuser/" + iUserId))
+        mockMvc.perform(delete("/user/iuser/" + iUser.getId()))
                 .andExpect(status().isOk());
 
         //then
         User user = userRepository.findByEmail(sessionEmail).get();
 
         assertThat(user.getInterestUser().size()).isEqualTo(0);
+    }
+
+    @WithMockUser
+    @Test
+    public void 관심유저_중복_등록_및_삭제() throws Exception {
+        //given
+        //given
+        User iUser1 = makeUserProc("이관심", "interest@temp.net");
+        User iUser2 = makeUserProc("최사랑", "lovelove@temp.net");
+
+        mockMvc.perform(put("/user/iuser/" + iUser2.getId()))
+                .andExpect(status().isOk());
+
+        //when
+        //중복 등록
+        for (int i = 0; i < 3; i++)
+            mockMvc.perform(put("/user/iuser/" + iUser1.getId()))
+                    .andExpect(status().isOk());
+
+        //중복 삭제
+        for (int i = 0; i < 3; i++)
+            mockMvc.perform(delete("/user/iuser/" + iUser2.getId()))
+                    .andExpect(status().isOk());
+
+        //then
+        User user = userRepository.findByEmail(sessionEmail).get();
+
+        assertThat(user.getInterestUser().size()).isEqualTo(1);
+        assertThat(user.getInterestUser()).contains(iUser1);
+        assertThat(user.getInterestUser()).doesNotContain(iUser2);
+    }
+
+    @WithMockUser
+    @Test
+    public void 관심유저_불러오기() throws Exception {
+        //given
+        for (int i = 1; i < 11; i++) {
+            User iUser = makeUserProc("이름" + i, "이메일" + i + "@temp.net");
+            mockMvc.perform(put("/user/iuser/" + iUser.getId()))
+                    .andExpect(status().isOk());
+        }
+
+        //when
+        mockMvc.perform(get("/user/iuser"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].name").value("이름1"))
+                .andExpect(jsonPath("$[1].name").value("이름2"))
+                .andExpect(jsonPath("$[2].name").value("이름3"))
+                .andExpect(jsonPath("$[3].name").value("이름4"))
+                .andExpect(jsonPath("$[4].name").value("이름5"))
+                .andExpect(jsonPath("$[9]").exists())
+                .andExpect(jsonPath("$[10]").doesNotExist());
     }
 }

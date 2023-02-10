@@ -49,7 +49,7 @@ public class UserService {
     public void delete(Long userId) {
         User user = userRepository.getReferenceById(userId);
 
-        user.giveUpComments();
+        user.giveUpComments(); // 작성한 모든 댓글에 대한 소유권을 포기한다
 
         userRepository.deleteById(userId);
     }
@@ -72,9 +72,7 @@ public class UserService {
     public List<ResponseUserSimpleDto> getIUsers(Long userId) {
         User user = userRepository.findById(userId).get();
 
-        List<ResponseUserSimpleDto> list = user.getInterestUser().stream().map((x) -> new ResponseUserSimpleDto().toDto(x)).collect(Collectors.toList());
-
-        return list;
+        return user.getInterestUser().stream().map(ResponseUserSimpleDto::toDto).collect(Collectors.toList());
     }
 
     // iuserId와 userId의 혼동을 방지하기 위해 session id 값을 서비스에서 받아온다
@@ -85,7 +83,8 @@ public class UserService {
 
         User iUser = userRepository.findById(iUserId).orElseThrow(UserNotFoundException::new);
 
-        user.addInterestUser(iUser);
+        if(!user.getInterestUser().contains(iUser))
+            user.addInterestUser(iUser);
     }
 
     @Transactional
@@ -95,6 +94,7 @@ public class UserService {
 
         User iUser = userRepository.findById(iUserId).orElseThrow(UserNotFoundException::new);
 
-        user.deleteInterestUser(iUser);
+        if(user.getInterestUser().contains(iUser))
+            user.deleteInterestUser(iUser);
     }
 }

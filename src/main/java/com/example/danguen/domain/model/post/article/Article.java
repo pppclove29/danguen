@@ -23,7 +23,6 @@ public class Article extends BaseTimeEntity implements Post {
     private String title;
     private String content;
     private int price;
-    private String picture;
     private String category;
 
     private int views;
@@ -52,7 +51,6 @@ public class Article extends BaseTimeEntity implements Post {
         this.title = request.getTitle();
         this.content = request.getContent();
         this.price = request.getPrice();
-        this.picture = request.getPicture();
         this.category = request.getCategory();
         this.dealHopeAddress = request.getDealHopeAddress();
     }

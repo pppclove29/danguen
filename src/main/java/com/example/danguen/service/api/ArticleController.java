@@ -27,26 +27,13 @@ import java.util.stream.Collectors;
 @RestController
 public class ArticleController {
 
-    @Value("${file.article.image.path}")
-    private String savePath;
-
     private final ArticleService articleService;
 
     @PostMapping(value = "/article", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
     public void save(@RequestPart("request") RequestArticleSaveOrUpdateDto request,
                      @RequestPart("images") List<MultipartFile> images,
                      @SessionUserId Long userId) throws IOException {
-
-        List<ImageDto> imageList = images.stream()
-                .map(ImageDto::toDto)
-                .map(dto -> dto.setUrl(savePath))
-                .collect(Collectors.toList());
-
-        for(MultipartFile image : images){ // 로컬에 저장
-            image.transferTo(new File(savePath + image.getName()));
-        }
-
-        articleService.save(request, userId, imageList);
+        articleService.save(request, userId, images);
     }
 
     @PutMapping("/article/{articleId}")
@@ -56,9 +43,8 @@ public class ArticleController {
     }
 
     @DeleteMapping("/article/{articleId}")
-    public void delete(@PathVariable Long articleId,
-                       @SessionUserId Long userId) {
-        articleService.delete(articleId, userId);
+    public void delete(@PathVariable Long articleId) {
+        articleService.delete(articleId);
     }
 
     @GetMapping("/article/{articleId}")

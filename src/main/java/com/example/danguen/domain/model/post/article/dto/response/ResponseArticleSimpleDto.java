@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 public class ResponseArticleSimpleDto {
     private String title;
-    private String picture;
+    private String imageUrl;
 
     private int price;
     private int views;
@@ -20,7 +20,6 @@ public class ResponseArticleSimpleDto {
 
         dto.setTitle(article.getTitle());
         dto.setPrice(article.getPrice());
-        dto.setPicture(article.getPicture());
         dto.setViews(article.getViews());
         dto.setDealHopeAddress(article.getDealHopeAddress());
 

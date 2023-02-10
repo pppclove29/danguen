@@ -23,5 +23,7 @@ public class ArticleImage extends Image{
         this.name = name;
         this.url = url;
         this.article = article;
+
+        article.addImage(this);
     }
 }

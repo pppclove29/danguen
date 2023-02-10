@@ -8,11 +8,11 @@ public class ResponseUserSimpleDto {
     String name;
     String picture;
 
-    public ResponseUserSimpleDto toDto(User user){
+    public static ResponseUserSimpleDto toDto(User user){
         ResponseUserSimpleDto dto = new ResponseUserSimpleDto();
 
-        dto.name = name;
-        dto.picture = picture;
+        dto.name = user.getName();
+        dto.picture = user.getImage().getUrl();
 
         return dto;
     }

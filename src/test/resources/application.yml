@@ -10,7 +10,7 @@ spring:
   jpa:
     show-sql: true
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     generate-ddl: true
     database: mysql
 
@@ -22,10 +22,10 @@ server:
 file:
   user:
     image:
-      path: src/main/resources/userImage/
+      path: src/test/resources/userImage/
   article:
     image:
-      path: src/main/resources/articleImage/
+      path: src/test/resources/articleImage/
 
 
 

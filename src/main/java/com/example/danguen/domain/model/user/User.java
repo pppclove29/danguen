@@ -47,7 +47,7 @@ public class User extends BaseTimeEntity {
     @OneToMany(mappedBy = "writer")
     private List<Comment> comments = new ArrayList<>();
 
-    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private UserImage image;
 
     //@OneToMany(cascade = CascadeType.ALL) -> OneToMany일까 ManyToMany일까?
@@ -118,5 +118,11 @@ public class User extends BaseTimeEntity {
         for (Comment comment : comments) {
             comment.deleteUser();
         }
+    }
+
+    public UserImage setImage(UserImage userImage) {
+        this.image = userImage;
+
+        return userImage;
     }
 }

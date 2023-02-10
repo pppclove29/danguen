@@ -3,13 +3,13 @@ package com.example.danguen;
 import com.example.danguen.config.oauth.PrincipalUserDetails;
 import com.example.danguen.domain.Address;
 import com.example.danguen.domain.model.comment.dto.request.RequestCommentSaveDto;
+import com.example.danguen.domain.model.image.dto.ImageDto;
 import com.example.danguen.domain.model.post.article.Article;
 import com.example.danguen.domain.model.post.article.dto.request.RequestArticleSaveOrUpdateDto;
 import com.example.danguen.domain.model.user.User;
-import com.example.danguen.domain.repository.ArticleRepository;
-import com.example.danguen.domain.repository.CommentRepository;
-import com.example.danguen.domain.repository.ImageRepository;
-import com.example.danguen.domain.repository.UserRepository;
+import com.example.danguen.domain.repository.*;
+import com.example.danguen.domain.repository.image.ArticleImageRepository;
+import com.example.danguen.domain.repository.image.UserImageRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,6 +24,8 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
@@ -62,7 +64,9 @@ public class BaseTest {
     @Autowired
     CommentRepository commentRepository;
     @Autowired
-    ImageRepository imageRepository;
+    UserImageRepository userImageRepository;
+    @Autowired
+    ArticleImageRepository articleImageRepository;
 
     String sessionName = "박이름";
     String sessionEmail = "email@temp.com";
@@ -84,22 +88,27 @@ public class BaseTest {
 
     @AfterEach
     public void 초기화() {
-        userRepository.deleteAll();
-        articleRepository.deleteAll();
         commentRepository.deleteAll();
-        imageRepository.deleteAll();
+        userImageRepository.deleteAll();
+        articleImageRepository.deleteAll();
+        articleRepository.deleteAll();
+        userRepository.deleteAll();
     }
 
     String city = "서울시";
     String street = "길로";
     String zipcode = "1234";
-    String picture = "picture";
 
     public User makeUserProc(String name, String email) {
         Address address = new Address(city, street, zipcode);
 
-        User user = User.builder().name(name).email(email).picture(picture).address(address).build();
+        User user = User.builder().name(name).email(email).address(address).build();
 
+        ImageDto image = new ImageDto();
+        image.setName(user.getName() + ".jpg");
+        image.setPath("저장경로/");
+
+        userImageRepository.save(image.toUserImage(user));
         userRepository.save(user);
 
         return user;
@@ -120,12 +129,6 @@ public class BaseTest {
         dto.setDealHopeAddress(new Address(hopeCity + idx / 3, hopeStreet + idx / 3, hopeZipcode + idx));
         dto.setPrice(10000);
 
-        MockMultipartFile image = new MockMultipartFile(
-                "images",
-                " ",
-                "image/png",
-                new FileInputStream("src/test/java/testImage/input.png"));
-
         String dtoJson = new ObjectMapper().writeValueAsString(dto);
         MockMultipartFile request = new MockMultipartFile(
                 "request",
@@ -133,6 +136,12 @@ public class BaseTest {
                 "application/json",
                 dtoJson.getBytes(StandardCharsets.UTF_8)
         );
+
+        MockMultipartFile image = new MockMultipartFile(
+                "images",
+                "input.png",
+                "image/png",
+                new FileInputStream("src/test/java/testImage/input.png"));
 
         mockMvc.perform(multipart("/article")
                         .file(image)

@@ -1,8 +1,13 @@
 package com.example.danguen.domain.model.post.article.dto.response;
 
 import com.example.danguen.domain.Address;
+import com.example.danguen.domain.model.image.ArticleImage;
+import com.example.danguen.domain.model.image.Image;
 import com.example.danguen.domain.model.post.article.Article;
 import lombok.Data;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Data
@@ -11,7 +16,7 @@ public class ResponseArticleDto {
     private String title;
     private String content;
     private int price;
-    private String picture;
+    private List<String> imageUrl = new ArrayList<>();
     private String category;
 
     private int views;
@@ -27,12 +32,14 @@ public class ResponseArticleDto {
         dto.setTitle(article.getTitle());
         dto.setContent(article.getContent());
         dto.setPrice(article.getPrice());
-        dto.setPicture(article.getPicture());
         dto.setCategory(article.getCategory());
         dto.setViews(article.getViews());
         dto.setSold(article.isSold());
         dto.setDealHopeAddress(article.getDealHopeAddress());
         dto.setSeller(article.getSeller().getName());
+        for(ArticleImage image : article.getImages()){
+            dto.imageUrl.add(image.getUrl());
+        }
 
         return dto;
     }

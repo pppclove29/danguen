@@ -160,12 +160,10 @@ public class CommentTest extends BaseTest {
                 .andExpect(status().isOk());
 
         //then
-        Comment comment = commentRepository.findAll().get(0);
-
+        User sessionUser = userRepository.findByEmail(sessionEmail).get();
 
         assertThat(commentRepository.findAll().size()).isEqualTo(0);
-        assertThat(comment).isNotNull();
-        assertThat(comment.getWriter()).isNull();
+        assertThat(sessionUser.getComments().size()).isEqualTo(0);
     }
 
 }
