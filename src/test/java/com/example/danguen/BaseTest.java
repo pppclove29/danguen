@@ -7,7 +7,9 @@ import com.example.danguen.domain.model.image.dto.ImageDto;
 import com.example.danguen.domain.model.post.article.Article;
 import com.example.danguen.domain.model.post.article.dto.request.RequestArticleSaveOrUpdateDto;
 import com.example.danguen.domain.model.user.User;
-import com.example.danguen.domain.repository.*;
+import com.example.danguen.domain.repository.ArticleRepository;
+import com.example.danguen.domain.repository.CommentRepository;
+import com.example.danguen.domain.repository.UserRepository;
 import com.example.danguen.domain.repository.image.ArticleImageRepository;
 import com.example.danguen.domain.repository.image.UserImageRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,16 +20,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.mock.web.MockHttpSession;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,18 +40,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @Transactional
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ExtendWith(SpringExtension.class)
-@WebAppConfiguration
 @AutoConfigureMockMvc
 public class BaseTest {
 
     @Autowired
     MockMvc mockMvc;
-    @Autowired
-    MockHttpSession session;
-    @Autowired
-    JdbcTemplate jdbcTemplate;
     @Autowired
     WebApplicationContext ctx;
     @Autowired
@@ -117,17 +109,19 @@ public class BaseTest {
     String title = "제목 ";
     String category = "카테고리";
     String articleContent = "내용";
+    int price = 10000;
     String hopeCity = "희망주소";
     String hopeStreet = "희망주소";
     String hopeZipcode = "희망주소";
 
     public void articleSaveProc(int idx) throws Exception { // 중고 물품 등록
-        RequestArticleSaveOrUpdateDto dto = new RequestArticleSaveOrUpdateDto();
-        dto.setTitle(title + idx);
-        dto.setCategory(category);
-        dto.setContent(articleContent);
-        dto.setDealHopeAddress(new Address(hopeCity + idx / 3, hopeStreet + idx / 3, hopeZipcode + idx));
-        dto.setPrice(10000);
+        RequestArticleSaveOrUpdateDto dto = RequestArticleSaveOrUpdateDto.builder()
+                .title(title + idx)
+                .content(articleContent)
+                .price(price)
+                .category(category)
+                .dealHopeAddress(new Address(hopeCity + idx / 3, hopeStreet + idx / 3, hopeZipcode + idx))
+                .build();
 
         String dtoJson = new ObjectMapper().writeValueAsString(dto);
         MockMultipartFile request = new MockMultipartFile(
@@ -151,15 +145,16 @@ public class BaseTest {
     }
 
     public void noneSessionsArticleSaveProc(User noneSessionUser, int idx) {
-        RequestArticleSaveOrUpdateDto dto = new RequestArticleSaveOrUpdateDto();
-        dto.setTitle(title + noneSessionUser.getName());
-        dto.setCategory(category);
-        dto.setContent(articleContent);
-        dto.setDealHopeAddress(new Address(
-                noneSessionUser.getAddress().getCity(),
-                noneSessionUser.getAddress().getStreet(),
-                noneSessionUser.getAddress().getZipcode()));
-        dto.setPrice(10000 * idx);
+        RequestArticleSaveOrUpdateDto dto = RequestArticleSaveOrUpdateDto.builder()
+                .title(title + noneSessionUser.getName())
+                .content(articleContent)
+                .price(price * idx)
+                .category(category)
+                .dealHopeAddress(new Address(
+                        noneSessionUser.getAddress().getCity(),
+                        noneSessionUser.getAddress().getStreet(),
+                        noneSessionUser.getAddress().getZipcode()))
+                .build();
 
         Article article = dto.toEntity();
 

@@ -32,10 +32,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     // oAuth 로그인 버튼 클릭 후 자동 호출, 세션에 저장할 값 반환
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
-
-        //여기 들어오네?
-        System.out.println("야호~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-
         OAuth2User oAuth2User = super.loadUser(userRequest);
 
         String name = oAuth2User.getAttribute("name");
@@ -49,6 +45,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                         .email(email)
                         .build());
 
+        userRepository.save(user);
+
         if (user.getImage() == null) {
             String imageUrl = oAuth2User.getAttribute("picture");
 
@@ -56,7 +54,9 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                 URL url = new URL(Objects.requireNonNull(imageUrl));
 
                 BufferedImage image = ImageIO.read(url);
-                File file = new File(savePath + user.getName() + ".jpg");
+                System.out.println(savePath + email + "/image.jpg");
+                File file = new File(savePath + email + "/image.jpg");
+                file.mkdirs();
 
                 ImageIO.write(image, "jpg", file);
 
@@ -68,7 +68,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                 throw new RuntimeException(e);
             }
 
-            userRepository.save(user);
         }
 
         return new PrincipalUserDetails(user, oAuth2User);

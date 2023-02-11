@@ -1,4 +1,4 @@
-package com.example.danguen.service.api;
+package com.example.danguen.service.controller;
 
 import com.example.danguen.argumentResolver.SessionUserId;
 import com.example.danguen.config.exception.UserNotFoundException;

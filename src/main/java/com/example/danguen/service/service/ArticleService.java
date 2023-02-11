@@ -5,7 +5,6 @@ import com.example.danguen.config.exception.UserNotFoundException;
 import com.example.danguen.domain.Address;
 import com.example.danguen.domain.model.comment.Comment;
 import com.example.danguen.domain.model.image.ArticleImage;
-import com.example.danguen.domain.model.image.dto.ImageDto;
 import com.example.danguen.domain.model.post.article.Article;
 import com.example.danguen.domain.model.post.article.dto.request.RequestArticleSaveOrUpdateDto;
 import com.example.danguen.domain.model.post.article.dto.response.ResponseArticleDto;
@@ -15,6 +14,7 @@ import com.example.danguen.domain.repository.ArticleRepository;
 import com.example.danguen.domain.repository.UserRepository;
 import com.example.danguen.domain.repository.image.ArticleImageRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class ArticleService {

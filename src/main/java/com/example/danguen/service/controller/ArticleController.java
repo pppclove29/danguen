@@ -1,16 +1,14 @@
-package com.example.danguen.service.api;
+package com.example.danguen.service.controller;
 
 import com.example.danguen.argumentResolver.SessionUserId;
 import com.example.danguen.config.exception.ArticleNotFoundException;
 import com.example.danguen.domain.Address;
-import com.example.danguen.domain.model.image.dto.ImageDto;
 import com.example.danguen.domain.model.post.article.dto.request.RequestArticleSaveOrUpdateDto;
 import com.example.danguen.domain.model.post.article.dto.response.ResponseArticleDto;
 import com.example.danguen.domain.model.post.article.dto.response.ResponseArticleSimpleDto;
 import com.example.danguen.service.service.ArticleService;
 import lombok.RequiredArgsConstructor;
-
-import org.springframework.beans.factory.annotation.Value;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
@@ -18,11 +16,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.stream.Collectors;
 
+@Slf4j
 @RequiredArgsConstructor
 @RestController
 public class ArticleController {
@@ -33,7 +30,12 @@ public class ArticleController {
     public void save(@RequestPart("request") RequestArticleSaveOrUpdateDto request,
                      @RequestPart("images") List<MultipartFile> images,
                      @SessionUserId Long userId) throws IOException {
-        articleService.save(request, userId, images);
+
+        log.info("request = {}",request);
+        log.info("images = {}", images);
+        log.info("request = {}",request.getTitle());
+
+        articleService.save(request,userId ,images);
     }
 
     @PutMapping("/article/{articleId}")

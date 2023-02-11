@@ -52,7 +52,14 @@ public class ArticleTest extends BaseTest {
     @Test
     public void 이미지_다수_포함_물품등록() throws Exception {
         //given
-        RequestArticleSaveOrUpdateDto dto = new RequestArticleSaveOrUpdateDto();
+        RequestArticleSaveOrUpdateDto dto = RequestArticleSaveOrUpdateDto.builder()
+                .title(title)
+                .content(articleContent)
+                .price(price)
+                .category(category)
+                .dealHopeAddress(new Address(hopeCity, hopeStreet, hopeZipcode))
+                .build();
+
         String dtoJson = new ObjectMapper().writeValueAsString(dto);
         MockMultipartFile request = new MockMultipartFile(
                 "request",
@@ -105,12 +112,13 @@ public class ArticleTest extends BaseTest {
         //given
         articleSaveProc(0);
 
-        RequestArticleSaveOrUpdateDto dto = new RequestArticleSaveOrUpdateDto();
-        dto.setTitle("new제목");
-        dto.setCategory("new카테고리");
-        dto.setContent("new내용");
-        dto.setDealHopeAddress(new Address("new희망주소1", "new희망주소2", "new희망주소3"));
-        dto.setPrice(30000);
+        RequestArticleSaveOrUpdateDto dto = RequestArticleSaveOrUpdateDto.builder()
+                .title("new제목")
+                .content("new내용")
+                .price(30000)
+                .category("new카테고리")
+                .dealHopeAddress(new Address("new희망주소1", "new희망주소2", "new희망주소3"))
+                .build();
 
         Long articleId = articleRepository.findAll().get(0).getId();
 
