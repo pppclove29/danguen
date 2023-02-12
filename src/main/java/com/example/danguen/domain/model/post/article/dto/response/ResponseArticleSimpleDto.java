@@ -6,6 +6,7 @@ import lombok.Data;
 
 @Data
 public class ResponseArticleSimpleDto {
+    private Long id;
     private String title;
     private String imageUrl;
 
@@ -18,6 +19,7 @@ public class ResponseArticleSimpleDto {
     public static ResponseArticleSimpleDto toResponse(Article article) {
         ResponseArticleSimpleDto dto = new ResponseArticleSimpleDto();
 
+        dto.setId(article.getId());
         dto.setTitle(article.getTitle());
         dto.setPrice(article.getPrice());
         dto.setViews(article.getViews());

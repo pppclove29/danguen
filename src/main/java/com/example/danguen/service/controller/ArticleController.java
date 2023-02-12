@@ -12,8 +12,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -30,7 +32,12 @@ public class ArticleController {
     public void save(@RequestPart("request") RequestArticleSaveOrUpdateDto request,
                      @RequestPart("images") List<MultipartFile> images,
                      @SessionUserId Long userId) throws IOException {
-        articleService.save(request,userId ,images);
+
+        log.info("request = {}", request);
+        log.info("images = {}", images);
+        log.info("request = {}", request.getTitle());
+
+        articleService.save(request, userId, images);
     }
 
     @PutMapping("/article/{articleId}")
@@ -45,25 +52,38 @@ public class ArticleController {
     }
 
     @GetMapping("/article/{articleId}")
-    public ResponseArticleDto getArticle(@PathVariable Long articleId) {
-        return articleService.getArticle(articleId);
+    public ModelAndView getArticle(@PathVariable Long articleId) {
+        ModelAndView mav = new ModelAndView("articlePage");
+        mav.addObject("article", articleService.getArticle(articleId));
+
+        return mav;
     }
 
     @GetMapping("/address/**")
-    public List<ResponseArticleSimpleDto> getArticlePage(@PageableDefault(size = 6) Pageable pageable,
+    public ModelAndView getArticlePage(@PageableDefault(size = 6) Pageable pageable,
                                                          HttpServletRequest servletRequest) {
-        return articleService.getArticlePage(pageable,
+        List<ResponseArticleSimpleDto> articles = articleService.getArticlePage(pageable,
                 new Address(
                         (String) servletRequest.getAttribute("city"),
                         (String) servletRequest.getAttribute("street"),
                         (String) servletRequest.getAttribute("zipcode")
                 )
         );
+
+        ModelAndView mav = new ModelAndView("articleList");
+        mav.addObject("articles", articles);
+
+        return mav;
     }
 
     @GetMapping("/hot-articles")
-    public List<ResponseArticleSimpleDto> getHotArticlePage(@PageableDefault(size = 6) Pageable pageable) {
-        return articleService.getHotArticlePage(pageable);
+    public ModelAndView getHotArticlePage(@PageableDefault(size = 6) Pageable pageable) {
+        List<ResponseArticleSimpleDto> hArticles = articleService.getHotArticlePage(pageable);
+
+        ModelAndView mav = new ModelAndView("articleList");
+        mav.addObject("hArticle", hArticles);
+
+        return mav;
     }
 
     @GetMapping("/search")
