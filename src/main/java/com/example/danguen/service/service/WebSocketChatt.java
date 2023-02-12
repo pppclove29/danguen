@@ -20,6 +20,8 @@ public class WebSocketChatt {
 
     @OnMessage
     public void onMessage(String msg, Session session) throws Exception {
+        System.out.println("메세지 전송 :" + msg);
+
         clients.forEach(s -> {
             if (!s.getId().equals(session.getId())) {
                 try {

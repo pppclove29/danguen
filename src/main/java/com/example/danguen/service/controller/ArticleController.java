@@ -30,11 +30,6 @@ public class ArticleController {
     public void save(@RequestPart("request") RequestArticleSaveOrUpdateDto request,
                      @RequestPart("images") List<MultipartFile> images,
                      @SessionUserId Long userId) throws IOException {
-
-        log.info("request = {}",request);
-        log.info("images = {}", images);
-        log.info("request = {}",request.getTitle());
-
         articleService.save(request,userId ,images);
     }
 

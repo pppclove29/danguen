@@ -13,6 +13,10 @@ spring:
       ddl-auto: update
     generate-ddl: true
     database: mysql
+  mvc:
+    view:
+      prefix: /WEB-INF/views/
+      suffix: .jsp
 
 server:
   servlet:

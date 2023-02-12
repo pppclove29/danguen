@@ -19,7 +19,7 @@ public class SecurityConfig {
                 .headers().frameOptions().disable()
                 .and()
                     .authorizeRequests()
-                    .antMatchers("/", "/css/**", "/images/**", "/js/**", "/h2-console/**", "/profile","/favicon.ico", "/resources/**", "/error").permitAll()
+                    .antMatchers("/index", "/css/**", "/images/**", "/js/**", "/h2-console/**", "/profile","/favicon.ico", "/resources/**", "/error").permitAll()
                     .anyRequest().authenticated()
                 .and()
                     .logout()
