@@ -44,6 +44,9 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 	testImplementation 'com.jayway.jsonpath:json-path'
+
+	implementation group: 'commons-fileupload', name: 'commons-fileupload', version: '1.4'
+	implementation group: 'commons-io', name: 'commons-io', version: '2.4'
 }
 
 tasks.named('test') {

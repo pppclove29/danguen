@@ -95,7 +95,7 @@ public class ArticleService {
 
             ArticleImage articleImage = ArticleImage.builder()
                     .name(imageName)
-                    .url(savePath + article.getId() + "/" + imageIdx + ".jpg")
+                    .url(savePath + article.getId() + "/" + imageIdx++ + ".jpg")
                     .article(article)
                     .build();
 

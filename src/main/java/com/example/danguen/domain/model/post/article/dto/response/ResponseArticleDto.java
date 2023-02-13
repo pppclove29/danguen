@@ -37,10 +37,11 @@ public class ResponseArticleDto {
         dto.setSold(article.isSold());
         dto.setDealHopeAddress(article.getDealHopeAddress());
         dto.setSeller(article.getSeller().getName());
-        for(ArticleImage image : article.getImages()){
+        for(ArticleImage image : article.getImages()){ // for 문 마다 select가 발생하진 않을까? <<check>>
             dto.imageUrl.add(image.getUrl());
         }
 
         return dto;
     }
+
 }

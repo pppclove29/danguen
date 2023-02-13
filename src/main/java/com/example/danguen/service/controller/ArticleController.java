@@ -9,16 +9,18 @@ import com.example.danguen.domain.model.post.article.dto.response.ResponseArticl
 import com.example.danguen.service.service.ArticleService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 @Slf4j
@@ -32,11 +34,6 @@ public class ArticleController {
     public void save(@RequestPart("request") RequestArticleSaveOrUpdateDto request,
                      @RequestPart("images") List<MultipartFile> images,
                      @SessionUserId Long userId) throws IOException {
-
-        log.info("request = {}", request);
-        log.info("images = {}", images);
-        log.info("request = {}", request.getTitle());
-
         articleService.save(request, userId, images);
     }
 
@@ -61,7 +58,7 @@ public class ArticleController {
 
     @GetMapping("/address/**")
     public ModelAndView getArticlePage(@PageableDefault(size = 6) Pageable pageable,
-                                                         HttpServletRequest servletRequest) {
+                                       HttpServletRequest servletRequest) {
         List<ResponseArticleSimpleDto> articles = articleService.getArticlePage(pageable,
                 new Address(
                         (String) servletRequest.getAttribute("city"),
@@ -77,11 +74,11 @@ public class ArticleController {
     }
 
     @GetMapping("/hot-articles")
-    public ModelAndView getHotArticlePage(@PageableDefault(size = 6) Pageable pageable) {
+    public ModelAndView getHotArticlePage(@PageableDefault(size = 6) Pageable pageable) throws IOException {
         List<ResponseArticleSimpleDto> hArticles = articleService.getHotArticlePage(pageable);
 
         ModelAndView mav = new ModelAndView("articleList");
-        mav.addObject("hArticle", hArticles);
+        mav.addObject("articles", hArticles);
 
         return mav;
     }
@@ -102,6 +99,4 @@ public class ArticleController {
     public String handleArticleNotFound() {
         return ArticleNotFoundException.message;
     }
-
-
 }

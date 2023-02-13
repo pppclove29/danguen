@@ -14,19 +14,10 @@
 </head>
 <body>
 
-<c:forEach var="article" items="${articles}">
-    <li>
-        <div>
-            <img src="${article.imageUrl}" width="200" height="200">
-            <h3> ${article.imageUrl}</h3>
-            <a href="/article/${article.id}">${article}</a>
-        </div>
-    </li>
-</c:forEach>
+<a href="/hot-articles" methods="get"> 인기 중고 물품 리스트</a>
+<a href="/article-make" methods="get"> 랜덤 10개 물품 등록</a>
 
 </body>
 
-<script src="http://code.jquery.com/jquery-latest.js">
-
-</script>
+<script src="http://code.jquery.com/jquery-latest.js"></script>
 </html>

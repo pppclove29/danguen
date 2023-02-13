@@ -24,6 +24,7 @@ public class ResponseArticleSimpleDto {
         dto.setPrice(article.getPrice());
         dto.setViews(article.getViews());
         dto.setDealHopeAddress(article.getDealHopeAddress());
+        dto.setImageUrl(article.getImages().get(0).getUrl());
 
         return dto;
     }
