@@ -44,7 +44,7 @@ public class CommentTest extends BaseTest {
 
         Long commentId = commentRepository.findAll().get(0).getId();
 
-        RequestCommentSaveDto dto = new RequestCommentSaveDto();
+        RequestCommentSaveDto dto = new RequestCommentSaveDto(commentContent);
         dto.setContent(articleContent + " new");
 
 
@@ -90,7 +90,7 @@ public class CommentTest extends BaseTest {
         mockMvc.perform(delete("/comment/" + commentId))
                 .andExpect(status().isOk());
 
-        RequestCommentSaveDto dto = new RequestCommentSaveDto();
+        RequestCommentSaveDto dto = new RequestCommentSaveDto(commentContent);
         dto.setContent(articleContent + " new");
 
         //when
@@ -114,9 +114,9 @@ public class CommentTest extends BaseTest {
     public void 유저삭제시_댓글유지테스트() throws Exception {
         //given
         User user = makeUserProc("임꺽정", "im@mmm.com");
-        noneSessionsArticleSaveProc(user,0);
+        noneSessionsArticleSaveProc(user, 0);
 
-        RequestCommentSaveDto dto = new RequestCommentSaveDto();
+        RequestCommentSaveDto dto = new RequestCommentSaveDto(commentContent);
         dto.setContent(commentContent);
 
         Long articleId = articleRepository.findAll().get(0).getId();
@@ -143,9 +143,9 @@ public class CommentTest extends BaseTest {
     public void 글삭제시_댓글삭제테스트() throws Exception {
         //given
         User user = makeUserProc("임꺽정", "im@mmm.com");
-        noneSessionsArticleSaveProc(user,0);
+        noneSessionsArticleSaveProc(user, 0);
 
-        RequestCommentSaveDto dto = new RequestCommentSaveDto();
+        RequestCommentSaveDto dto = new RequestCommentSaveDto(commentContent);
         dto.setContent(commentContent);
 
         Long articleId = articleRepository.findAll().get(0).getId();

@@ -76,6 +76,8 @@ public class BaseTest {
                 .addFilters(new CharacterEncodingFilter("UTF-8", true))  // 필터 추가
                 .alwaysDo(print())
                 .build();
+
+        System.out.println("유저_생성");
     }
 
     @AfterEach
@@ -170,7 +172,7 @@ public class BaseTest {
 
         Long articleId = articleRepository.findAll().get(0).getId();
 
-        RequestCommentSaveDto dto = new RequestCommentSaveDto();
+        RequestCommentSaveDto dto = new RequestCommentSaveDto(commentContent);
 
         dto.setContent(commentContent);
 

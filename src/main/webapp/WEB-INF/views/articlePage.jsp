@@ -36,18 +36,45 @@
     ------------------------------------댓글------------------------------------
 
     댓글달아볼까요?
-    <form action="/article/<%=article.getId()%>/comment" method="post" datatype="json">
-        <input type="text" placeholder="댓글을 달아볼까요잉"/>
-        <input type="submit" value="댓글달기"/>
+    <form id="commentForm">
+        <input type="text" name="content" id="content"/>
+        <button id="btnSend"></button>
     </form>
-
-    <c:forEach var="comment" items="${comments}">
-        ${comment.writer}
-        ${comment.content}
-
-    </c:forEach>
 </pre>
-</body>
 
+<c:forEach var="comment" items="${comments}">
+    ${comment.writer}
+    ${comment.content}
+    <form action="/comment/${comment.id}" method="post">
+        <input type="hidden" name="_method" value="PUT"/>
+        <input type="submit" value="삭제"/>
+    </form>
+    <form action="/comment/${comment.id}" method="post">
+        <input type="hidden" name="_method" value="PUT"/>
+        <input type="submit" value="수정"/>
+    </form>
+</c:forEach>
+
+</body>
+<script src="http://code.jquery.com/jquery-latest.js">
+    $(document).ready(function() {
+        $("#btnSend").on("click", function () {
+            var commentData = $("#commentForm").serialize();
+
+            $.ajax({
+                url: window.location.pathname + '/comment',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(commentData),
+                success: function (data) {
+                    console.log(data);
+                },
+                error: function () {
+                    console.assert(true);
+                }
+            })
+        })
+    })
+</script>
 
 </html>

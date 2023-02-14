@@ -7,8 +7,13 @@ import com.example.danguen.domain.model.comment.dto.request.RequestCommentSaveDt
 import com.example.danguen.domain.model.comment.dto.response.ResponseCommentDto;
 import com.example.danguen.service.service.CommentService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
+import java.net.URI;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -18,11 +23,19 @@ public class CommentController {
     private final CommentService commentService;
 
     @PostMapping("/{postName}/{postId}/comment") // 댓글이 달릴 객체 필요
-    public void save(@RequestBody RequestCommentSaveDto request,
-                     @PathVariable String postName,
-                     @PathVariable Long postId,
-                     @SessionUserId Long userId) {
+    public ResponseEntity<?> save(@RequestBody RequestCommentSaveDto request,
+                                  @PathVariable String postName,
+                                  @PathVariable Long postId,
+                                  @SessionUserId Long userId,
+                                  HttpServletRequest httpRequest) {
         commentService.save(request, postName, postId, userId);
+
+        HttpHeaders headers = new HttpHeaders();
+
+        String uri = httpRequest.getRequestURI().replace("/comment", "");
+        headers.setLocation(URI.create(uri));
+
+        return new ResponseEntity<>(headers, HttpStatus.MOVED_PERMANENTLY); // 게시글 경로로 다시 이동
     }
 
     @GetMapping("/{postName}/{postId}/comment")
