@@ -3,6 +3,7 @@ package com.example.danguen.config;
 import com.example.danguen.argumentResolver.SessionUserIdArgumentResolver;
 import com.example.danguen.interceptor.AddressCheckInterceptor;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -18,6 +19,8 @@ import java.util.List;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
     private final SessionUserIdArgumentResolver sessionUserIdArgumentResolver;
+    @Value("${file.article.image.local}")
+    private String articlePath;
 
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
@@ -38,7 +41,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/src/main/resources/articleImage/**")
-                .addResourceLocations("file:///C:\\Users\\82103\\IdeaProjects\\danguen\\src\\main\\resources\\articleImage\\");
+                .addResourceLocations(articlePath);
     }
 
     @Bean

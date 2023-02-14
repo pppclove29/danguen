@@ -13,6 +13,7 @@ import java.util.List;
 @Data
 public class ResponseArticleDto {
 
+    private Long id;
     private String title;
     private String content;
     private int price;
@@ -29,6 +30,7 @@ public class ResponseArticleDto {
     public static ResponseArticleDto toResponse(Article article) {
         ResponseArticleDto dto = new ResponseArticleDto();
 
+        dto.setId(article.getId());
         dto.setTitle(article.getTitle());
         dto.setContent(article.getContent());
         dto.setPrice(article.getPrice());

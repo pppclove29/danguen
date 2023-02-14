@@ -13,12 +13,10 @@
     <title>$Article_List$</title>
 </head>
 <body>
-
 <c:forEach var="article" items="${articles}">
     <li>
         <div>
             <img src="${article.imageUrl}" width="200" height="200">
-            <h3> ${article.imageUrl}</h3>
             <a href="/article/${article.id}">${article}</a>
         </div>
     </li>

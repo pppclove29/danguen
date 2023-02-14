@@ -81,14 +81,10 @@ public class FormController {
             List<MultipartFile> imageList = new ArrayList<>();
 
             int imageCount = (int) (Math.random() * 4) + 1;
-            System.out.println("반복" + imageCount);
             for (int j = 1; j <= imageCount; j++) {
                 int imageIndex = (int) (Math.random() * 12) + 1;
                 imageList.add(getMultipartFile(imageIndex));
-
             }
-
-            System.out.println("사이즈" + imageList.size());
             articleService.save(request, userId, imageList);
         }
 

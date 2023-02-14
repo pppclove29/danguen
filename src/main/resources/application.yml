@@ -2,6 +2,7 @@ spring:
   profiles:
     include:
       - oauth
+      - local
   datasource:
     url: jdbc:mysql://localhost:3306/danguen?useUnicode=true&serverTimezone=Asia/Seoul
     username: root
@@ -10,7 +11,7 @@ spring:
   jpa:
     show-sql: true
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
     generate-ddl: true
     database: mysql
   mvc:
@@ -23,13 +24,7 @@ server:
     encoding:
       charset: UTF-8
       force: true
-file:
-  user:
-    image:
-      path: src/main/resources/userImage/
-  article:
-    image:
-      path: src/main/resources/articleImage/
+
 
 
 

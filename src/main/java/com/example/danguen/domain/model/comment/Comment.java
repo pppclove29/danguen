@@ -1,6 +1,7 @@
 package com.example.danguen.domain.model.comment;
 
 import com.example.danguen.domain.BaseTimeEntity;
+import com.example.danguen.domain.model.comment.dto.response.ResponseCommentDto;
 import com.example.danguen.domain.model.user.User;
 import lombok.Getter;
 

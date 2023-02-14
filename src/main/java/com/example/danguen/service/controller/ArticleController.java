@@ -7,6 +7,7 @@ import com.example.danguen.domain.model.post.article.dto.request.RequestArticleS
 import com.example.danguen.domain.model.post.article.dto.response.ResponseArticleDto;
 import com.example.danguen.domain.model.post.article.dto.response.ResponseArticleSimpleDto;
 import com.example.danguen.service.service.ArticleService;
+import com.example.danguen.service.service.CommentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
@@ -29,6 +30,7 @@ import java.util.List;
 public class ArticleController {
 
     private final ArticleService articleService;
+    private final CommentService commentService;
 
     @PostMapping(value = "/article", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
     public void save(@RequestPart("request") RequestArticleSaveOrUpdateDto request,
@@ -52,6 +54,7 @@ public class ArticleController {
     public ModelAndView getArticle(@PathVariable Long articleId) {
         ModelAndView mav = new ModelAndView("articlePage");
         mav.addObject("article", articleService.getArticle(articleId));
+        mav.addObject("comments",commentService.getComments("article", articleId));
 
         return mav;
     }
