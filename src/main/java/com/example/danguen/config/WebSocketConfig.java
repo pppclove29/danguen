@@ -11,10 +11,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws") // endpoint 연결용
-                .setAllowedOriginPatterns("*") // cors
-                .withSockJS();
-
-        //var sock = new SockJS("/ws"); 프론트에서 다음과 같이 연결, 이걸 어떻게 백에서 테스트 못하나?
+                .setAllowedOriginPatterns("*"); // cors
     }
 
     @Override

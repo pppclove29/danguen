@@ -40,7 +40,7 @@ public class ChatTest extends BaseTest {
     private String url;
 
     @BeforeEach
-    public void 웹소켓생성() throws ExecutionException, InterruptedException, TimeoutException {
+    public void 웹소켓_생성_및_연결() throws ExecutionException, InterruptedException, TimeoutException {
         //SockJsClient 는 WebSocketClient 를 구현했다!
         //SockJsClient 는 List<Transport> transports 를 받아야한다 이게 뭐냐?
         //Transport를 구현한 객체중 WebSocketTransport를 발견했다 이걸로 써보자
@@ -57,16 +57,16 @@ public class ChatTest extends BaseTest {
 
         System.out.println("소켓 클라이언트 생성 및 기본 값 초기화");
 
-        System.out.println("final url = " + url + port + "/ws" );
+        System.out.println("final url = " + url + port + "/ws");
 
         this.stompSession = this.client
-                .connect(url + port + "/ws", new StompSessionHandlerAdapter() {
+                .connect(url + port , new StompSessionHandlerAdapter() {
                     @Override
                     public void afterConnected(StompSession session, StompHeaders connectedHeaders) {
                         System.out.println("연결되었습니다");
                     }
                 }) // 연결 및 핸들러에 알린다
-                .get(3, TimeUnit.SECONDS); // 최대 대기시간?
+                .get(1, TimeUnit.SECONDS); // 최대 대기시간?
 
         //근데 저 함수는 익명함수다
         //그렇다면 내 맘대로 해당 함수를 구현해서 각 요청에 대한 처리를 하면 되지 않을까?
