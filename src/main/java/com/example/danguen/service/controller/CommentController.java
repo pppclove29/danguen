@@ -23,12 +23,14 @@ public class CommentController {
     private final CommentService commentService;
 
     @PostMapping("/{postName}/{postId}/comment") // 댓글이 달릴 객체 필요
-    public ResponseEntity<?> save(@RequestBody RequestCommentSaveDto request,
+    public ResponseEntity<?> save(@RequestParam String content,
                                   @PathVariable String postName,
                                   @PathVariable Long postId,
                                   @SessionUserId Long userId,
                                   HttpServletRequest httpRequest) {
-        commentService.save(request, postName, postId, userId);
+
+
+        commentService.save(new RequestCommentSaveDto(content), postName, postId, userId);
 
         HttpHeaders headers = new HttpHeaders();
 
@@ -45,9 +47,9 @@ public class CommentController {
     }
 
     @PutMapping("/comment/{commentId}")
-    public void update(@RequestBody RequestCommentSaveDto request,
+    public void update(@RequestParam String content,
                        @PathVariable Long commentId) {
-        commentService.update(request, commentId);
+        commentService.update(new RequestCommentSaveDto(content), commentId);
     }
 
     @DeleteMapping("/comment/{commentId}") // 댓글이 달린 객체 필요, 이미 저장되어있으니 내부의

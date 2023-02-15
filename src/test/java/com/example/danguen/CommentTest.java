@@ -5,9 +5,7 @@ import com.example.danguen.domain.model.comment.ArticleComment;
 import com.example.danguen.domain.model.comment.Comment;
 import com.example.danguen.domain.model.comment.dto.request.RequestCommentSaveDto;
 import com.example.danguen.domain.model.user.User;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -17,6 +15,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 public class CommentTest extends BaseTest {
 
+    /* 댓글 불러오기 확인 테스트 할것
+    assertThat(result.getModelAndView().getModel().get("comment")).isInstanceOf(ResponseCommentDto.class);
+
+        ResponseCommentDto comment = (ResponseCommentDto)result.getModelAndView().getModel().get("comment");
+     */
     @WithMockUser
     @Test
     public void 중고물품에_댓글_달기() throws Exception {
@@ -44,20 +47,15 @@ public class CommentTest extends BaseTest {
 
         Long commentId = commentRepository.findAll().get(0).getId();
 
-        RequestCommentSaveDto dto = new RequestCommentSaveDto(commentContent);
-        dto.setContent(articleContent + " new");
-
-
         //when
         mockMvc.perform(put("/comment/" + commentId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(new ObjectMapper().writeValueAsString(dto)))
+                        .param("content", commentContent + " new"))
                 .andExpect(status().isOk());
 
         //then
         Comment comment = commentRepository.findById(commentId).get();
 
-        assertThat(comment.getContent()).isEqualTo(dto.getContent());
+        assertThat(comment.getContent()).isEqualTo(commentContent + " new");
         assertThat(comment).isInstanceOf(ArticleComment.class);
     }
 
@@ -95,8 +93,7 @@ public class CommentTest extends BaseTest {
 
         //when
         MvcResult result = mockMvc.perform(put("/comment/" + commentId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(new ObjectMapper().writeValueAsString(dto)))
+                        .param("content", commentContent + " new"))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -116,15 +113,12 @@ public class CommentTest extends BaseTest {
         User user = makeUserProc("임꺽정", "im@mmm.com");
         noneSessionsArticleSaveProc(user, 0);
 
-        RequestCommentSaveDto dto = new RequestCommentSaveDto(commentContent);
-        dto.setContent(commentContent);
-
         Long articleId = articleRepository.findAll().get(0).getId();
 
-        mockMvc.perform(get("/article/" + articleId + "/comment")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(new ObjectMapper().writeValueAsString(dto)))
-                .andExpect(status().isOk());
+        mockMvc.perform(post("/article/" + articleId + "/comment")
+                        .param("content", commentContent))
+                .andExpect(status().is3xxRedirection());
+
 
         Long userId = userRepository.findByEmail(sessionEmail).get().getId();
 
@@ -145,15 +139,11 @@ public class CommentTest extends BaseTest {
         User user = makeUserProc("임꺽정", "im@mmm.com");
         noneSessionsArticleSaveProc(user, 0);
 
-        RequestCommentSaveDto dto = new RequestCommentSaveDto(commentContent);
-        dto.setContent(commentContent);
-
         Long articleId = articleRepository.findAll().get(0).getId();
 
-        mockMvc.perform(get("/article/" + articleId + "/comment")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(new ObjectMapper().writeValueAsString(dto)))
-                .andExpect(status().isOk());
+        mockMvc.perform(post("/article/" + articleId + "/comment")
+                        .param("content", commentContent))
+                .andExpect(status().is3xxRedirection());
 
         //when
         mockMvc.perform(delete("/article/" + articleId))

@@ -2,7 +2,6 @@ package com.example.danguen;
 
 import com.example.danguen.config.oauth.PrincipalUserDetails;
 import com.example.danguen.domain.Address;
-import com.example.danguen.domain.model.comment.dto.request.RequestCommentSaveDto;
 import com.example.danguen.domain.model.image.dto.ImageDto;
 import com.example.danguen.domain.model.post.article.Article;
 import com.example.danguen.domain.model.post.article.dto.request.RequestArticleSaveOrUpdateDto;
@@ -34,8 +33,8 @@ import org.springframework.web.filter.CharacterEncodingFilter;
 import java.io.FileInputStream;
 import java.nio.charset.StandardCharsets;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -59,6 +58,8 @@ public class BaseTest {
     UserImageRepository userImageRepository;
     @Autowired
     ArticleImageRepository articleImageRepository;
+    @Autowired
+    ObjectMapper mapper;
 
     String sessionName = "박이름";
     String sessionEmail = "email@temp.com";
@@ -98,9 +99,7 @@ public class BaseTest {
 
         User user = User.builder().name(name).email(email).address(address).build();
 
-        ImageDto image = new ImageDto();
-        image.setName(user.getName() + ".jpg");
-        image.setPath("저장경로/");
+        ImageDto image = new ImageDto(user.getName() + ".jpg", "path:");
 
         userImageRepository.save(image.toUserImage(user));
         userRepository.save(user);
@@ -162,6 +161,9 @@ public class BaseTest {
 
         noneSessionUser.addSellArticle(article);
 
+        ImageDto image = new ImageDto(article.getId() + ".jpg", "path:");
+
+        articleImageRepository.save(image.toArticleImage(article));
         articleRepository.save(article);
     }
 
@@ -172,13 +174,8 @@ public class BaseTest {
 
         Long articleId = articleRepository.findAll().get(0).getId();
 
-        RequestCommentSaveDto dto = new RequestCommentSaveDto(commentContent);
-
-        dto.setContent(commentContent);
-
-        mockMvc.perform(get("/article/" + articleId + "/comment")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(new ObjectMapper().writeValueAsString(dto)))
-                .andExpect(status().isOk());
+        mockMvc.perform(post("/article/" + articleId + "/comment")
+                        .param("content", commentContent))
+                .andExpect(status().is3xxRedirection());
     }
 }

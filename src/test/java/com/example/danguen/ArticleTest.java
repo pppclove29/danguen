@@ -6,6 +6,8 @@ import com.example.danguen.domain.Address;
 import com.example.danguen.domain.model.image.Image;
 import com.example.danguen.domain.model.post.article.Article;
 import com.example.danguen.domain.model.post.article.dto.request.RequestArticleSaveOrUpdateDto;
+import com.example.danguen.domain.model.post.article.dto.response.ResponseArticleDto;
+import com.example.danguen.domain.model.post.article.dto.response.ResponseArticleSimpleDto;
 import com.example.danguen.domain.model.user.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -16,6 +18,9 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import java.io.FileInputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -175,19 +180,26 @@ public class ArticleTest extends BaseTest {
         articleSaveProc(0);
         Long articleId = articleRepository.findAll().get(0).getId();
 
-        //when & then
-        mockMvc.perform(get("/article/" + articleId))
+        //when
+        MvcResult result = mockMvc.perform(get("/article/" + articleId))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.title").value(title + 0))
-                .andExpect(jsonPath("$.content").value(articleContent))
-                .andExpect(jsonPath("$.price").value(10000))
-                .andExpect(jsonPath("$.category").value(category))
-                .andExpect(jsonPath("$.views").value(1))
-                .andExpect(jsonPath("$.sold").value(false))
-                .andExpect(jsonPath("$.dealHopeAddress.city").value(hopeCity + 0))
-                .andExpect(jsonPath("$.dealHopeAddress.street").value(hopeStreet + 0))
-                .andExpect(jsonPath("$.dealHopeAddress.zipcode").value(hopeZipcode + 0))
-                .andExpect(jsonPath("$.seller").value(sessionName));
+                .andReturn();
+
+        //then
+        assertThat(result.getModelAndView().getModel().get("article")).isInstanceOf(ResponseArticleDto.class);
+
+        ResponseArticleDto article = (ResponseArticleDto) result.getModelAndView().getModel().get("article");
+
+        assertThat(article.getTitle()).isEqualTo(title + 0);
+        assertThat(article.getContent()).isEqualTo(articleContent);
+        assertThat(article.getPrice()).isEqualTo(10000);
+        assertThat(article.getCategory()).isEqualTo(category);
+        assertThat(article.getViews()).isEqualTo(1);
+        assertThat(article.isSold()).isEqualTo(false);
+        assertThat(article.getDealHopeAddress().getCity()).isEqualTo(hopeCity + 0);
+        assertThat(article.getDealHopeAddress().getStreet()).isEqualTo(hopeStreet + 0);
+        assertThat(article.getDealHopeAddress().getZipcode()).isEqualTo(hopeZipcode + 0);
+        assertThat(article.getSeller()).isEqualTo(sessionName);
     }
 
     @Test
@@ -226,40 +238,60 @@ public class ArticleTest extends BaseTest {
          */
 
         //when
-        mockMvc.perform(get("/address"))
+        MvcResult result;
+        List<ResponseArticleSimpleDto> articles;
+        String objKey = "articles";
+
+        result = mockMvc.perform(get("/address"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0]").exists())
-                .andExpect(jsonPath("$[5]").exists()) // 6개의 검색 결과가 존재해야한다
-                .andExpect(jsonPath("$[6]").doesNotExist())
-                .andExpect(jsonPath("$[0].title").value(title + 9))
-                .andExpect(jsonPath("$[5].title").value(title + 4)); // 검색 결과는 최신순으로 내림차순한다
+                .andReturn(); // 검색 결과는 최신순으로 내림차순한다
+
+        articles = objToList(result, objKey);
+
+        assertThat(articles.size()).isEqualTo(6);
+        assertThat(articles.get(0).getTitle()).isEqualTo(title + 9);
+        assertThat(articles.get(5).getTitle()).isEqualTo(title + 4);
 
         //같은 검색결과를 반환하는지 확인
-        mockMvc.perform(get("/address/희망주소1/희망주소1"))
+        result = mockMvc.perform(get("/address/희망주소1/희망주소1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0]").exists())
-                .andExpect(jsonPath("$[2]").exists()) // 3개의 검색 결과가 존재해야한다
-                .andExpect(jsonPath("$[3]").doesNotExist())
-                .andExpect(jsonPath("$[0].title").value(title + 5))
-                .andExpect(jsonPath("$[2].title").value(title + 3)); // 검색 결과는 최신순으로 내림차순한다
+                .andReturn();
+
+        articles = objToList(result, objKey);
+
+        assertThat(articles.size()).isEqualTo(3);
+        assertThat(articles.get(0).getTitle()).isEqualTo(title + 5);
+        assertThat(articles.get(2).getTitle()).isEqualTo(title + 3);
 
         //단 하나의 단독결과만 반환하는지 확인
-        mockMvc.perform(get("/address/희망주소1/희망주소1/희망주소3"))
+        result = mockMvc.perform(get("/address/희망주소1/희망주소1/희망주소3"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0]").exists()) // 단 하나의 결과만 출력해야한다
-                .andExpect(jsonPath("$[1]").doesNotExist())
-                .andExpect(jsonPath("$[0].title").value(title + 3)); // 검색 결과는 최신순으로 내림차순한다
+                .andReturn();
+
+        articles = objToList(result, objKey);
+
+        assertThat(articles.size()).isEqualTo(1);
+        assertThat(articles.get(0).getTitle()).isEqualTo(title + 3);
 
         //없는 주소를 입력시 반환값이 없는지 확인
-        mockMvc.perform(get("/address/없는주소"))
+        result = mockMvc.perform(get("/address/없는주소"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0]").doesNotExist()); // 아무 결과도 있어선 안된다
+                .andReturn();
+
+        articles = objToList(result, objKey);
+
+        assertThat(articles.size()).isEqualTo(0);
 
         //영어 url도 확인, 역시 없음
-        mockMvc.perform(get("/address/no-address"))
+        result = mockMvc.perform(get("/address/no-address"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0]").doesNotExist()); // 아무 결과도 있어선 안된다
+                .andReturn();
+
+        articles = objToList(result, objKey);
+
+        assertThat(articles.size()).isEqualTo(0);
     }
+
 
     @Test
     public void 리스트_페이지_분할테스트() throws Exception {
@@ -307,18 +339,27 @@ public class ArticleTest extends BaseTest {
         }
         // 물품 리스트 0 ~ 9
         // 이 중에 1 4 5 8의 조회수를 높혀보자 높은 순서대로 5 8 1 4이다
-        watchArticle(1, 4);
-        watchArticle(4, 2);
-        watchArticle(5, 10);
-        watchArticle(8, 7);
+        // 즉 인기리스트 순서는 5 8 1 4 순으로 나와야한다
+        int[] viewCount = new int[]{10, 7, 4, 2};
+        int[] targetIndex = new int[]{5, 8, 1, 4};
+
+        for (int i = 0; i < 4; i++) {
+            watchArticle(targetIndex[i], viewCount[i]);
+        }
 
         //when
-        mockMvc.perform(get("/hot-articles"))
+        MvcResult result = mockMvc.perform(get("/hot-articles"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].title").value(title + 5))
-                .andExpect(jsonPath("$[1].title").value(title + 8))
-                .andExpect(jsonPath("$[2].title").value(title + 1))
-                .andExpect(jsonPath("$[3].title").value(title + 4));
+                .andReturn();
+
+        //then
+        List<ResponseArticleSimpleDto> articles = objToList(result, "articles");
+
+        assertThat(articles.size()).isEqualTo(6); // 페이지 사이즈만큼 출력
+        for (int i = 0; i < 4; i++) {
+            assertThat(articles.get(i).getTitle()).isEqualTo(title + targetIndex[i]);
+            assertThat(articles.get(i).getViews()).isEqualTo(viewCount[i]);
+        }
     }
 
 
@@ -413,8 +454,6 @@ public class ArticleTest extends BaseTest {
             noneSessionsArticleSaveProc(other, i);
         }
 
-        User user = userRepository.findByEmail(sessionEmail).get();
-
         // 홍길동과 고구마를 관심유저로 등록하자
         Long interestUserId1 = userRepository.findByEmail("hong@namver.com").get().getId();
         Long interestUserId2 = userRepository.findByEmail("potato@vege.com").get().getId();
@@ -423,7 +462,7 @@ public class ArticleTest extends BaseTest {
         mockMvc.perform(put("/user/iuser/" + interestUserId2));
 
         //when
-        mockMvc.perform(get("/interest"))
+        MvcResult result = mockMvc.perform(get("/interest"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].title").value("제목 홍길동"))
                 .andExpect(jsonPath("$[1].title").value("제목 홍길동"))
@@ -436,7 +475,11 @@ public class ArticleTest extends BaseTest {
                 .andExpect(jsonPath("$[2].price").value("20000"))
                 .andExpect(jsonPath("$[3].price").value("0"))
                 .andExpect(jsonPath("$[4].price").value("10000"))
-                .andExpect(jsonPath("$[5].price").value("20000"));
+                .andExpect(jsonPath("$[5].price").value("20000"))
+                .andReturn();
+
+        //then
+        System.out.println(result.getResponse().getContentAsString());
     }
 
     public void watchArticle(int idx, int count) throws Exception { // 조회수 증가
@@ -445,5 +488,14 @@ public class ArticleTest extends BaseTest {
         for (int i = 0; i < count; i++) {
             mockMvc.perform(get("/article/" + articleId));
         }
+    }
+
+    public <T> List<T> objToList(MvcResult result, String objKey) {
+        List<T> resultList;
+
+        assertThat(result.getModelAndView().getModel().get(objKey) instanceof ArrayList).isTrue();
+        resultList = ((ArrayList<?>) result.getModelAndView().getModel().get(objKey)).stream().map(obj -> (T) obj).collect(Collectors.toList());
+
+        return resultList;
     }
 }
