@@ -10,9 +10,8 @@ public class WebSocketBrokerConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws-endpoint") // endpoint 연결용
-                .setAllowedOriginPatterns("*")
-                .withSockJS(); // cors
+        registry.addEndpoint("/ws-ep") // endpoint 연결용
+                .setAllowedOriginPatterns("*");
     }
 
     @Override
@@ -20,9 +19,6 @@ public class WebSocketBrokerConfig implements WebSocketMessageBrokerConfigurer {
         // topic 1:N 공지
         // queue 1:1 개인
         registry.enableSimpleBroker("/queue", "topic"); // 메시지 큐 나누는 용도?
-        registry.setApplicationDestinationPrefixes("/appDes");
+        registry.setApplicationDestinationPrefixes("/pub");
     }
-
-
-
 }

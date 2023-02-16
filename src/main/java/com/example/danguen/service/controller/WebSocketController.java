@@ -1,15 +1,17 @@
 package com.example.danguen.service.controller;
 
-import org.springframework.messaging.handler.annotation.DestinationVariable;
+import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.messaging.simp.annotation.SendToUser;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
 
+@RequiredArgsConstructor
 @Controller
 public class WebSocketController {
+
+    private final SimpMessagingTemplate simpMessagingTemplate;
 
     @MessageMapping("/ws-endpoint")
     @SendTo("/topic/messages")
@@ -31,11 +33,9 @@ public class WebSocketController {
         return message;
     }
 
-    @MessageMapping("/private-message/{sessionId}")
-    @SendToUser("/queue/private")
-    public String sendPrivateMsg(@Payload String message,
-                                 @DestinationVariable String sessionId) {
-        System.out.println(message + " controller의 sendPrivateMsg에서 처리합니다");
-        return message;
+    @MessageMapping("/private")
+    public void sendPrivateMsg(Message message) {
+        System.out.println("메시지 수신 완료");
+        simpMessagingTemplate.convertAndSend("/queue/private/" + message.getRoomId(), message.getContent());
     }
 }
