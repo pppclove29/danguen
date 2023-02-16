@@ -1,0 +1,5 @@
+websocket:
+  url:
+    host: "ws://localhost:"
+    connect: /appDes/connect
+    private: /appDes/private-message

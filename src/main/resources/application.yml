@@ -3,6 +3,7 @@ spring:
     include:
       - oauth
       - local
+      - websocket
   datasource:
     url: jdbc:mysql://localhost:3306/danguen?useUnicode=true&serverTimezone=Asia/Seoul
     username: root

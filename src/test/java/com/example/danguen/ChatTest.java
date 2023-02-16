@@ -1,23 +1,21 @@
 package com.example.danguen;
 
+import com.example.danguen.config.webSocket.CustomSessionHandlerAdapter;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
-import org.springframework.messaging.simp.stomp.StompFrameHandler;
-import org.springframework.messaging.simp.stomp.StompHeaders;
 import org.springframework.messaging.simp.stomp.StompSession;
-import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
 import org.springframework.web.socket.sockjs.client.SockJsClient;
 import org.springframework.web.socket.sockjs.client.WebSocketTransport;
 
-import java.lang.reflect.Type;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -27,15 +25,17 @@ public class ChatTest extends BaseTest {
 
     private StompSession stompSession1, stompSession2;
     private WebSocketStompClient client1, client2;
+    @Autowired
+    private CustomSessionHandlerAdapter customSessionHandlerAdapter;
 
     @LocalServerPort
     private int port;
 
-    private final String url = "ws://localhost:";
-    private final String connectUrl = "/appDes/connect";
-    private final String privateMsgUrl = "/appDes/private-message";
-    private String message;
-    private Map<String, StompSession> sessions;
+    @Value("${websocket.url.host}")
+    private String url;
+    @Value("${websocket.url.private}")
+    private String privateMsgUrl;
+
 
     @BeforeEach
     public void 웹소켓_생성() {
@@ -52,8 +52,10 @@ public class ChatTest extends BaseTest {
         // default = SimpleMessageConverter
         client1.setMessageConverter(new MappingJackson2MessageConverter());
         client2.setMessageConverter(new MappingJackson2MessageConverter());
-
-        sessions = new HashMap<>();
+    }
+    @AfterEach
+    public void 세션_초기화(){
+        customSessionHandlerAdapter.sessionClear();
     }
 
     @Test
@@ -62,7 +64,7 @@ public class ChatTest extends BaseTest {
         stompSession1 = connectToWs(client1);
 
         //then
-        assertThat(sessions.size()).isEqualTo(1);
+        assertThat(customSessionHandlerAdapter.getSessionsCount()).isEqualTo(1);
     }
 
     @Test
@@ -72,22 +74,14 @@ public class ChatTest extends BaseTest {
         stompSession2 = connectToWs(client2);
 
         //1이 구독
-        stompSession1.subscribe("/user/" + stompSession1.getSessionId() + "/queue/private", new StompFrameHandler() {
-            @Override
-            public Type getPayloadType(StompHeaders headers) {
-                // 메세지 타입 반환
-                return null;
-            }
+        stompSession1.subscribe("/topic/message", customSessionHandlerAdapter);
+        Thread.sleep(1000);
 
-            @Override
-            public void handleFrame(StompHeaders headers, Object payload) {
-                // 메세지 수신 시 호출
-                System.out.println("메세지 받았다~");
-            }
-        });
+        //2가 메세지 전송
+        stompSession2.send("/appDes/topic", "공지입니다");
+        Thread.sleep(1000);
 
-        stompSession2.send(privateMsgUrl + "/" + stompSession1.getSessionId(), "사랑의 메세지");
-
+        stompSession2.subscribe("/topic/message", customSessionHandlerAdapter);
         Thread.sleep(1000);
     }
 
@@ -95,15 +89,7 @@ public class ChatTest extends BaseTest {
     public StompSession connectToWs(WebSocketStompClient client) throws ExecutionException, InterruptedException {
         // 연결 및 핸들러에 알린다
         StompSession stompSession = client
-                .connect(url + port + "/ws-endpoint", new StompSessionHandlerAdapter() {
-                    @Override
-                    public void afterConnected(StompSession session, StompHeaders connectedHeaders) {
-                        sessions.put(session.getSessionId(), session);
-
-                        message = session.getSessionId() + "님이 연결되었습니다";
-                        session.send(connectUrl, message);
-                    }
-                }) // 연결 및 핸들러에 알린다
+                .connect(url + port + "/ws-endpoint", customSessionHandlerAdapter) // 연결 및 핸들러에 알린다
                 .get();
 
         return stompSession;

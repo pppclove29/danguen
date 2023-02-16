@@ -29,5 +29,9 @@ file:
       path: src/test/resources/articleImage/
       local: file///C:\\Users\\82103\\IdeaProjects\\danguen\\src\\test\\resources\\userImage\\
 
-
+websocket:
+  url:
+    host: "ws://localhost:"
+    connect: /appDes/connect
+    private: /appDes/private-message
 
