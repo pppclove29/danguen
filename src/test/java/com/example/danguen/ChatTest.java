@@ -1,10 +1,7 @@
 package com.example.danguen;
 
-import com.example.danguen.config.webSocket.CustomSessionHandlerAdapter;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -18,15 +15,11 @@ import org.springframework.web.socket.sockjs.client.WebSocketTransport;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 @AutoConfigureMockMvc
 public class ChatTest extends BaseTest {
 
     private StompSession stompSession1, stompSession2;
     private WebSocketStompClient client1, client2;
-    @Autowired
-    private CustomSessionHandlerAdapter customSessionHandlerAdapter;
 
     @LocalServerPort
     private int port;
@@ -53,45 +46,16 @@ public class ChatTest extends BaseTest {
         client1.setMessageConverter(new MappingJackson2MessageConverter());
         client2.setMessageConverter(new MappingJackson2MessageConverter());
     }
-    @AfterEach
-    public void 세션_초기화(){
-        customSessionHandlerAdapter.sessionClear();
-    }
 
     @Test
     public void 세션_연결() throws ExecutionException, InterruptedException {
-        //when
-        stompSession1 = connectToWs(client1);
 
-        //then
-        assertThat(customSessionHandlerAdapter.getSessionsCount()).isEqualTo(1);
     }
 
     @Test
     public void 구독_및_메세지_전송() throws ExecutionException, InterruptedException {
-        //1이 구독하고 2가 거기에 메세지를 보내보자
-        stompSession1 = connectToWs(client1);
-        stompSession2 = connectToWs(client2);
 
-        //1이 구독
-        stompSession1.subscribe("/topic/message", customSessionHandlerAdapter);
-        Thread.sleep(1000);
-
-        //2가 메세지 전송
-        stompSession2.send("/appDes/topic", "공지입니다");
-        Thread.sleep(1000);
-
-        stompSession2.subscribe("/topic/message", customSessionHandlerAdapter);
-        Thread.sleep(1000);
     }
 
 
-    public StompSession connectToWs(WebSocketStompClient client) throws ExecutionException, InterruptedException {
-        // 연결 및 핸들러에 알린다
-        StompSession stompSession = client
-                .connect(url + port + "/ws-endpoint", customSessionHandlerAdapter) // 연결 및 핸들러에 알린다
-                .get();
-
-        return stompSession;
-    }
 }

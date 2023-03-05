@@ -4,6 +4,7 @@ import com.example.danguen.config.oauth.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 
@@ -19,9 +20,8 @@ public class SecurityConfig {
                 .headers().frameOptions().disable()
                 .and()
                     .authorizeRequests()
-                    .anyRequest().permitAll()
-                    //.antMatchers("/index", "/css/**", "/images/**", "/js/**", "/h2-console/**", "/profile","/favicon.ico", "/resources/**", "/error").permitAll()
-                    //.anyRequest().authenticated()
+                    .antMatchers("/index", "/css/**", "/images/**", "/js/**", "/h2-console/**", "/profile", "/favicon.ico", "/resources/**", "/error").permitAll()
+                    .anyRequest().authenticated()
                 .and()
                     .logout()
                     .logoutSuccessUrl("/")

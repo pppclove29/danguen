@@ -36,9 +36,9 @@
     ------------------------------------댓글------------------------------------
 
     댓글달아볼까요?
-    <form id="commentForm">
-        <input type="text" name="content" id="content"/>
-        <button id="btnSend"></button>
+    <form action="/article/<%=article.getId()%>/comment" method="post">
+        <textarea name="content" rows="5" cols="50"></textarea>
+        <input type="submit" value="Submit">
     </form>
 </pre>
 
@@ -56,25 +56,6 @@
 </c:forEach>
 
 </body>
-<script src="http://code.jquery.com/jquery-latest.js">
-    $(document).ready(function() {
-        $("#btnSend").on("click", function () {
-            var commentData = $("#commentForm").serialize();
 
-            $.ajax({
-                url: window.location.pathname + '/comment',
-                type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify(commentData),
-                success: function (data) {
-                    console.log(data);
-                },
-                error: function () {
-                    console.assert(true);
-                }
-            })
-        })
-    })
-</script>
 
 </html>
