@@ -1,5 +1,6 @@
 package com.example.danguen.config.oauth;
 
+import com.example.danguen.config.CustomStompHandler;
 import com.example.danguen.domain.model.image.UserImage;
 import com.example.danguen.domain.model.image.dto.ImageDto;
 import com.example.danguen.domain.model.user.User;
@@ -12,12 +13,18 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.socket.client.standard.StandardWebSocketClient;
+import org.springframework.web.socket.messaging.WebSocketStompClient;
+import org.springframework.web.socket.sockjs.client.SockJsClient;
+import org.springframework.web.socket.sockjs.client.WebSocketTransport;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 import java.util.Objects;
 
 @RequiredArgsConstructor
@@ -29,9 +36,22 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     private final UserRepository userRepository;
     private final UserImageRepository userImageRepository;
 
+    @Value("${websocket.url.connect}")
+    private String connect_url;
+    private WebSocketStompClient stompClient;
+    private final CustomStompHandler stompHandler;
+
     // oAuth 로그인 버튼 클릭 후 자동 호출, 세션에 저장할 값 반환
+    @Transactional
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
+        System.out.println(" - Oauth 로그인 시도");
+        System.out.println(" - Oauth 로그인 시도");
+        System.out.println(" - Oauth 로그인 시도");
+        System.out.println(" - Oauth 로그인 시도");
+        System.out.println(" - Oauth 로그인 시도");
+        System.out.println(" - Oauth 로그인 시도");
+
         OAuth2User oAuth2User = super.loadUser(userRequest);
 
         String name = oAuth2User.getAttribute("name");
@@ -46,6 +66,10 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                         .build());
 
         userRepository.save(user);
+
+        // 소켓 연결
+        stompClient = new WebSocketStompClient(new SockJsClient(List.of(new WebSocketTransport(new StandardWebSocketClient()))));
+        stompClient.connect(connect_url, stompHandler);
 
         if (user.getImage() == null) {
             String imageUrl = oAuth2User.getAttribute("picture");
@@ -69,6 +93,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             }
 
         }
+
+        System.out.println(name + " - Oauth 로그인 완료");
 
         return new PrincipalUserDetails(user, oAuth2User);
     }

@@ -1,5 +1,6 @@
 package com.example.danguen;
 
+import com.example.danguen.config.oauth.CustomOAuth2UserService;
 import com.example.danguen.config.oauth.PrincipalUserDetails;
 import com.example.danguen.domain.Address;
 import com.example.danguen.domain.model.image.dto.ImageDto;
@@ -23,6 +24,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -49,6 +51,8 @@ public class BaseTest {
     @Autowired
     WebApplicationContext ctx;
     @Autowired
+    CustomOAuth2UserService userService;
+    @Autowired
     UserRepository userRepository;
     @Autowired
     ArticleRepository articleRepository;
@@ -61,33 +65,40 @@ public class BaseTest {
     @Autowired
     ObjectMapper mapper;
 
-    String sessionName = "박이름";
-    String sessionEmail = "email@temp.com";
 
     @BeforeEach
-    public void 임의유저_생성_및_세션등록() {
-        User user = makeUserProc(sessionName, sessionEmail);
-
-        PrincipalUserDetails userDetails = new PrincipalUserDetails(user);
-        SecurityContext context = SecurityContextHolder.getContext();
-        context.setAuthentication(new UsernamePasswordAuthenticationToken(userDetails, userDetails.getPassword(), userDetails.getAuthorities()));
-
+    public void init() {
         mockMvc = MockMvcBuilders
                 .webAppContextSetup(ctx)
                 .addFilters(new CharacterEncodingFilter("UTF-8", true))  // 필터 추가
                 .alwaysDo(print())
                 .build();
 
-        System.out.println("유저_생성");
+        //registerUserToSession();
     }
 
     @AfterEach
-    public void 초기화() {
+    public void clear() {
         commentRepository.deleteAll();
         userImageRepository.deleteAll();
         articleImageRepository.deleteAll();
         articleRepository.deleteAll();
         userRepository.deleteAll();
+    }
+
+    String sessionName = "박이름";
+    String sessionEmail = "email@temp.com";
+
+    public void registerUserToSession(){
+        User user = makeUserProc(sessionName, sessionEmail);
+
+        PrincipalUserDetails userDetails = new PrincipalUserDetails(user);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new UsernamePasswordAuthenticationToken(userDetails, userDetails.getPassword(), userDetails.getAuthorities()));
+
+        OAuth2UserRequest request = new OAuth2UserRequest();
+
+        userService.loadUser()
     }
 
     String city = "서울시";

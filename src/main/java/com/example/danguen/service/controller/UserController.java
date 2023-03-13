@@ -19,6 +19,9 @@ public class UserController {
 
     private final UserService userService;
 
+    @GetMapping("/login")
+    public void login(){}
+
     @GetMapping("/user/{userId}")
     public ResponseUserPageDto getInfo(@PathVariable Long userId) {
         return userService.getUserPage(userId);

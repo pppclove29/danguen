@@ -2,23 +2,40 @@ package com.example.danguen;
 
 import com.example.danguen.config.exception.UserNotFoundException;
 import com.example.danguen.domain.Address;
+import com.example.danguen.domain.model.user.Role;
+import com.example.danguen.domain.model.user.User;
 import com.example.danguen.domain.model.user.dto.request.RequestUserUpdateDto;
 import com.example.danguen.domain.model.user.dto.request.review.RequestBuyerReviewDto;
 import com.example.danguen.domain.model.user.dto.request.review.RequestSellerReviewDto;
-import com.example.danguen.domain.model.user.Role;
-import com.example.danguen.domain.model.user.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MvcResult;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oauth2Login;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 public class UserApiTest extends BaseTest {
+
+    @Test
+    public void Oauth_로그인() throws Exception {
+        mockMvc.perform(get("/login").with(oauth2Login()
+                        // 1
+                        .authorities(new SimpleGrantedAuthority("ROLE_USER"))
+                        // 2
+                        .attributes(attributes -> {
+                            attributes.put("name", "name");
+                            attributes.put("email", "my@email");
+                            attributes.put("picture", "https://my_picture");
+                        })
+                ))
+                .andExpect(status().isOk());
+    }
 
     @WithMockUser
     @Test
