@@ -8,6 +8,7 @@ import com.example.danguen.domain.model.user.dto.request.review.RequestSellerRev
 import com.example.danguen.domain.model.user.dto.response.ResponseUserPageDto;
 import com.example.danguen.domain.model.user.dto.response.ResponseUserSimpleDto;
 import com.example.danguen.service.service.UserService;
+import com.example.danguen.service.service.UserServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,9 +29,9 @@ public class UserController {
     }
 
     @PutMapping("/user/{userId}")
-    public ResponseUserPageDto update(@RequestBody RequestUserUpdateDto request,
+    public void update(@RequestBody RequestUserUpdateDto request,
                                       @PathVariable Long userId) {
-        return userService.update(request, userId);
+        userService.update(request, userId);
     }
 
     @DeleteMapping("/user/{userId}")
@@ -38,16 +39,16 @@ public class UserController {
         userService.delete(userId);
     }
 
-    @PostMapping("/user/{userId}/review-seller")
+    @PostMapping("/user/{sellerId}/review-seller")
     public void reviewSeller(@RequestBody RequestSellerReviewDto request,
-                             @PathVariable Long userId) {
-        userService.reviewSeller(request, userId);
+                             @PathVariable Long sellerId) {
+        userService.reviewSeller(request, sellerId);
     }
 
-    @PostMapping("/user/{userId}/review-buyer")
+    @PostMapping("/user/{buyerId}/review-buyer")
     public void reviewBuyer(@RequestBody RequestBuyerReviewDto request,
-                            @PathVariable Long userId) {
-        userService.reviewBuyer(request, userId);
+                            @PathVariable Long buyerId) {
+        userService.reviewBuyer(request, buyerId);
     }
 
     @GetMapping("/user/iuser")

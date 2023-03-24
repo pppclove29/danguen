@@ -44,9 +44,9 @@ public class Comment extends BaseTimeEntity {
     }
 
     public void likesComment(User user) {
-//        if (likedUser.contains(user))
-//            likedUser.remove(user);
-//        else
-//            likedUser.add(user);
+        if (likedUser.contains(user))
+            likedUser.remove(user);
+        else
+            likedUser.add(user);
     }
 }

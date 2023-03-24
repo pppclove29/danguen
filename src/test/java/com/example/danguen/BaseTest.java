@@ -74,7 +74,7 @@ public class BaseTest {
                 .alwaysDo(print())
                 .build();
 
-        //registerUserToSession();
+        registerUserToSession();
     }
 
     @AfterEach
@@ -95,10 +95,6 @@ public class BaseTest {
         PrincipalUserDetails userDetails = new PrincipalUserDetails(user);
         SecurityContext context = SecurityContextHolder.getContext();
         context.setAuthentication(new UsernamePasswordAuthenticationToken(userDetails, userDetails.getPassword(), userDetails.getAuthorities()));
-
-        OAuth2UserRequest request = new OAuth2UserRequest();
-
-        userService.loadUser()
     }
 
     String city = "서울시";

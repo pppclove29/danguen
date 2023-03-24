@@ -1,100 +1,81 @@
 package com.example.danguen.service.service;
 
-import com.example.danguen.config.exception.UserNotFoundException;
-import com.example.danguen.config.oauth.PrincipalUserDetails;
-import com.example.danguen.domain.model.user.User;
 import com.example.danguen.domain.model.user.dto.request.RequestUserUpdateDto;
 import com.example.danguen.domain.model.user.dto.request.review.RequestBuyerReviewDto;
 import com.example.danguen.domain.model.user.dto.request.review.RequestSellerReviewDto;
 import com.example.danguen.domain.model.user.dto.response.ResponseUserPageDto;
 import com.example.danguen.domain.model.user.dto.response.ResponseUserSimpleDto;
-import com.example.danguen.domain.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
-@RequiredArgsConstructor
-@Service
-public class UserService {
-    private final UserRepository userRepository;
+public interface UserService {
 
-    @Transactional(readOnly = true)
-    public ResponseUserPageDto getUserPage(Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
+    /**
+     * 특정 유저의 상세 정보를 표시
+     *
+     * @param userId 특정 유저의 ID
+     * @return 특정 유저의 상세 정보
+     */
+    ResponseUserPageDto getUserPage(Long userId);
 
-        return new ResponseUserPageDto(user);
-    }
+    /**
+     * Email 을 통해 특정 유저의 ID를 반환
+     *
+     * @param email ID를 알고 싶은 유저의 Email
+     * @return 해당 유저의 ID
+     */
+    Long getUserIdByEmail(String email);
 
-    @Transactional(readOnly = true)
-    public Long getUserIdByEmail(String email) {
-        Long id = userRepository.findByEmail(email).orElseThrow(UserNotFoundException::new).getId();
+    /**
+     * 유저 업데이트 정보를 받아 기존 유저의 정보를 수정
+     *
+     * @param request 유저 수정 정보
+     * @param userId  수정할 유저 ID
+     */
+    void update(RequestUserUpdateDto request, Long userId);
 
-        return id;
-    }
+    /**
+     * ID를 통해 특정 유저 삭제
+     *
+     * @param userId 삭제할 유저 ID
+     */
+    void delete(Long userId);
 
-    @Transactional
-    public ResponseUserPageDto update(RequestUserUpdateDto request, Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
+    /**
+     * 구매자의 판매자 평가, 평가표와 평가할 판매자 ID를 통해 평가를 진행
+     *
+     * @param request 평가표
+     * @param sellerId 판매자 ID
+     */
+    void reviewSeller(RequestSellerReviewDto request, Long sellerId);
 
-        user.updateUser(request);
+    /**
+     * 판매자의 구매자 평가, 평가표와 평가할 구매자 ID를 통해 평가를 진행
+     *
+     * @param request 평가표
+     * @param buyerId 구매자 ID
+     */
+    void reviewBuyer(RequestBuyerReviewDto request, Long buyerId);
 
-        return new ResponseUserPageDto(user);
-    }
+    /**
+     * 특정 유저의 관심유저 목록을 반환
+     * 
+     * @param userId 조회할 유저의 ID
+     * @return 조회한 유저의 관심유저 목록
+     */
+    List<ResponseUserSimpleDto> getIUsers(Long userId);
 
-    @Transactional
-    public void delete(Long userId) {
-        User user = userRepository.getReferenceById(userId);
+    /**
+     * 특정 유저를 관심유저로 추가한다
+     *
+     * @param iUserId 관심유저로 추가할 유저의 ID
+     */
+    void addInterestUser(Long iUserId);
 
-        user.giveUpComments(); // 작성한 모든 댓글에 대한 소유권을 포기한다
-
-        userRepository.deleteById(userId);
-    }
-
-    @Transactional
-    public void reviewSeller(RequestSellerReviewDto request, Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
-
-        user.reviewSeller(request);
-    }
-
-    @Transactional
-    public void reviewBuyer(RequestBuyerReviewDto request, Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
-
-        user.reviewBuyer(request);
-    }
-
-    @Transactional(readOnly = true)
-    public List<ResponseUserSimpleDto> getIUsers(Long userId) {
-        User user = userRepository.findById(userId).get();
-
-        return user.getInterestUser().stream().map(ResponseUserSimpleDto::toDto).collect(Collectors.toList());
-    }
-
-    // iuserId와 userId의 혼동을 방지하기 위해 session id 값을 서비스에서 받아온다
-    @Transactional
-    public void addInterestUser(Long iUserId) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        User user = userRepository.findByEmail(((PrincipalUserDetails) principal).getUserEmail()).orElseThrow(UserNotFoundException::new);
-
-        User iUser = userRepository.findById(iUserId).orElseThrow(UserNotFoundException::new);
-
-        if(!user.getInterestUser().contains(iUser))
-            user.addInterestUser(iUser);
-    }
-
-    @Transactional
-    public void deleteInterestUser(Long iUserId) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        User user = userRepository.findByEmail(((PrincipalUserDetails) principal).getUserEmail()).orElseThrow(UserNotFoundException::new);
-
-        User iUser = userRepository.findById(iUserId).orElseThrow(UserNotFoundException::new);
-
-        if(user.getInterestUser().contains(iUser))
-            user.deleteInterestUser(iUser);
-    }
+    /**
+     * 특정 유저를 관심유저에서 제거한다
+     *
+     * @param iUserId 관심유저에서 제거할 유저의 ID
+     */
+    void deleteInterestUser(Long iUserId);
 }

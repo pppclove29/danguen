@@ -1,95 +1,54 @@
 package com.example.danguen.service.service;
 
 import com.example.danguen.config.exception.AlreadyDeletedCommentException;
-import com.example.danguen.config.exception.ArticleNotFoundException;
-import com.example.danguen.config.exception.CommentNotFoundException;
-import com.example.danguen.domain.model.comment.ArticleComment;
-import com.example.danguen.domain.model.comment.Comment;
 import com.example.danguen.domain.model.comment.dto.request.RequestCommentSaveDto;
 import com.example.danguen.domain.model.comment.dto.response.ResponseCommentDto;
-import com.example.danguen.domain.model.post.article.Article;
-import com.example.danguen.domain.model.post.article.Post;
-import com.example.danguen.domain.model.user.User;
-import com.example.danguen.domain.repository.ArticleRepository;
-import com.example.danguen.domain.repository.UserRepository;
-import com.example.danguen.domain.repository.comment.ArticleCommentRepository;
-import com.example.danguen.domain.repository.comment.CommentRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
-@RequiredArgsConstructor
-@Service
-public class CommentService {
+public interface CommentService {
 
-    private final UserRepository userRepository;
-    private final ArticleRepository articleRepository;
-    private final CommentRepository commentRepository;
-    private final ArticleCommentRepository articleCommentRepository;
+    /**
+     * 댓글 정보, 댓글을 달 게시물과 댓글을 달 유저의 정보를 받아와 새로운 댓글을 등록
+     *
+     * @param request 댓글 정보
+     * @param postName 댓글을 달 게시글 유형(ex. "article")
+     * @param postId 게시글 ID
+     * @param userId 댓글 작성 유저 ID
+     */
+    void save(RequestCommentSaveDto request, String postName, Long postId, Long userId);
 
+    /**
+     * 특정 게시글에 등록된 모든 댓글을 표시
+     *
+     * @param postName 게시글 유형(ex. "article")
+     * @param postId 게시글 ID
+     * @return 특정 게시물에 등록된 댓글 리스트
+     */
+    List<ResponseCommentDto> getComments(String postName, Long postId);
 
-    @Transactional
-    public void save(RequestCommentSaveDto request, String postName, Long postId, Long userId) {
-        User user = userRepository.getReferenceById(userId);
-        Post post;
+    /**
+     * 댓글 업데이트 정보를 받아 기존 댓글의 정보를 수정
+     *
+     * @param request 댓글 수정 정보
+     * @param commentId 수정할 댓글 ID
+     * @throws AlreadyDeletedCommentException 수정시도 중 댓글 삭제 에러처리
+     */
+    void update(RequestCommentSaveDto request, Long commentId) throws AlreadyDeletedCommentException;
 
-        // 보기 별로 좋지 않다
-        switch (postName) {
-            case "article":
-                post = articleRepository.findById(postId).orElseThrow(ArticleNotFoundException::new);
-                ArticleComment aComment = request.toArticleComment(user, (Article) post);
-                articleCommentRepository.save(aComment);
-                break;
-            default:
-                throw new RuntimeException("알 수 없는 게시물 유형입니다.");
-        }
+    /**
+     * ID에 맞는 댓글 삭제
+     *
+     * @param commentId 삭제할 댓글 ID
+     */
+    void delete(Long commentId);
 
-    }
-
-    @Transactional(readOnly = true)
-    public List<ResponseCommentDto> getComments(String postName, Long postId) {
-        List<ResponseCommentDto> list;
-
-        switch (postName) {
-            case "article":
-                List<ArticleComment> aCommentList = articleCommentRepository.findAllByArticle_Id(postId);
-                list = aCommentList.stream().map(ArticleComment::toDto).collect(Collectors.toList());
-                break;
-            default:
-                throw new RuntimeException("알 수 없는 게시물 유형입니다.");
-        }
-        return list;
-    }
-
-    @Transactional
-    public void update(RequestCommentSaveDto request, Long commentId) throws AlreadyDeletedCommentException {
-        Comment comment = commentRepository.findById(commentId).orElseThrow(CommentNotFoundException::new);
-
-        if (comment.isDeleted()) // 삭제된 댓글에 대해서는 수정을 막는다
-            throw new AlreadyDeletedCommentException();
-
-        comment.updateComment(request.getContent());
-    }
-
-    @Transactional
-    public void delete(Long commentId) {
-        Comment comment = commentRepository.findById(commentId).orElseThrow(CommentNotFoundException::new);
-        comment.getWriter().removeComment(comment);
-
-        comment.updateComment("삭제된 메세지입니다.");
-        comment.delete();
-    }
-
-    @Transactional
-    public int like(Long commentId, Long userId) {
-        User user = userRepository.getReferenceById(userId);
-        Comment comment = commentRepository.findById(commentId).orElseThrow(CommentNotFoundException::new);
-
-        comment.likesComment(user);
-
-        return 1;//comment.getLikedUser().size();
-    }
+    /**
+     * 댓글 좋아요 기능
+     *
+     * @param commentId 좋아요할 댓글 ID
+     * @param userId 좋아요한 유저 ID
+     * @return
+     */
+    int like(Long commentId, Long userId);
 }

@@ -4,13 +4,11 @@ import com.example.danguen.argumentResolver.SessionUserId;
 import com.example.danguen.config.exception.ArticleNotFoundException;
 import com.example.danguen.domain.Address;
 import com.example.danguen.domain.model.post.article.dto.request.RequestArticleSaveOrUpdateDto;
-import com.example.danguen.domain.model.post.article.dto.response.ResponseArticleDto;
 import com.example.danguen.domain.model.post.article.dto.response.ResponseArticleSimpleDto;
 import com.example.danguen.service.service.ArticleService;
 import com.example.danguen.service.service.CommentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.IOUtils;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
@@ -19,9 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 
 @Slf4j
@@ -54,7 +50,7 @@ public class ArticleController {
     public ModelAndView getArticle(@PathVariable Long articleId) {
         ModelAndView mav = new ModelAndView("articlePage");
         mav.addObject("article", articleService.getArticle(articleId));
-        mav.addObject("comments",commentService.getComments("article", articleId));
+        mav.addObject("comments", commentService.getComments("article", articleId));
 
         return mav;
     }
@@ -62,7 +58,8 @@ public class ArticleController {
     @GetMapping("/address/**")
     public ModelAndView getArticlePage(@PageableDefault(size = 6) Pageable pageable,
                                        HttpServletRequest servletRequest) {
-        List<ResponseArticleSimpleDto> articles = articleService.getArticlePage(pageable,
+        List<ResponseArticleSimpleDto> articles = articleService.getArticleByAddressPage(
+                pageable,
                 new Address(
                         (String) servletRequest.getAttribute("city"),
                         (String) servletRequest.getAttribute("street"),

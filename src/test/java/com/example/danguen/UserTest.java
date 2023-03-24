@@ -1,6 +1,7 @@
 package com.example.danguen;
 
 import com.example.danguen.config.exception.UserNotFoundException;
+import com.example.danguen.config.oauth.CustomOAuth2UserService;
 import com.example.danguen.domain.Address;
 import com.example.danguen.domain.model.user.Role;
 import com.example.danguen.domain.model.user.User;
@@ -9,6 +10,8 @@ import com.example.danguen.domain.model.user.dto.request.review.RequestBuyerRevi
 import com.example.danguen.domain.model.user.dto.request.review.RequestSellerReviewDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -20,10 +23,17 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-public class UserApiTest extends BaseTest {
+public class UserTest extends BaseTest {
+
+    @MockBean
+    CustomOAuth2UserService oAuth2UserService;
 
     @Test
     public void Oauth_로그인() throws Exception {
+        //given
+        //Mockito.when(oAuth2UserService.loadUser(user));
+
+        //when
         mockMvc.perform(get("/login").with(oauth2Login()
                         // 1
                         .authorities(new SimpleGrantedAuthority("ROLE_USER"))
@@ -35,6 +45,8 @@ public class UserApiTest extends BaseTest {
                         })
                 ))
                 .andExpect(status().isOk());
+        //then
+
     }
 
     @WithMockUser
@@ -86,13 +98,8 @@ public class UserApiTest extends BaseTest {
 
         //where & then
         mockMvc.perform(put("/user/" + userId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(new ObjectMapper().writeValueAsString(dto)))
-                .andExpect(jsonPath("$.name").value("김개똥"))
-                .andExpect(jsonPath("$.address.city").value("부산광역시"))
-                .andExpect(jsonPath("$.address.street").value("화지로"))
-                .andExpect(jsonPath("$.address.zipcode").value("52"))
-                .andExpect(jsonPath("$.rate.dealTemperature").value(36.5));
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(new ObjectMapper().writeValueAsString(dto)));
 
         //then
         User user = userRepository.getReferenceById(userId);

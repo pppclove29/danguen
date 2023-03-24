@@ -1,8 +1,7 @@
 package com.example.danguen.argumentResolver;
 
-import com.example.danguen.config.exception.UserNotFoundException;
 import com.example.danguen.config.oauth.PrincipalUserDetails;
-import com.example.danguen.service.service.UserService;
+import com.example.danguen.service.service.UserServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.MethodParameter;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -15,7 +14,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 @RequiredArgsConstructor
 @Component
 public class SessionUserIdArgumentResolver implements HandlerMethodArgumentResolver {
-    private final UserService userService;
+    private final UserServiceImpl userServiceImpl;
 
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
@@ -27,6 +26,6 @@ public class SessionUserIdArgumentResolver implements HandlerMethodArgumentResol
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         PrincipalUserDetails user = (PrincipalUserDetails) principal;
 
-        return userService.getUserIdByEmail(user.getUserEmail());
+        return userServiceImpl.getUserIdByEmail(user.getUserEmail());
     }
 }

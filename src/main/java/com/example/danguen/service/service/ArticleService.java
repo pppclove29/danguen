@@ -1,127 +1,81 @@
 package com.example.danguen.service.service;
 
-import com.example.danguen.config.exception.ArticleNotFoundException;
-import com.example.danguen.config.exception.UserNotFoundException;
 import com.example.danguen.domain.Address;
-import com.example.danguen.domain.model.comment.Comment;
-import com.example.danguen.domain.model.image.ArticleImage;
-import com.example.danguen.domain.model.post.article.Article;
 import com.example.danguen.domain.model.post.article.dto.request.RequestArticleSaveOrUpdateDto;
 import com.example.danguen.domain.model.post.article.dto.response.ResponseArticleDto;
 import com.example.danguen.domain.model.post.article.dto.response.ResponseArticleSimpleDto;
-import com.example.danguen.domain.model.user.User;
-import com.example.danguen.domain.repository.ArticleRepository;
-import com.example.danguen.domain.repository.UserRepository;
-import com.example.danguen.domain.repository.image.ArticleImageRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.stream.Collectors;
 
-@Slf4j
-@RequiredArgsConstructor
-@Service
-public class ArticleService {
-    @Value("${file.article.image.path}")
-    private String savePath;
+public interface ArticleService {
+    /**
+     * 조회할 게시글 번호를 통해 특정 게시글을 조회
+     *
+     * @param articleId 조회할 게시글 번호
+     * @return 조회된 게시글 정보
+     */
+    ResponseArticleDto getArticle(Long articleId);
 
-    private final UserRepository userRepository;
-    private final ArticleRepository articleRepository;
-    private final ArticleImageRepository articleImageRepository;
+    /**
+     * 주소 정보에 따라 게시글 목록을 페이지로 표시
+     *
+     * @param pageable 사용자에게 표시할 페이지 정보
+     * @param address  조회에 필요한 주소 정보
+     * @return 주소 정보와 일치하는 게시글 목록
+     */
+    List<ResponseArticleSimpleDto> getArticleByAddressPage(Pageable pageable, Address address);
 
+    /**
+     * 게시글의 인기정도에 따라 게시글 목록을 페이지로 분류하여 표시
+     *
+     * @param pageable 사용자에게 표시할 페이지 정보
+     * @return 상위 인기 게시글 목록
+     */
+    List<ResponseArticleSimpleDto> getHotArticlePage(Pageable pageable);
 
-    @Transactional(readOnly = true)
-    public ResponseArticleDto getArticle(Long articleId) {
-        Article article = articleRepository.findById(articleId).orElseThrow(ArticleNotFoundException::new);
-        article.addViewCount();
+    /**
+     * 검색 키워드에 따라 제목이나 내용이 키워드를 포함하는 게시글 목록을 페이지로 분류하여 표시
+     *
+     * @param pageable 사용자에게 표시할 페이지 정보
+     * @param title    검색 키워드
+     * @return 검색 결과 게시글 목록
+     */
+    List<ResponseArticleSimpleDto> getSearchArticlePage(Pageable pageable, String title);
 
-        return ResponseArticleDto.toResponse(article);
-    }
+    /**
+     * 특정 사용자가 관심가진 유저들이 등록한 게시글을 페이지로 분류하여 표시
+     *
+     * @param pageable 사용자에게 표시할 페이지 정보
+     * @param userId   특정 사용자
+     * @return 관심 유저들이 등록한 게시글 목록
+     */
+    List<ResponseArticleSimpleDto> getInterestPage(Pageable pageable, Long userId);
 
-    @Transactional(readOnly = true)
-    public List<ResponseArticleSimpleDto> getArticlePage(Pageable pageable, Address address) {
-        Page<Article> page = articleRepository.findAllByAddress(pageable, address.getCity(), address.getStreet(), address.getZipcode());
+    /**
+     * 게시글의 정보를 받아 새로운 게시글을 등록
+     *
+     * @param request 게시글의 텍스트 정보를 가진 DTO
+     * @param userId  게시글을 등록한 유저의 ID
+     * @param images  게시글의 이미지 리스트
+     * @throws IOException 이미지의 transferTo 메소드 에러처리
+     */
+    void save(RequestArticleSaveOrUpdateDto request, Long userId, List<MultipartFile> images) throws IOException;
 
-        return page.stream().map(ResponseArticleSimpleDto::toResponse).collect(Collectors.toList());
-    }
+    /**
+     * 게시글 업데이트 정보를 받아 기존 게시글의 정보를 수정
+     *
+     * @param request   게시글 수정 정보를 가진 DTO
+     * @param articleId 수정할 게시글 ID
+     */
+    void update(RequestArticleSaveOrUpdateDto request, Long articleId);
 
-    @Transactional(readOnly = true)
-    public List<ResponseArticleSimpleDto> getHotArticlePage(Pageable pageable) {
-        Page<Article> page = articleRepository.findByHot(pageable);
-
-        return page.stream().map(ResponseArticleSimpleDto::toResponse).collect(Collectors.toList());
-    }
-
-    @Transactional(readOnly = true)
-    public List<ResponseArticleSimpleDto> getSearchArticlePage(Pageable pageable, String title) {
-        Page<Article> page = articleRepository.findByTitleContainingOrderByIdDesc(pageable, title);
-
-        return page.stream().map(ResponseArticleSimpleDto::toResponse).collect(Collectors.toList());
-    }
-
-    @Transactional(readOnly = true)
-    public List<ResponseArticleSimpleDto> getInterestPage(Pageable pageable, Long userId) {
-        List<User> interestUser = userRepository.findById(userId).orElseThrow(UserNotFoundException::new).getInterestUser();
-
-        Page<Article> page = articleRepository.findByInterestUser(pageable, interestUser);
-
-        return page.stream().map(ResponseArticleSimpleDto::toResponse).collect(Collectors.toList());
-    }
-
-    @Transactional
-    public void save(RequestArticleSaveOrUpdateDto request, Long userId, List<MultipartFile> images) throws IOException {
-        Article article = request.toEntity();
-
-        User user = userRepository.getReferenceById(userId);
-        user.addSellArticle(article);
-
-        articleRepository.save(article);
-
-        File file = new File(savePath + article.getId());
-        file.mkdirs();
-
-        int imageIdx = 1;
-        for (MultipartFile image : images) {
-            String imageName = image.getOriginalFilename();
-
-            ArticleImage articleImage = ArticleImage.builder()
-                    .name(imageName)
-                    .url(savePath + article.getId() + "/" + imageIdx++ + ".jpg")
-                    .article(article)
-                    .build();
-
-            //로컬에 이미지 저장
-            image.transferTo(new File(articleImage.getUrl()));
-
-            articleImageRepository.save(articleImage);
-        }
-    }
-
-    @Transactional
-    public void update(RequestArticleSaveOrUpdateDto request, Long articleId) {
-        Article article = articleRepository.findById(articleId).orElseThrow(ArticleNotFoundException::new);
-
-        article.updateArticle(request);
-    }
-
-    @Transactional
-    public void delete(Long articleId) {
-        Article article = articleRepository.findById(articleId).orElseThrow(ArticleNotFoundException::new);
-        User user = article.getSeller();
-
-        user.removeSellArticle(article);
-        for (Comment comment : article.getComments())
-            comment.getWriter().removeComment(comment);
-
-        articleRepository.deleteById(articleId);
-    }
+    /**
+     * ID에 맞는 게시글을 삭제
+     *
+     * @param articleId 삭제할 게시글 ID
+     */
+    void delete(Long articleId);
 }
