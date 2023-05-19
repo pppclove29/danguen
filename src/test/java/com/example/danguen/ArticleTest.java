@@ -91,7 +91,7 @@ public class ArticleTest extends BaseTest {
                 "image/png",
                 new FileInputStream("src/test/java/testImage/input.png"));
 
-
+w
         //when
         mockMvc.perform(multipart("/article")
                         .file(image1)
