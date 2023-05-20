@@ -1,17 +1,15 @@
 package com.example.danguen.config;
 
 import com.example.danguen.argumentResolver.SessionUserIdArgumentResolver;
-import com.example.danguen.interceptor.AddressCheckInterceptor;
+import com.example.danguen.interceptor.AddressExtractInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
-import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.springframework.web.socket.server.standard.ServerEndpointExporter;
 
 import java.util.List;
 
@@ -29,7 +27,7 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(new AddressCheckInterceptor())
+        registry.addInterceptor(new AddressExtractInterceptor())
                 .addPathPatterns("/address/**");
     }
 
@@ -37,5 +35,13 @@ public class WebConfig implements WebMvcConfigurer {
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/src/main/resources/articleImage/**")
                 .addResourceLocations(articlePath);
+    }
+
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**")
+                .allowedOrigins("http://frontend")
+                .allowCredentials(true)
+                .maxAge(3600);
     }
 }

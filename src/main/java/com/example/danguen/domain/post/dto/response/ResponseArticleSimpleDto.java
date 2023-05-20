@@ -1,0 +1,31 @@
+package com.example.danguen.domain.post.dto.response;
+
+import com.example.danguen.domain.base.Address;
+import com.example.danguen.domain.post.entity.Article;
+import lombok.Data;
+
+@Data
+public class ResponseArticleSimpleDto {
+    private Long id;
+    private String title;
+    private String imageUrl;
+
+    private int price;
+    private int views;
+    private int likes;
+
+    private Address dealHopeAddress; // 거래 희망 장소
+
+    public static ResponseArticleSimpleDto toResponse(Article article) {
+        ResponseArticleSimpleDto dto = new ResponseArticleSimpleDto();
+
+        dto.setId(article.getId());
+        dto.setTitle(article.getTitle());
+        dto.setPrice(article.getPrice());
+        dto.setViews(article.getViews());
+        dto.setDealHopeAddress(article.getDealHopeAddress());
+        dto.setImageUrl(article.getImages().get(0).getUrl());
+
+        return dto;
+    }
+}

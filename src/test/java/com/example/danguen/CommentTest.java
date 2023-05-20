@@ -1,10 +1,10 @@
 package com.example.danguen;
 
-import com.example.danguen.config.exception.AlreadyDeletedCommentException;
-import com.example.danguen.domain.model.comment.ArticleComment;
-import com.example.danguen.domain.model.comment.Comment;
-import com.example.danguen.domain.model.comment.dto.request.RequestCommentSaveDto;
-import com.example.danguen.domain.model.user.User;
+import com.example.danguen.domain.comment.entity.AlreadyDeletedCommentException;
+import com.example.danguen.domain.comment.entity.ArticleComment;
+import com.example.danguen.domain.comment.entity.Comment;
+import com.example.danguen.domain.comment.dto.request.RequestCommentSaveDto;
+import com.example.danguen.domain.user.entity.User;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MvcResult;

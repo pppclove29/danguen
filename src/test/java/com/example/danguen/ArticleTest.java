@@ -1,15 +1,16 @@
 package com.example.danguen;
 
 
-import com.example.danguen.config.exception.ArticleNotFoundException;
-import com.example.danguen.domain.Address;
-import com.example.danguen.domain.model.image.Image;
-import com.example.danguen.domain.model.post.article.Article;
-import com.example.danguen.domain.model.post.article.dto.request.RequestArticleSaveOrUpdateDto;
-import com.example.danguen.domain.model.post.article.dto.response.ResponseArticleDto;
-import com.example.danguen.domain.model.post.article.dto.response.ResponseArticleSimpleDto;
-import com.example.danguen.domain.model.user.User;
+import com.example.danguen.domain.image.exception.ArticleNotFoundException;
+import com.example.danguen.domain.base.Address;
+import com.example.danguen.domain.image.entity.Image;
+import com.example.danguen.domain.post.entity.Article;
+import com.example.danguen.domain.post.dto.request.RequestArticleSaveOrUpdateDto;
+import com.example.danguen.domain.post.dto.response.ResponseArticleDto;
+import com.example.danguen.domain.post.dto.response.ResponseArticleSimpleDto;
+import com.example.danguen.domain.user.entity.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
@@ -29,6 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 public class ArticleTest extends BaseTest {
 
+    @DisplayName("정상적인 물품 등록하기")
     @WithMockUser
     @Test
     public void 정상적인_물품_등록하기() throws Exception {
@@ -91,7 +93,6 @@ public class ArticleTest extends BaseTest {
                 "image/png",
                 new FileInputStream("src/test/java/testImage/input.png"));
 
-w
         //when
         mockMvc.perform(multipart("/article")
                         .file(image1)

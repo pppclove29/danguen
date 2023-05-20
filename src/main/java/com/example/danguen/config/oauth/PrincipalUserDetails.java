@@ -1,6 +1,6 @@
 package com.example.danguen.config.oauth;
 
-import com.example.danguen.domain.model.user.User;
+import com.example.danguen.domain.user.entity.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -11,16 +11,10 @@ import java.util.Map;
 
 public class PrincipalUserDetails implements UserDetails, OAuth2User {
 
-    private User user;
-    private OAuth2User oAuth2User;
+    private final User user;
 
     public PrincipalUserDetails(User user) {
         this.user = user;
-    }
-
-    public PrincipalUserDetails(User user, OAuth2User oAuth2User) {
-        this.user = user;
-        this.oAuth2User = oAuth2User;
     }
 
     @Override
@@ -46,8 +40,8 @@ public class PrincipalUserDetails implements UserDetails, OAuth2User {
         return user.getName();
     }
 
-    public String getUserEmail() {
-        return user.getEmail();
+    public Long getUserId() {
+        return user.getId();
     }
 
     @Override
