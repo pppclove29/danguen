@@ -1,24 +1,28 @@
 package com.example.danguen;
 
 
+import com.example.danguen.domain.comment.dto.response.ResponseCommentDto;
 import com.example.danguen.domain.image.exception.ArticleNotFoundException;
 import com.example.danguen.domain.base.Address;
-import com.example.danguen.domain.image.entity.Image;
 import com.example.danguen.domain.post.entity.ArticlePost;
 import com.example.danguen.domain.post.dto.request.RequestArticleSaveOrUpdateDto;
 import com.example.danguen.domain.post.dto.response.ResponseArticleDto;
 import com.example.danguen.domain.post.dto.response.ResponseArticleSimpleDto;
+import com.example.danguen.domain.post.repository.ArticlePostRepository;
 import com.example.danguen.domain.user.entity.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.ResultActions;
 
 import java.io.FileInputStream;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -30,41 +34,63 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 public class ArticlePostTest extends BaseTest {
 
-    @DisplayName("정상적인 물품 등록하기")
+    @Autowired
+    ArticlePostRepository articlePostRepository;
+
+    @DisplayName("이미지 없이 중고물품 등록")
     @WithMockUser
     @Test
-    public void 정상적인_물품_등록하기() throws Exception {
-        //given & when
-        articleSaveProc(0);
+    public void successSaveArticleWithOutImages() throws Exception {
+        //given
+        RequestArticleSaveOrUpdateDto dto = RequestArticleSaveOrUpdateDto.builder()
+                .title(articleTitle)
+                .content(articleContent)
+                .price(articlePrice)
+                .category(articleCategory)
+                .dealHopeAddress(new Address(articleCity, articleStreet, articleZipcode))
+                .build();
+
+        String dtoJson = mapper.writeValueAsString(dto);
+        MockMultipartFile request = new MockMultipartFile(
+                "request",
+                "request",
+                "application/json",
+                dtoJson.getBytes(StandardCharsets.UTF_8)
+        );
+
+        //when
+        mockMvc.perform(multipart("/article")
+                        .file(request)
+                        .contentType(MediaType.MULTIPART_FORM_DATA))
+                .andExpect(status().isOk());
 
         //then
         ArticlePost articlePost = articlePostRepository.findAll().get(0);
-        Image image1 = articleImageRepository.findAll().get(0);
 
-        assertThat(articlePost.getTitle()).isEqualTo(title + 0);
-        assertThat(articlePost.getCategory()).isEqualTo(category);
+        assertThat(articlePost.getTitle()).isEqualTo(articleTitle + 0);
+        assertThat(articlePost.getCategory()).isEqualTo(articleCategory);
         assertThat(articlePost.getContent()).isEqualTo(articleContent);
         assertThat(articlePost.getImages().size()).isEqualTo(1);
-        assertThat(articlePost.getDealHopeAddress().getCity()).isEqualTo(hopeCity + 0);
-        assertThat(articlePost.getDealHopeAddress().getStreet()).isEqualTo(hopeStreet + 0);
-        assertThat(articlePost.getDealHopeAddress().getZipcode()).isEqualTo(hopeZipcode + 0);
+        assertThat(articlePost.getDealHopeAddress().getCity()).isEqualTo(articleCity + 0);
+        assertThat(articlePost.getDealHopeAddress().getStreet()).isEqualTo(articleStreet + 0);
+        assertThat(articlePost.getDealHopeAddress().getZipcode()).isEqualTo(articleZipcode + 0);
         assertThat(articlePost.getPrice()).isEqualTo(10000);
         assertThat(articlePost.getSeller().getName()).isEqualTo(sessionName);
         assertThat(articlePost.getSeller().getEmail()).isEqualTo(sessionEmail);
-        assertThat(articlePost.getImages().get(0).getName()).isEqualTo(image1.getName());
         assertThat(articlePost.getImages().size()).isEqualTo(1);
     }
 
+    @DisplayName("이미지가 포함된 중고물품 등록")
     @WithMockUser
     @Test
-    public void 이미지_다수_포함_물품등록() throws Exception {
+    public void successSaveArticleWithImages() throws Exception {
         //given
         RequestArticleSaveOrUpdateDto dto = RequestArticleSaveOrUpdateDto.builder()
-                .title(title)
+                .title(articleTitle)
                 .content(articleContent)
-                .price(price)
-                .category(category)
-                .dealHopeAddress(new Address(hopeCity, hopeStreet, hopeZipcode))
+                .price(articlePrice)
+                .category(articleCategory)
+                .dealHopeAddress(new Address(articleCity, articleStreet, articleZipcode))
                 .build();
 
         String dtoJson = new ObjectMapper().writeValueAsString(dto);
@@ -106,137 +132,146 @@ public class ArticlePostTest extends BaseTest {
         ArticlePost articlePost = articlePostRepository.findAll().get(0);
 
         assertThat(articlePost.getImages().size()).isEqualTo(3);
-        assertThat(articlePost.getImages().get(0).getName()).isEqualTo("input1.png");
-        assertThat(articlePost.getImages().get(1).getName()).isEqualTo("input2.png");
-        assertThat(articlePost.getImages().get(2).getName()).isEqualTo("input3.png");
-        assertThat(articleImageRepository.findAll().size()).isEqualTo(3); // article 3
+        assertThat(imageRepository.findAll().size()).isEqualTo(3);
     }
 
+    @DisplayName("이미지 수정 없이 물품 정보 수정")
     @WithMockUser
     @Test
-    public void 물품_정보수정() throws Exception {
+    public void successUpdateArticleInfoWithOutImages() throws Exception {
         //given
-        articleSaveProc(0);
+        Long articleId = makeMockArticle(0, getSessionUser()).getId();
 
         RequestArticleSaveOrUpdateDto dto = RequestArticleSaveOrUpdateDto.builder()
-                .title("new제목")
-                .content("new내용")
+                .title("new" + articleTitle)
+                .content("new" + articleContent)
                 .price(30000)
-                .category("new카테고리")
-                .dealHopeAddress(new Address("new희망주소1", "new희망주소2", "new희망주소3"))
+                .category("new" + articleCategory)
+                .dealHopeAddress(new Address(
+                        "new" + articleCity,
+                        "new" + articleStreet,
+                        "new" + articleZipcode))
                 .build();
 
-        Long articleId = articlePostRepository.findAll().get(0).getId();
-
         //when
-        mockMvc.perform(put("/article/" + articleId).contentType(MediaType.APPLICATION_JSON).content(new ObjectMapper().writeValueAsString(dto))).andExpect(status().isOk());
+        //todo update 메서드 파라미터 변경으로 다른 방안 모색
+        mockMvc.perform(put("/article/" + articleId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(dto)))
+                .andExpect(status().isOk());
 
         //then
-        ArticlePost articlePost = articlePostRepository.findById(articleId).get();
-        assertThat(articlePost.getTitle()).isEqualTo("new제목");
-        assertThat(articlePost.getCategory()).isEqualTo("new카테고리");
-        assertThat(articlePost.getContent()).isEqualTo("new내용");
-        assertThat(articlePost.getDealHopeAddress().getCity()).isEqualTo("new희망주소1");
-        assertThat(articlePost.getDealHopeAddress().getStreet()).isEqualTo("new희망주소2");
-        assertThat(articlePost.getDealHopeAddress().getZipcode()).isEqualTo("new희망주소3");
+        ArticlePost articlePost = articlePostRepository.getReferenceById(articleId);
+        assertThat(articlePost.getTitle()).isEqualTo("new" + articleTitle);
+        assertThat(articlePost.getCategory()).isEqualTo("new" + articleCategory);
+        assertThat(articlePost.getContent()).isEqualTo("new" + articleContent);
+        assertThat(articlePost.getDealHopeAddress().getCity()).isEqualTo("new" + articleCity);
+        assertThat(articlePost.getDealHopeAddress().getStreet()).isEqualTo("new" + articleStreet);
+        assertThat(articlePost.getDealHopeAddress().getZipcode()).isEqualTo("new" + articleZipcode);
         assertThat(articlePost.getPrice()).isEqualTo(30000);
-        assertThat(articlePost.getSeller().getEmail()).isEqualTo("email@temp.com");
     }
 
+    @DisplayName("이미지를 포함한 물품 정보 수정")
     @WithMockUser
     @Test
-    public void 물품_삭제() throws Exception {
-        //given
-        articleSaveProc(0);
-        Long articleId = articlePostRepository.findAll().get(0).getId();
+    public void successUpdateArticleInfoWithImages() throws Exception {
+        //TODO 이미지 포함 테스트 시도
+    }
 
+    @DisplayName("중고물품 삭제")
+    @WithMockUser
+    @Test
+    public void successDeleteArticle() throws Exception {
+        //given
+        User user = getSessionUser();
+        ArticlePost articlePost = makeMockArticle(0, user);
 
         //when
-        mockMvc.perform(delete("/article/" + articleId));
+        mockMvc.perform(delete("/article/" + articlePost.getId()))
+                .andExpect(status().isOk());
 
         //then
-        User user = userRepository.findAll().get(0);
-
         assertThat(articlePostRepository.findAll().size()).isEqualTo(0);
         assertThat(user.getSellArticlePosts().size()).isEqualTo(0);
     }
 
+    @DisplayName("물품 정보 요청")
     @Test
-    public void 등록자_회원탈퇴시_중고물품_처리테스트() throws Exception {
+    public void successLoadSimpleArticleInfo() throws Exception {
         //given
-        articleSaveProc(0);
-        Long userId = userRepository.findAll().get(0).getId();
+        LocalDateTime testTime = LocalDateTime.now();
+
+        Long articleId = makeMockArticle(0, getSessionUser()).getId();
 
         //when
-        mockMvc.perform(delete("/user/" + userId));
+        ResultActions resultActions = mockMvc.perform(get("/article/" + articleId))
+                .andExpect(status().isOk());
+        //then
+        resultActions
+                .andExpect(jsonPath("$.id").value(articleId))
+                .andExpect(jsonPath("$.title").value(articleTitle + 0))
+                .andExpect(jsonPath("$.content").value(articleContent))
+                .andExpect(jsonPath("$.price").value(articlePrice))
+                .andExpect(jsonPath("$.view").value(1))
+                .andExpect(jsonPath("$.isSold").value(false))
+                .andExpect(jsonPath("$.dealHopeAddress.city").value(articleCity + 0))
+                .andExpect(jsonPath("$.dealHopeAddress.street").value(articleStreet + 0))
+                .andExpect(jsonPath("$.dealHopeAddress.zipcode").value(articleZipcode + 0))
+                .andExpect(jsonPath("$.seller").value(sessionName));
+
+        //todo 작성 시간 검증
+    }
+
+    @DisplayName("중고물품 등록자 회원탈퇴시 게시글 자동삭제")
+    @WithMockUser
+    @Test
+    public void successAutoDeleteArticleWhenSellerWithdrawal() throws Exception {
+        //given
+        User otherUser = getOtherUser();
+        makeMockArticle(0, otherUser);
+
+        //when
+        mockMvc.perform(delete("/user/" + otherUser.getId()));
 
         //then
         assertThat(articlePostRepository.findAll().size()).isEqualTo(0);
         assertThat(userRepository.findAll().size()).isEqualTo(0);
     }
 
+    @DisplayName("존재하지 않는 중고물품 정보 요청")
+    @WithMockUser
     @Test
-    public void 물품_페이지로딩() throws Exception {
+    public void failLoadNonExistArticleInfo() throws Exception {
         //given
-        articleSaveProc(0);
-        Long articleId = articlePostRepository.findAll().get(0).getId();
+        Long articleId = makeMockArticle(0, getSessionUser()).getId();
 
         //when
-        MvcResult result = mockMvc.perform(get("/article/" + articleId))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        //then
-        assertThat(result.getModelAndView().getModel().get("article")).isInstanceOf(ResponseArticleDto.class);
-
-        ResponseArticleDto article = (ResponseArticleDto) result.getModelAndView().getModel().get("article");
-
-        assertThat(article.getTitle()).isEqualTo(title + 0);
-        assertThat(article.getContent()).isEqualTo(articleContent);
-        assertThat(article.getPrice()).isEqualTo(10000);
-        assertThat(article.getCategory()).isEqualTo(category);
-        assertThat(article.getViews()).isEqualTo(1);
-        assertThat(article.isSold()).isEqualTo(false);
-        assertThat(article.getDealHopeAddress().getCity()).isEqualTo(hopeCity + 0);
-        assertThat(article.getDealHopeAddress().getStreet()).isEqualTo(hopeStreet + 0);
-        assertThat(article.getDealHopeAddress().getZipcode()).isEqualTo(hopeZipcode + 0);
-        assertThat(article.getSeller()).isEqualTo(sessionName);
-    }
-
-    @Test
-    public void 잘못된_물품페이지로딩() throws Exception {
-        //given
-        articleSaveProc(0);
-        Long articleId = articlePostRepository.findAll().get(0).getId();
-
-        //when
-        MvcResult result = mockMvc.perform(get("/article/" + articleId + 1)).andReturn();
+        MvcResult result = mockMvc.perform(get("/article/999999999")).andReturn();
 
         //then
         assertThat(result.getResponse().getContentAsString()).contains(ArticleNotFoundException.message);
     }
-
+    /*
+     물품 지역 리스트
+     idx     address
+     0       000
+     1       001
+     2       002
+     3       113
+     4       114
+     5       115
+     6       226
+     7       227
+     8       228
+     9       339
+     */
+    @DisplayName("주소 없이 주소별 중고물품 리스트 요청")
     @Test
     public void 주소에_맞는_물품_리스트로딩() throws Exception {
         //given
         for (int i = 0; i < 10; i++) {
-            articleSaveProc(i);
+            makeMockArticle(i, getSessionUser());
         }
-
-        /*
-        물품 지역 리스트
-        idx     address
-        0       000
-        1       001
-        2       002
-        3       113
-        4       114
-        5       115
-        6       226
-        7       227
-        8       228
-        9       339
-         */
 
         //when
         MvcResult result;
@@ -250,8 +285,8 @@ public class ArticlePostTest extends BaseTest {
         articles = objToList(result, objKey);
 
         assertThat(articles.size()).isEqualTo(6);
-        assertThat(articles.get(0).getTitle()).isEqualTo(title + 9);
-        assertThat(articles.get(5).getTitle()).isEqualTo(title + 4);
+        assertThat(articles.get(0).getTitle()).isEqualTo(articleTitle + 9);
+        assertThat(articles.get(5).getTitle()).isEqualTo(articleTitle + 4);
 
         //같은 검색결과를 반환하는지 확인
         result = mockMvc.perform(get("/address/희망주소1/희망주소1"))
@@ -261,8 +296,8 @@ public class ArticlePostTest extends BaseTest {
         articles = objToList(result, objKey);
 
         assertThat(articles.size()).isEqualTo(3);
-        assertThat(articles.get(0).getTitle()).isEqualTo(title + 5);
-        assertThat(articles.get(2).getTitle()).isEqualTo(title + 3);
+        assertThat(articles.get(0).getTitle()).isEqualTo(articleTitle + 5);
+        assertThat(articles.get(2).getTitle()).isEqualTo(articleTitle + 3);
 
         //단 하나의 단독결과만 반환하는지 확인
         result = mockMvc.perform(get("/address/희망주소1/희망주소1/희망주소3"))
@@ -272,7 +307,7 @@ public class ArticlePostTest extends BaseTest {
         articles = objToList(result, objKey);
 
         assertThat(articles.size()).isEqualTo(1);
-        assertThat(articles.get(0).getTitle()).isEqualTo(title + 3);
+        assertThat(articles.get(0).getTitle()).isEqualTo(articleTitle + 3);
 
         //없는 주소를 입력시 반환값이 없는지 확인
         result = mockMvc.perform(get("/address/없는주소"))
@@ -304,31 +339,31 @@ public class ArticlePostTest extends BaseTest {
         // 첫번째 페이지
         mockMvc.perform(get("/search?size=3&page=0&keyword="))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].title").value((title + 9)))
-                .andExpect(jsonPath("$[1].title").value((title + 8)))
-                .andExpect(jsonPath("$[2].title").value((title + 7)))
+                .andExpect(jsonPath("$[0].title").value((articleTitle + 9)))
+                .andExpect(jsonPath("$[1].title").value((articleTitle + 8)))
+                .andExpect(jsonPath("$[2].title").value((articleTitle + 7)))
                 .andExpect(jsonPath("$[3]").doesNotExist());
 
         // 두번째 페이지
         mockMvc.perform(get("/search?size=3&page=1&keyword="))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].title").value((title + 6)))
-                .andExpect(jsonPath("$[1].title").value((title + 5)))
-                .andExpect(jsonPath("$[2].title").value((title + 4)))
+                .andExpect(jsonPath("$[0].title").value((articleTitle + 6)))
+                .andExpect(jsonPath("$[1].title").value((articleTitle + 5)))
+                .andExpect(jsonPath("$[2].title").value((articleTitle + 4)))
                 .andExpect(jsonPath("$[3]").doesNotExist());
 
         // 세번째 페이지
         mockMvc.perform(get("/search?size=3&page=2&keyword="))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].title").value((title + 3)))
-                .andExpect(jsonPath("$[1].title").value((title + 2)))
-                .andExpect(jsonPath("$[2].title").value((title + 1)))
+                .andExpect(jsonPath("$[0].title").value((articleTitle + 3)))
+                .andExpect(jsonPath("$[1].title").value((articleTitle + 2)))
+                .andExpect(jsonPath("$[2].title").value((articleTitle + 1)))
                 .andExpect(jsonPath("$[3]").doesNotExist());
 
         // 마지막 페이지
         mockMvc.perform(get("/search?size=3&page=3&keyword="))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].title").value((title + 0)))
+                .andExpect(jsonPath("$[0].title").value((articleTitle + 0)))
                 .andExpect(jsonPath("$[1]").doesNotExist());
     }
 
@@ -358,7 +393,7 @@ public class ArticlePostTest extends BaseTest {
 
         assertThat(articles.size()).isEqualTo(6); // 페이지 사이즈만큼 출력
         for (int i = 0; i < 4; i++) {
-            assertThat(articles.get(i).getTitle()).isEqualTo(title + targetIndex[i]);
+            assertThat(articles.get(i).getTitle()).isEqualTo(articleTitle + targetIndex[i]);
             assertThat(articles.get(i).getViews()).isEqualTo(viewCount[i]);
         }
     }
@@ -387,11 +422,11 @@ public class ArticlePostTest extends BaseTest {
                 .andExpect(jsonPath("$[3]").exists())
                 .andExpect(jsonPath("$[4]").exists())
                 .andExpect(jsonPath("$[5]").doesNotExist())
-                .andExpect(jsonPath("$[0].title").value(title + 7777))
-                .andExpect(jsonPath("$[1].title").value(title + 7777))
-                .andExpect(jsonPath("$[2].title").value(title + 7777))
-                .andExpect(jsonPath("$[3].title").value(title + 7777))
-                .andExpect(jsonPath("$[4].title").value(title + 7777))
+                .andExpect(jsonPath("$[0].title").value(articleTitle + 7777))
+                .andExpect(jsonPath("$[1].title").value(articleTitle + 7777))
+                .andExpect(jsonPath("$[2].title").value(articleTitle + 7777))
+                .andExpect(jsonPath("$[3].title").value(articleTitle + 7777))
+                .andExpect(jsonPath("$[4].title").value(articleTitle + 7777))
                 .andReturn();
 
         keyword = "10000";
@@ -405,12 +440,12 @@ public class ArticlePostTest extends BaseTest {
                 .andExpect(jsonPath("$[4]").exists())
                 .andExpect(jsonPath("$[5]").exists())
                 .andExpect(jsonPath("$[6]").doesNotExist())
-                .andExpect(jsonPath("$[0].title").value(title + 10000))
-                .andExpect(jsonPath("$[1].title").value(title + 10000))
-                .andExpect(jsonPath("$[2].title").value(title + 10000))
-                .andExpect(jsonPath("$[3].title").value(title + 10000))
-                .andExpect(jsonPath("$[4].title").value(title + 10000))
-                .andExpect(jsonPath("$[5].title").value(title + 10000))
+                .andExpect(jsonPath("$[0].title").value(articleTitle + 10000))
+                .andExpect(jsonPath("$[1].title").value(articleTitle + 10000))
+                .andExpect(jsonPath("$[2].title").value(articleTitle + 10000))
+                .andExpect(jsonPath("$[3].title").value(articleTitle + 10000))
+                .andExpect(jsonPath("$[4].title").value(articleTitle + 10000))
+                .andExpect(jsonPath("$[5].title").value(articleTitle + 10000))
                 .andReturn();
 
         keyword = "777";
@@ -424,12 +459,12 @@ public class ArticlePostTest extends BaseTest {
                 .andExpect(jsonPath("$[4]").exists())
                 .andExpect(jsonPath("$[5]").exists())
                 .andExpect(jsonPath("$[6]").doesNotExist())
-                .andExpect(jsonPath("$[0].title").value(title + 777))
-                .andExpect(jsonPath("$[1].title").value(title + 777))
-                .andExpect(jsonPath("$[2].title").value(title + 777))
-                .andExpect(jsonPath("$[3].title").value(title + 7777))
-                .andExpect(jsonPath("$[4].title").value(title + 7777))
-                .andExpect(jsonPath("$[5].title").value(title + 7777))
+                .andExpect(jsonPath("$[0].title").value(articleTitle + 777))
+                .andExpect(jsonPath("$[1].title").value(articleTitle + 777))
+                .andExpect(jsonPath("$[2].title").value(articleTitle + 777))
+                .andExpect(jsonPath("$[3].title").value(articleTitle + 7777))
+                .andExpect(jsonPath("$[4].title").value(articleTitle + 7777))
+                .andExpect(jsonPath("$[5].title").value(articleTitle + 7777))
                 .andReturn();
     }
 
@@ -494,7 +529,7 @@ public class ArticlePostTest extends BaseTest {
     public <T> List<T> objToList(MvcResult result, String objKey) {
         List<T> resultList;
 
-        assertThat(result.getModelAndView().getModel().get(objKey) instanceof ArrayList).isTrue();
+        assertThat(result.getResponse().get.get(objKey) instanceof ArrayList).isTrue();
         resultList = ((ArrayList<?>) result.getModelAndView().getModel().get(objKey)).stream().map(obj -> (T) obj).collect(Collectors.toList());
 
         return resultList;

@@ -32,17 +32,19 @@ public class ArticleController {
     private final CommentService commentService;
 
     @PostMapping(value = "/article", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
-    public void save(@RequestPart("request") RequestArticleSaveOrUpdateDto request,
-                     @RequestPart("images") List<MultipartFile> images,
+    public void save(@ModelAttribute("request") RequestArticleSaveOrUpdateDto request,
+                     @RequestParam(value = "images", required = false) List<MultipartFile> images,
                      @SessionUserId Long userId) throws IOException {
         Long articleId = articleService.save(request, userId);
         articleImageService.save(articleId, images);
     }
 
     @PutMapping("/article/{articleId}")
-    public void update(@RequestBody RequestArticleSaveOrUpdateDto request,
-                       @PathVariable Long articleId) {
+    public void update(@ModelAttribute("request") RequestArticleSaveOrUpdateDto request,
+                                    @PathVariable Long articleId,
+                                    @RequestParam(value = "images", required = false) List<MultipartFile> images) {
         articleService.update(request, articleId);
+        articleImageService.update(images);
     }
 
     @DeleteMapping("/article/{articleId}")

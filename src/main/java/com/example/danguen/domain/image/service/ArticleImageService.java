@@ -52,4 +52,8 @@ public class ArticleImageService {
 
         return Optional.of(articleImagePath + "/" + uuid);
     }
+
+    public void update(List<MultipartFile> images){
+        //todo 기존 사진 삭제를 하던 해서 새로운 사진 추가
+    }
 }

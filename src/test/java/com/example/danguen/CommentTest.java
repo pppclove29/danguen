@@ -34,7 +34,7 @@ public class CommentTest extends BaseTest {
         assertThat(comment.getContent()).isEqualTo(commentContent);
         assertThat(comment.getLikedUser().size()).isEqualTo(0);
         assertThat(comment.getWriter().getEmail()).isEqualTo(sessionEmail);
-        assertThat(((ArticlePostComment) comment).getArticlePost().getTitle()).isEqualTo(title + 0);
+        assertThat(((ArticlePostComment) comment).getArticlePost().getTitle()).isEqualTo(articleTitle + 0);
         assertThat(comment.getCreatedTime()).isAfter(((ArticlePostComment) comment).getArticlePost().getCreatedTime());
     }
 

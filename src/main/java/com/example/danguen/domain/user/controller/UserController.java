@@ -34,7 +34,7 @@ public class UserController {
         userService.delete(userId);
     }
 
-    @PostMapping("/user/{otherUserId}/review-seller")
+    @PostMapping("/user/{otherUserId}/review")
     public void reviewSeller(@RequestBody RequestReviewDto request,
                              @PathVariable Long otherUserId) {
         userService.reviewTest(() ->
