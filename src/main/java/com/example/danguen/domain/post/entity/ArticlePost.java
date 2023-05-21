@@ -1,8 +1,7 @@
 package com.example.danguen.domain.post.entity;
 
 import com.example.danguen.domain.base.Address;
-import com.example.danguen.domain.base.BaseTimeEntity;
-import com.example.danguen.domain.comment.entity.ArticleComment;
+import com.example.danguen.domain.comment.entity.Comment;
 import com.example.danguen.domain.image.entity.ArticleImage;
 import com.example.danguen.domain.user.entity.User;
 import com.example.danguen.domain.post.dto.request.RequestArticleSaveOrUpdateDto;
@@ -14,18 +13,13 @@ import java.util.List;
 
 @Getter
 @Entity
-public class Article extends BaseTimeEntity implements Post {
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "ARTICLE_ID", nullable = false)
-    private Long id;
+@DiscriminatorValue("A")
+public class ArticlePost extends Post {
 
-    private String title;
-    private String content;
     private int price;
     private String category;
 
-    private int views;
+
     private boolean isSold;
 
     private Address dealHopeAddress; // 거래 희망 장소
@@ -37,13 +31,11 @@ public class Article extends BaseTimeEntity implements Post {
     //@ManyToMany(mappedBy = "")
     //List<User> interests;
 
-    @OneToMany(mappedBy = "article", cascade = CascadeType.ALL)
-    private List<ArticleComment> comments = new ArrayList<>();
 
-    @OneToMany(mappedBy = "article", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "articlePost", cascade = CascadeType.ALL)
     private List<ArticleImage> images = new ArrayList<>();
 
-    public Article() {
+    public ArticlePost() {
         isSold = false;
     }
 
@@ -63,9 +55,6 @@ public class Article extends BaseTimeEntity implements Post {
         isSold = true;
     }
 
-    public void addViewCount() {
-        views++;
-    }
 
     public void addInterest() {
 
@@ -75,13 +64,6 @@ public class Article extends BaseTimeEntity implements Post {
 
     }
 
-    public void addComment(ArticleComment articleComment) {
-        comments.add(articleComment);
-    }
-
-    public void removeComment(ArticleComment articleComment) {
-        comments.remove(articleComment);
-    }
 
     public ArticleImage addImage(ArticleImage image) {
         images.add(image);

@@ -1,20 +1,21 @@
 package com.example.danguen.domain.comment.dto.request;
 
-import com.example.danguen.domain.comment.entity.ArticleComment;
-import com.example.danguen.domain.post.entity.Article;
+import com.example.danguen.domain.comment.entity.Comment;
+import com.example.danguen.domain.post.entity.ArticlePost;
+import com.example.danguen.domain.post.entity.Post;
+import com.example.danguen.domain.post.entity.PostKind;
 import com.example.danguen.domain.user.entity.User;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 
-@AllArgsConstructor
 @Data
 public class RequestCommentSaveDto {
+    private PostKind kind;
     private String content;
 
-    public ArticleComment toArticleComment(User user, Article article) {
-        return ArticleComment.builder()
+    public Comment toEntity(User user, Post post) {
+        return Comment.builder()
                 .writer(user)
-                .article(article)
+                .post(post)
                 .content(content)
                 .build();
     }

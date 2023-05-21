@@ -12,6 +12,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 @Service
@@ -23,21 +25,31 @@ public class ArticleImageService {
     private final ArticleImageRepository articleImageRepository;
 
     @Transactional
-    public void save(Long articleId, List<MultipartFile> images) throws IOException {
-        if (new File(savePath + articleId).mkdirs()) {
+    public void save(Long articleId, List<MultipartFile> images) {
+
+        String articleImagePath = savePath + articleId;
+
+        if (new File(articleImagePath).mkdirs()) {
             images.stream()
-                    .map(this::saveToLocal)
-                    .map(image ->
+                    .map((image) -> saveToLocal(image, articleImagePath))
+                    .filter(Optional::isPresent)
+                    .map(uuid ->
                             ArticleImage.builder()
-                                    .name(image.getOriginalFilename())
-                                    .url(imageUUid)
-                                    .article(articleService.getArticleFromDB(articleId))
+                                    .url(uuid.get())
+                                    .articlePost(articleService.getArticleFromDB(articleId))
                                     .build())
                     .forEach(articleImageRepository::save);
         }
     }
 
-    public MultipartFile saveToLocal(MultipartFile multipartFile) {
-        multipartFile.transferTo(new File());
+    public Optional<String> saveToLocal(MultipartFile multipartFile, String articleImagePath) {
+        UUID uuid = UUID.randomUUID();
+        try {
+            multipartFile.transferTo(new File(articleImagePath + "/" + uuid));
+        } catch (IOException e) {
+            return Optional.empty();
+        }
+
+        return Optional.of(articleImagePath + "/" + uuid);
     }
 }

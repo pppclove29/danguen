@@ -2,7 +2,7 @@ package com.example.danguen.domain.image.dto;
 
 import com.example.danguen.domain.image.entity.ArticleImage;
 import com.example.danguen.domain.image.entity.UserImage;
-import com.example.danguen.domain.post.entity.Article;
+import com.example.danguen.domain.post.entity.ArticlePost;
 import com.example.danguen.domain.user.entity.User;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,25 +11,21 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class ImageDto {
-    String name; // fileName + .jpg
-    String path; // savePath + name
+    String path; // savePath
 
-    public ImageDto(String name, String path) {
-        this.name = name;
-        this.path = path + name;
+    public ImageDto(String path) {
+        this.path = path;
     }
 
-    public ArticleImage toArticleImage(Article article) {
+    public ArticleImage toArticleImage(ArticlePost articlePost) {
         return ArticleImage.builder()
-                .name(this.name)
                 .url(this.path)
-                .article(article)
+                .articlePost(articlePost)
                 .build();
     }
 
     public UserImage toUserImage(User user) {
         return UserImage.builder()
-                .name(this.name)
                 .url(this.path)
                 .user(user)
                 .build();

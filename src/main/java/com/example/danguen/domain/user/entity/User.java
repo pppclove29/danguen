@@ -4,7 +4,7 @@ import com.example.danguen.domain.base.Address;
 import com.example.danguen.domain.base.BaseTimeEntity;
 import com.example.danguen.domain.comment.entity.Comment;
 import com.example.danguen.domain.image.entity.UserImage;
-import com.example.danguen.domain.post.entity.Article;
+import com.example.danguen.domain.post.entity.ArticlePost;
 import com.example.danguen.domain.user.dto.request.RequestUserUpdateDto;
 import com.example.danguen.domain.review.RequestReviewDto;
 import lombok.Builder;
@@ -41,12 +41,12 @@ public class User extends BaseTimeEntity {
     private final List<User> interestUser = new ArrayList<>();
 
     @OneToMany(mappedBy = "seller", cascade = CascadeType.ALL)
-    private final List<Article> sellArticles = new ArrayList<>(); // 판매상품
+    private final List<ArticlePost> sellArticlePosts = new ArrayList<>(); // 판매상품
 
     @OneToMany(mappedBy = "writer")
     private final List<Comment> comments = new ArrayList<>();
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private UserImage image;
 
     //@OneToMany(cascade = CascadeType.ALL) -> OneToMany일까 ManyToMany일까?
@@ -63,11 +63,6 @@ public class User extends BaseTimeEntity {
         role = Role.ROLE_USER;
     }
 
-    public User sssss() {
-        return new User();
-    }
-
-
     public void updateUser(RequestUserUpdateDto request) {
         //현 유저에 대한 정보를 변경한다
         this.address = request.getAddress();
@@ -78,14 +73,14 @@ public class User extends BaseTimeEntity {
         rate.applyReview(request);
     }
 
-    public void addSellArticle(Article article) {
-        sellArticles.add(article);
+    public void addSellArticle(ArticlePost articlePost) {
+        sellArticlePosts.add(articlePost);
 
-        article.setSeller(this);
+        articlePost.setSeller(this);
     }
 
-    public void removeSellArticle(Article article) {
-        sellArticles.remove(article);
+    public void removeSellArticle(ArticlePost articlePost) {
+        sellArticlePosts.remove(articlePost);
     }
 
     public boolean isInterestUser(User iUser) {

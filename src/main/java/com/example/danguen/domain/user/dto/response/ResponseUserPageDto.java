@@ -13,10 +13,13 @@ public class ResponseUserPageDto {
     private Address address;
     private UserRate rate;
 
-    public ResponseUserPageDto(User user) {
-        this.name = user.getName();
-        this.address = user.getAddress();
-        this.rate = user.getRate();
+    public static ResponseUserPageDto toResponse(User user) {
+        ResponseUserPageDto dto = new ResponseUserPageDto();
+        dto.name = user.getName();
+        dto.address = user.getAddress();
+        dto.rate = user.getRate();
+
+        return dto;
     }
 
 }

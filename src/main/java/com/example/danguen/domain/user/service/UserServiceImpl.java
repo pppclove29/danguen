@@ -24,7 +24,7 @@ public class UserServiceImpl implements UserService {
     public ResponseUserPageDto getUserDto(Long userId) {
         User user = getUserFromDB(userId);
 
-        return new ResponseUserPageDto(user);
+        return ResponseUserPageDto.toResponse(user);
     }
 
     @Override
@@ -77,7 +77,7 @@ public class UserServiceImpl implements UserService {
     public List<ResponseUserSimpleDto> getIUserDtos(Long userId) {
         User user = getUserFromDB(userId);
 
-        return user.getInterestUser().stream().map(ResponseUserSimpleDto::toDto).collect(Collectors.toList());
+        return user.getInterestUser().stream().map(ResponseUserSimpleDto::toResponse).collect(Collectors.toList());
     }
 
     @Override

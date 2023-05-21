@@ -1,19 +1,24 @@
 package com.example.danguen.front;
 
+import com.example.danguen.config.oauth.PrincipalUserDetails;
 import com.example.danguen.domain.base.Address;
+import com.example.danguen.domain.image.service.ArticleImageService;
 import com.example.danguen.domain.post.dto.request.RequestArticleSaveOrUpdateDto;
-import com.example.danguen.domain.post.service.ArticleService;
+import com.example.danguen.domain.post.service.ArticleServiceImpl;
 import com.example.danguen.domain.user.entity.User;
 import com.example.danguen.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItem;
 import org.apache.commons.io.IOUtils;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.commons.CommonsMultipartFile;
-import org.springframework.web.servlet.ModelAndView;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -21,17 +26,37 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RequiredArgsConstructor
-@Controller
+@RestController
 public class FormController {
 
     //for front test
-    private final ArticleService articleService;
+    private final ArticleServiceImpl articleService;
+    private final ArticleImageService articleImageService;
     private final UserRepository userRepository;
+
+    @GetMapping("/user-make")
+    public String userSave() throws IOException {
+        User user = User.builder()
+                .name("김개동")
+                .email("pppclove29@naver.com")
+                .address(new Address("11", "22", "33"))
+                .build();
+
+        PrincipalUserDetails userDetails = new PrincipalUserDetails(user);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new UsernamePasswordAuthenticationToken(userDetails, userDetails.getPassword(), userDetails.getAuthorities()));
+
+        userRepository.save(user);
+
+        articleSave();
+
+        return "유저 생성 성공 + 게시글 10개 생성 성공";
+    }
 
     //아래는 테스트용이다.
     @GetMapping("/article-make")
-    public ModelAndView articleSave() throws IOException {
-        ModelAndView mav = new ModelAndView("index");
+    public void articleSave() throws IOException {
+
 
         // 랜덤하게 10개의 게시글을 만든다
         for (int i = 0; i < 10; i++) {
@@ -57,10 +82,9 @@ public class FormController {
                 int imageIndex = (int) (Math.random() * 12) + 1;
                 imageList.add(getMultipartFile(imageIndex));
             }
-            articleService.save(request, userId, imageList);
+            Long articleId = articleService.save(request, userId);
+            articleImageService.save(articleId, imageList);
         }
-
-        return mav;
     }
 
     // 이미지로부터 값얻기
@@ -79,8 +103,7 @@ public class FormController {
         }
 
         //jpa.png -> multipart 변환
-        MultipartFile mFile = new CommonsMultipartFile(fileItem);
-        return mFile;
+        return new CommonsMultipartFile(fileItem);
     }
 
 

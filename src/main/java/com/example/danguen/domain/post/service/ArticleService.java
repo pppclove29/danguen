@@ -4,7 +4,7 @@ import com.example.danguen.domain.base.Address;
 import com.example.danguen.domain.post.dto.request.RequestArticleSaveOrUpdateDto;
 import com.example.danguen.domain.post.dto.response.ResponseArticleDto;
 import com.example.danguen.domain.post.dto.response.ResponseArticleSimpleDto;
-import com.example.danguen.domain.post.entity.Article;
+import com.example.danguen.domain.post.entity.ArticlePost;
 import org.springframework.data.domain.Pageable;
 
 import java.io.IOException;
@@ -86,5 +86,5 @@ public interface ArticleService {
      * @param articleId 가져올 Article ID
      * @return DB 에서 가져온 Article Entity
      */
-    Article getArticleFromDB(Long articleId);
+    ArticlePost getArticleFromDB(Long articleId);
 }

@@ -8,7 +8,6 @@ import com.example.danguen.handler.CustomAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 
@@ -31,7 +30,7 @@ public class SecurityConfig {
                     .authorizeHttpRequests()
                         .antMatchers(permitUri).permitAll()
                         .antMatchers("/admin").hasRole("ADMIN")
-                        .anyRequest().authenticated()
+                        .anyRequest().permitAll()
                 .and()
                     .logout()
                         .logoutSuccessUrl("/")

@@ -4,10 +4,10 @@ import com.example.danguen.config.oauth.CustomOAuth2UserService;
 import com.example.danguen.config.oauth.PrincipalUserDetails;
 import com.example.danguen.domain.base.Address;
 import com.example.danguen.domain.image.dto.ImageDto;
-import com.example.danguen.domain.post.entity.Article;
+import com.example.danguen.domain.post.entity.ArticlePost;
 import com.example.danguen.domain.post.dto.request.RequestArticleSaveOrUpdateDto;
 import com.example.danguen.domain.user.entity.User;
-import com.example.danguen.domain.post.repository.ArticleRepository;
+import com.example.danguen.domain.post.repository.ArticlePostRepository;
 import com.example.danguen.domain.user.repository.UserRepository;
 import com.example.danguen.domain.comment.repository.CommentRepository;
 import com.example.danguen.domain.image.repository.ArticleImageRepository;
@@ -54,7 +54,7 @@ public class BaseTest {
     @Autowired
     UserRepository userRepository;
     @Autowired
-    ArticleRepository articleRepository;
+    ArticlePostRepository articlePostRepository;
     @Autowired
     CommentRepository commentRepository;
     @Autowired
@@ -81,14 +81,14 @@ public class BaseTest {
         commentRepository.deleteAll();
         userImageRepository.deleteAll();
         articleImageRepository.deleteAll();
-        articleRepository.deleteAll();
+        articlePostRepository.deleteAll();
         userRepository.deleteAll();
     }
 
     String sessionName = "박이름";
     String sessionEmail = "email@temp.com";
 
-    public void registerUserToSession(){
+    public void registerUserToSession() {
         User user = makeUserProc(sessionName, sessionEmail);
 
         PrincipalUserDetails userDetails = new PrincipalUserDetails(user);
@@ -105,7 +105,7 @@ public class BaseTest {
 
         User user = User.builder().name(name).email(email).address(address).build();
 
-        ImageDto image = new ImageDto(user.getName() + ".jpg", "path:");
+        ImageDto image = new ImageDto("path:" + user.getName() + ".jpg");
 
         userImageRepository.save(image.toUserImage(user));
         userRepository.save(user);
@@ -163,14 +163,14 @@ public class BaseTest {
                         noneSessionUser.getAddress().getZipcode()))
                 .build();
 
-        Article article = dto.toEntity();
+        ArticlePost articlePost = dto.toEntity();
 
-        noneSessionUser.addSellArticle(article);
+        noneSessionUser.addSellArticle(articlePost);
 
-        ImageDto image = new ImageDto(article.getId() + ".jpg", "path:");
+        ImageDto image = new ImageDto("path:" + articlePost.getId() + ".jpg");
 
-        articleImageRepository.save(image.toArticleImage(article));
-        articleRepository.save(article);
+        articleImageRepository.save(image.toArticleImage(articlePost));
+        articlePostRepository.save(articlePost);
     }
 
     String commentContent = "댓글 내용";
@@ -178,7 +178,7 @@ public class BaseTest {
     public void commentSaveProc() throws Exception { // 댓글 등록
         articleSaveProc(0);
 
-        Long articleId = articleRepository.findAll().get(0).getId();
+        Long articleId = articlePostRepository.findAll().get(0).getId();
 
         mockMvc.perform(post("/article/" + articleId + "/comment")
                         .param("content", commentContent))

@@ -1,20 +1,12 @@
 package com.example.danguen.domain.comment.controller;
 
 import com.example.danguen.annotation.SessionUserId;
-import com.example.danguen.domain.comment.entity.AlreadyDeletedCommentException;
+import com.example.danguen.domain.comment.exception.AlreadyDeletedCommentException;
 import com.example.danguen.domain.comment.exception.CommentNotFoundException;
 import com.example.danguen.domain.comment.dto.request.RequestCommentSaveDto;
-import com.example.danguen.domain.comment.dto.response.ResponseCommentDto;
 import com.example.danguen.domain.comment.service.CommentService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import javax.servlet.http.HttpServletRequest;
-import java.net.URI;
-import java.util.stream.Stream;
 
 @RequiredArgsConstructor
 @RestController
@@ -22,36 +14,21 @@ public class CommentController {
 
     private final CommentService commentService;
 
-    @PostMapping("/{postName}/{postId}/comment") // 댓글이 달릴 객체 필요
-    public ResponseEntity<?> save(@RequestParam String content,
-                                  @PathVariable String postName,
-                                  @PathVariable Long postId,
-                                  @SessionUserId Long userId,
-                                  HttpServletRequest httpRequest) {
+    @PostMapping("/post/{postId}/comment") // 댓글이 달릴 객체 필요
+    public void save(@RequestBody RequestCommentSaveDto requestCommentSaveDto,
+                     @PathVariable Long postId,
+                     @SessionUserId Long userId) {
 
-        commentService.save(new RequestCommentSaveDto(content), postName, postId, userId);
-
-        HttpHeaders headers = new HttpHeaders();
-
-        String uri = httpRequest.getRequestURI().replace("/comment", "");
-        headers.setLocation(URI.create(uri));
-
-        return new ResponseEntity<>(headers, HttpStatus.MOVED_PERMANENTLY); // 게시글 경로로 다시 이동
-    }
-
-    @GetMapping("/{postName}/{postId}/comment")
-    public Stream<ResponseCommentDto> getComments(@PathVariable String postName,
-                                                  @PathVariable Long postId) {
-        return commentService.getComments(postName, postId);
+        commentService.save(requestCommentSaveDto, postId, userId);
     }
 
     @PutMapping("/comment/{commentId}")
-    public void update(@RequestParam String content,
+    public void update(@RequestBody RequestCommentSaveDto requestCommentSaveDto,
                        @PathVariable Long commentId) {
-        commentService.update(new RequestCommentSaveDto(content), commentId);
+        commentService.update(requestCommentSaveDto, commentId);
     }
 
-    @DeleteMapping("/comment/{commentId}") // 댓글이 달린 객체 필요, 이미 저장되어있으니 내부의
+    @DeleteMapping("/comment/{commentId}")
     public void delete(@PathVariable Long commentId) {
         commentService.delete(commentId);
     }

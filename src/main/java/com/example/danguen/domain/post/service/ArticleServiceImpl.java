@@ -6,8 +6,8 @@ import com.example.danguen.domain.image.exception.ArticleNotFoundException;
 import com.example.danguen.domain.post.dto.request.RequestArticleSaveOrUpdateDto;
 import com.example.danguen.domain.post.dto.response.ResponseArticleDto;
 import com.example.danguen.domain.post.dto.response.ResponseArticleSimpleDto;
-import com.example.danguen.domain.post.entity.Article;
-import com.example.danguen.domain.post.repository.ArticleRepository;
+import com.example.danguen.domain.post.entity.ArticlePost;
+import com.example.danguen.domain.post.repository.ArticlePostRepository;
 import com.example.danguen.domain.user.entity.User;
 import com.example.danguen.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -28,23 +28,23 @@ public class ArticleServiceImpl implements ArticleService {
 
     private final UserService userService;
 
-    private final ArticleRepository articleRepository;
+    private final ArticlePostRepository articlePostRepository;
 
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public ResponseArticleDto getArticle(Long articleId) {
-        Article article = getArticleFromDB(articleId);
-        article.addViewCount();
+        ArticlePost articlePost = getArticleFromDB(articleId);
+        articlePost.addViewCount();
 
-        return ResponseArticleDto.toResponse(article);
+        return ResponseArticleDto.toResponse(articlePost);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<ResponseArticleSimpleDto> getArticleByAddressPage(Pageable pageable, Address address) {
-        Page<Article> page =
-                articleRepository.findAllByDealHopeAddressLikeOrderByCreatedTimeDesc(pageable, address);
+        Page<ArticlePost> page =
+                articlePostRepository.findAllByDealHopeAddressLikeOrderByCreatedTimeDesc(pageable, address);
 
         return page.stream().map(ResponseArticleSimpleDto::toResponse).collect(Collectors.toList());
     }
@@ -52,7 +52,7 @@ public class ArticleServiceImpl implements ArticleService {
     @Override
     @Transactional(readOnly = true)
     public List<ResponseArticleSimpleDto> getHotArticlePage(Pageable pageable) {
-        Page<Article> page = articleRepository.findByHot(pageable);
+        Page<ArticlePost> page = articlePostRepository.findByHot(pageable);
 
         return page.stream().map(ResponseArticleSimpleDto::toResponse).collect(Collectors.toList());
     }
@@ -60,7 +60,7 @@ public class ArticleServiceImpl implements ArticleService {
     @Override
     @Transactional(readOnly = true)
     public List<ResponseArticleSimpleDto> getSearchArticlePage(Pageable pageable, String title) {
-        Page<Article> page = articleRepository.findByTitleContainingOrderByIdDesc(pageable, title);
+        Page<ArticlePost> page = articlePostRepository.findByTitleContainingOrderByIdDesc(pageable, title);
 
         return page.stream().map(ResponseArticleSimpleDto::toResponse).collect(Collectors.toList());
     }
@@ -70,7 +70,7 @@ public class ArticleServiceImpl implements ArticleService {
     public List<ResponseArticleSimpleDto> getInterestPage(Pageable pageable, Long userId) {
         List<User> interestUser = userService.getUserFromDB(userId).getInterestUser();
 
-        Page<Article> page = articleRepository.findByInterestUser(pageable, interestUser);
+        Page<ArticlePost> page = articlePostRepository.findByInterestUser(pageable, interestUser);
 
         return page.stream().map(ResponseArticleSimpleDto::toResponse).collect(Collectors.toList());
     }
@@ -78,37 +78,37 @@ public class ArticleServiceImpl implements ArticleService {
     @Override
     @Transactional
     public Long save(RequestArticleSaveOrUpdateDto request, Long userId) throws IOException {
-        Article article = request.toEntity();
+        ArticlePost articlePost = request.toEntity();
 
         User user = userService.getUserFromDB(userId);
-        user.addSellArticle(article);
+        user.addSellArticle(articlePost);
 
-        return articleRepository.save(article).getId();
+        return articlePostRepository.save(articlePost).getId();
     }
 
     @Override
     @Transactional
     public void update(RequestArticleSaveOrUpdateDto request, Long articleId) {
-        Article article = getArticleFromDB(articleId);
+        ArticlePost articlePost = getArticleFromDB(articleId);
 
-        article.updateArticle(request);
+        articlePost.updateArticle(request);
     }
 
     @Override
     @Transactional
     public void delete(Long articleId) {
-        Article article = getArticleFromDB(articleId);
-        User user = article.getSeller();
+        ArticlePost articlePost = getArticleFromDB(articleId);
+        User user = articlePost.getSeller();
 
-        user.removeSellArticle(article);
-        for (Comment comment : article.getComments())
+        user.removeSellArticle(articlePost);
+        for (Comment comment : articlePost.getComments())
             comment.getWriter().removeComment(comment);
 
-        articleRepository.deleteById(articleId);
+        articlePostRepository.deleteById(articleId);
     }
 
     @Override
-    public Article getArticleFromDB(Long articleId) {
-        return articleRepository.findById(articleId).orElseThrow(ArticleNotFoundException::new);
+    public ArticlePost getArticleFromDB(Long articleId) {
+        return articlePostRepository.findById(articleId).orElseThrow(ArticleNotFoundException::new);
     }
 }

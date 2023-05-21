@@ -4,17 +4,7 @@ spring:
       - oauth
       - local
       - websocket
-  datasource:
-    url: jdbc:mysql://localhost:3306/danguen?useUnicode=true&serverTimezone=Asia/Seoul
-    username: root
-    password: root1234
-    driver-class-name: com.mysql.cj.jdbc.Driver
-  jpa:
-    show-sql: false
-    hibernate:
-      ddl-auto: update
-    generate-ddl: true
-    database: mysql
+      - h2
   mvc:
     view:
       prefix: /WEB-INF/views/

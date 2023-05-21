@@ -3,16 +3,16 @@ spring:
     include:
       - oauth
   datasource:
-    url: jdbc:mysql://localhost:3306/danguen?useUnicode=true&serverTimezone=Asia/Seoul
-    username: root
-    password: root1234
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:h2:mem:testdb
+    username: sa
+    password: password
+    driver-class-name: org.h2.Driver
+
   jpa:
-    show-sql: false
     hibernate:
       ddl-auto: create
-    generate-ddl: true
-    database: mysql
+    database-platform: org.hibernate.dialect.H2Dialect
+
 
 server:
   servlet:

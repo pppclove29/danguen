@@ -55,6 +55,9 @@ dependencies {
 
 	implementation group: 'commons-fileupload', name: 'commons-fileupload', version: '1.4'
 	implementation group: 'commons-io', name: 'commons-io', version: '2.7'
+
+
+	implementation 'com.h2database:h2'
 }
 
 tasks.named('test') {

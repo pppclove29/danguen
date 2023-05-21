@@ -1,7 +1,7 @@
 package com.example.danguen.domain.post.dto.request;
 
 import com.example.danguen.domain.base.Address;
-import com.example.danguen.domain.post.entity.Article;
+import com.example.danguen.domain.post.entity.ArticlePost;
 import lombok.Builder;
 import lombok.Data;
 
@@ -23,10 +23,10 @@ public class RequestArticleSaveOrUpdateDto {
         this.dealHopeAddress = dealHopeAddress;
     }
 
-    public Article toEntity() {
-        Article article = new Article();
-        article.updateArticle(this);
+    public ArticlePost toEntity() {
+        ArticlePost articlePost = new ArticlePost();
+        articlePost.updateArticle(this);
 
-        return article;
+        return articlePost;
     }
 }

@@ -1,7 +1,6 @@
 package com.example.danguen;
 
-import com.example.danguen.domain.comment.entity.AlreadyDeletedCommentException;
-import com.example.danguen.domain.comment.entity.ArticleComment;
+import com.example.danguen.domain.comment.exception.AlreadyDeletedCommentException;
 import com.example.danguen.domain.comment.entity.Comment;
 import com.example.danguen.domain.comment.dto.request.RequestCommentSaveDto;
 import com.example.danguen.domain.user.entity.User;
@@ -31,12 +30,12 @@ public class CommentTest extends BaseTest {
         Comment comment = commentRepository.findAll().get(0);
 
         assertThat(commentRepository.findAll().size()).isEqualTo(1);
-        assertThat(comment).isInstanceOf(ArticleComment.class);
+        assertThat(comment).isInstanceOf(ArticlePostComment.class);
         assertThat(comment.getContent()).isEqualTo(commentContent);
         assertThat(comment.getLikedUser().size()).isEqualTo(0);
         assertThat(comment.getWriter().getEmail()).isEqualTo(sessionEmail);
-        assertThat(((ArticleComment) comment).getArticle().getTitle()).isEqualTo(title + 0);
-        assertThat(comment.getCreatedTime()).isAfter(((ArticleComment) comment).getArticle().getCreatedTime());
+        assertThat(((ArticlePostComment) comment).getArticlePost().getTitle()).isEqualTo(title + 0);
+        assertThat(comment.getCreatedTime()).isAfter(((ArticlePostComment) comment).getArticlePost().getCreatedTime());
     }
 
     @WithMockUser
@@ -56,7 +55,7 @@ public class CommentTest extends BaseTest {
         Comment comment = commentRepository.findById(commentId).get();
 
         assertThat(comment.getContent()).isEqualTo(commentContent + " new");
-        assertThat(comment).isInstanceOf(ArticleComment.class);
+        assertThat(comment).isInstanceOf(ArticlePostComment.class);
     }
 
     @Test
@@ -75,7 +74,7 @@ public class CommentTest extends BaseTest {
 
         assertThat(comment.getContent()).isNotEqualTo(commentContent);
         assertThat(comment.getContent()).isEqualTo("삭제된 메세지입니다.");
-        assertThat(comment).isInstanceOf(ArticleComment.class);
+        assertThat(comment).isInstanceOf(ArticlePostComment.class);
     }
 
     @Test
@@ -102,7 +101,7 @@ public class CommentTest extends BaseTest {
 
         assertThat(comment.getContent()).isNotEqualTo(commentContent);
         assertThat(comment.getContent()).isEqualTo("삭제된 메세지입니다.");
-        assertThat(comment).isInstanceOf(ArticleComment.class);
+        assertThat(comment).isInstanceOf(ArticlePostComment.class);
 
         assertThat(result.getResponse().getContentAsString()).contains(AlreadyDeletedCommentException.message);
     }
@@ -113,7 +112,7 @@ public class CommentTest extends BaseTest {
         User user = makeUserProc("임꺽정", "im@mmm.com");
         noneSessionsArticleSaveProc(user, 0);
 
-        Long articleId = articleRepository.findAll().get(0).getId();
+        Long articleId = articlePostRepository.findAll().get(0).getId();
 
         mockMvc.perform(post("/article/" + articleId + "/comment")
                         .param("content", commentContent))
@@ -139,7 +138,7 @@ public class CommentTest extends BaseTest {
         User user = makeUserProc("임꺽정", "im@mmm.com");
         noneSessionsArticleSaveProc(user, 0);
 
-        Long articleId = articleRepository.findAll().get(0).getId();
+        Long articleId = articlePostRepository.findAll().get(0).getId();
 
         mockMvc.perform(post("/article/" + articleId + "/comment")
                         .param("content", commentContent))

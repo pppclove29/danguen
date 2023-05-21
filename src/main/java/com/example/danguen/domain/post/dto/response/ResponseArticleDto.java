@@ -2,13 +2,13 @@ package com.example.danguen.domain.post.dto.response;
 
 import com.example.danguen.domain.base.Address;
 import com.example.danguen.domain.comment.dto.response.ResponseCommentDto;
-import com.example.danguen.domain.post.entity.Article;
+import com.example.danguen.domain.image.entity.Image;
+import com.example.danguen.domain.post.entity.ArticlePost;
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 
 @Data
@@ -24,31 +24,35 @@ public class ResponseArticleDto {
 
     private int views;
     private boolean isSold;
+    private LocalDateTime writtenTime;
 
     private Address dealHopeAddress; // 거래 희망 장소
 
     private String seller; // 판매자
 
-    public static ResponseArticleDto toResponse(Article article) {
+    public static ResponseArticleDto toResponse(ArticlePost articlePost) {
         ResponseArticleDto dto = new ResponseArticleDto();
 
-        dto.setId(article.getId());
-        dto.setTitle(article.getTitle());
-        dto.setContent(article.getContent());
-        dto.setPrice(article.getPrice());
-        dto.setCategory(article.getCategory());
-        dto.setViews(article.getViews());
-        dto.setSold(article.isSold());
-        dto.setDealHopeAddress(article.getDealHopeAddress());
-        dto.setSeller(article.getSeller().getName());
+        dto.setId(articlePost.getId());
+        dto.setTitle(articlePost.getTitle());
+        dto.setContent(articlePost.getContent());
+        dto.setPrice(articlePost.getPrice());
+        dto.setCategory(articlePost.getCategory());
+        dto.setViews(articlePost.getViews());
+        dto.setSold(articlePost.isSold());
+        dto.setDealHopeAddress(articlePost.getDealHopeAddress());
+        dto.setSeller(articlePost.getSeller().getName());
+        dto.setWrittenTime(articlePost.getCreatedTime());
 
-        article.getImages().stream().map((image) -> dto.getImageUrl().add(image.getUrl()));
+        articlePost.getImages().stream()
+                .map(Image::getUrl)
+                .forEach(dto.getImageUrl()::add);
 
         return dto;
     }
 
-    public void addComments(Stream<ResponseCommentDto> commentDtoStream) {
-        setComments(commentDtoStream.collect(Collectors.toList()));
+    public void addComments(List<ResponseCommentDto> commentDtos) {
+        setComments(commentDtos);
     }
 
 }

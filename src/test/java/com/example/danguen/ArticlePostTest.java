@@ -4,7 +4,7 @@ package com.example.danguen;
 import com.example.danguen.domain.image.exception.ArticleNotFoundException;
 import com.example.danguen.domain.base.Address;
 import com.example.danguen.domain.image.entity.Image;
-import com.example.danguen.domain.post.entity.Article;
+import com.example.danguen.domain.post.entity.ArticlePost;
 import com.example.danguen.domain.post.dto.request.RequestArticleSaveOrUpdateDto;
 import com.example.danguen.domain.post.dto.response.ResponseArticleDto;
 import com.example.danguen.domain.post.dto.response.ResponseArticleSimpleDto;
@@ -28,7 +28,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-public class ArticleTest extends BaseTest {
+public class ArticlePostTest extends BaseTest {
 
     @DisplayName("정상적인 물품 등록하기")
     @WithMockUser
@@ -38,21 +38,21 @@ public class ArticleTest extends BaseTest {
         articleSaveProc(0);
 
         //then
-        Article article = articleRepository.findAll().get(0);
+        ArticlePost articlePost = articlePostRepository.findAll().get(0);
         Image image1 = articleImageRepository.findAll().get(0);
 
-        assertThat(article.getTitle()).isEqualTo(title + 0);
-        assertThat(article.getCategory()).isEqualTo(category);
-        assertThat(article.getContent()).isEqualTo(articleContent);
-        assertThat(article.getImages().size()).isEqualTo(1);
-        assertThat(article.getDealHopeAddress().getCity()).isEqualTo(hopeCity + 0);
-        assertThat(article.getDealHopeAddress().getStreet()).isEqualTo(hopeStreet + 0);
-        assertThat(article.getDealHopeAddress().getZipcode()).isEqualTo(hopeZipcode + 0);
-        assertThat(article.getPrice()).isEqualTo(10000);
-        assertThat(article.getSeller().getName()).isEqualTo(sessionName);
-        assertThat(article.getSeller().getEmail()).isEqualTo(sessionEmail);
-        assertThat(article.getImages().get(0).getName()).isEqualTo(image1.getName());
-        assertThat(article.getImages().size()).isEqualTo(1);
+        assertThat(articlePost.getTitle()).isEqualTo(title + 0);
+        assertThat(articlePost.getCategory()).isEqualTo(category);
+        assertThat(articlePost.getContent()).isEqualTo(articleContent);
+        assertThat(articlePost.getImages().size()).isEqualTo(1);
+        assertThat(articlePost.getDealHopeAddress().getCity()).isEqualTo(hopeCity + 0);
+        assertThat(articlePost.getDealHopeAddress().getStreet()).isEqualTo(hopeStreet + 0);
+        assertThat(articlePost.getDealHopeAddress().getZipcode()).isEqualTo(hopeZipcode + 0);
+        assertThat(articlePost.getPrice()).isEqualTo(10000);
+        assertThat(articlePost.getSeller().getName()).isEqualTo(sessionName);
+        assertThat(articlePost.getSeller().getEmail()).isEqualTo(sessionEmail);
+        assertThat(articlePost.getImages().get(0).getName()).isEqualTo(image1.getName());
+        assertThat(articlePost.getImages().size()).isEqualTo(1);
     }
 
     @WithMockUser
@@ -103,12 +103,12 @@ public class ArticleTest extends BaseTest {
                 .andExpect(status().isOk());
 
         //then
-        Article article = articleRepository.findAll().get(0);
+        ArticlePost articlePost = articlePostRepository.findAll().get(0);
 
-        assertThat(article.getImages().size()).isEqualTo(3);
-        assertThat(article.getImages().get(0).getName()).isEqualTo("input1.png");
-        assertThat(article.getImages().get(1).getName()).isEqualTo("input2.png");
-        assertThat(article.getImages().get(2).getName()).isEqualTo("input3.png");
+        assertThat(articlePost.getImages().size()).isEqualTo(3);
+        assertThat(articlePost.getImages().get(0).getName()).isEqualTo("input1.png");
+        assertThat(articlePost.getImages().get(1).getName()).isEqualTo("input2.png");
+        assertThat(articlePost.getImages().get(2).getName()).isEqualTo("input3.png");
         assertThat(articleImageRepository.findAll().size()).isEqualTo(3); // article 3
     }
 
@@ -126,21 +126,21 @@ public class ArticleTest extends BaseTest {
                 .dealHopeAddress(new Address("new희망주소1", "new희망주소2", "new희망주소3"))
                 .build();
 
-        Long articleId = articleRepository.findAll().get(0).getId();
+        Long articleId = articlePostRepository.findAll().get(0).getId();
 
         //when
         mockMvc.perform(put("/article/" + articleId).contentType(MediaType.APPLICATION_JSON).content(new ObjectMapper().writeValueAsString(dto))).andExpect(status().isOk());
 
         //then
-        Article article = articleRepository.findById(articleId).get();
-        assertThat(article.getTitle()).isEqualTo("new제목");
-        assertThat(article.getCategory()).isEqualTo("new카테고리");
-        assertThat(article.getContent()).isEqualTo("new내용");
-        assertThat(article.getDealHopeAddress().getCity()).isEqualTo("new희망주소1");
-        assertThat(article.getDealHopeAddress().getStreet()).isEqualTo("new희망주소2");
-        assertThat(article.getDealHopeAddress().getZipcode()).isEqualTo("new희망주소3");
-        assertThat(article.getPrice()).isEqualTo(30000);
-        assertThat(article.getSeller().getEmail()).isEqualTo("email@temp.com");
+        ArticlePost articlePost = articlePostRepository.findById(articleId).get();
+        assertThat(articlePost.getTitle()).isEqualTo("new제목");
+        assertThat(articlePost.getCategory()).isEqualTo("new카테고리");
+        assertThat(articlePost.getContent()).isEqualTo("new내용");
+        assertThat(articlePost.getDealHopeAddress().getCity()).isEqualTo("new희망주소1");
+        assertThat(articlePost.getDealHopeAddress().getStreet()).isEqualTo("new희망주소2");
+        assertThat(articlePost.getDealHopeAddress().getZipcode()).isEqualTo("new희망주소3");
+        assertThat(articlePost.getPrice()).isEqualTo(30000);
+        assertThat(articlePost.getSeller().getEmail()).isEqualTo("email@temp.com");
     }
 
     @WithMockUser
@@ -148,7 +148,7 @@ public class ArticleTest extends BaseTest {
     public void 물품_삭제() throws Exception {
         //given
         articleSaveProc(0);
-        Long articleId = articleRepository.findAll().get(0).getId();
+        Long articleId = articlePostRepository.findAll().get(0).getId();
 
 
         //when
@@ -157,8 +157,8 @@ public class ArticleTest extends BaseTest {
         //then
         User user = userRepository.findAll().get(0);
 
-        assertThat(articleRepository.findAll().size()).isEqualTo(0);
-        assertThat(user.getSellArticles().size()).isEqualTo(0);
+        assertThat(articlePostRepository.findAll().size()).isEqualTo(0);
+        assertThat(user.getSellArticlePosts().size()).isEqualTo(0);
     }
 
     @Test
@@ -171,7 +171,7 @@ public class ArticleTest extends BaseTest {
         mockMvc.perform(delete("/user/" + userId));
 
         //then
-        assertThat(articleRepository.findAll().size()).isEqualTo(0);
+        assertThat(articlePostRepository.findAll().size()).isEqualTo(0);
         assertThat(userRepository.findAll().size()).isEqualTo(0);
     }
 
@@ -179,7 +179,7 @@ public class ArticleTest extends BaseTest {
     public void 물품_페이지로딩() throws Exception {
         //given
         articleSaveProc(0);
-        Long articleId = articleRepository.findAll().get(0).getId();
+        Long articleId = articlePostRepository.findAll().get(0).getId();
 
         //when
         MvcResult result = mockMvc.perform(get("/article/" + articleId))
@@ -207,7 +207,7 @@ public class ArticleTest extends BaseTest {
     public void 잘못된_물품페이지로딩() throws Exception {
         //given
         articleSaveProc(0);
-        Long articleId = articleRepository.findAll().get(0).getId();
+        Long articleId = articlePostRepository.findAll().get(0).getId();
 
         //when
         MvcResult result = mockMvc.perform(get("/article/" + articleId + 1)).andReturn();
@@ -484,7 +484,7 @@ public class ArticleTest extends BaseTest {
     }
 
     public void watchArticle(int idx, int count) throws Exception { // 조회수 증가
-        Long articleId = articleRepository.findAll().get(idx).getId();
+        Long articleId = articlePostRepository.findAll().get(idx).getId();
 
         for (int i = 0; i < count; i++) {
             mockMvc.perform(get("/article/" + articleId));

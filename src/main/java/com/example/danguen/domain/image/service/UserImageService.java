@@ -34,7 +34,7 @@ public class UserImageService {
 
             ImageIO.write(image, "jpg", file);
 
-            UserImage userImage = new ImageDto(user.getName() + ".jpg", savePath).toUserImage(user);
+            UserImage userImage = new ImageDto(savePath + user.getEmail() + "/image.jpg").toUserImage(user);
 
             userImageRepository.save(userImage);
 

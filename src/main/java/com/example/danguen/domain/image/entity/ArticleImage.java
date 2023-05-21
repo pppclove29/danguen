@@ -1,6 +1,6 @@
 package com.example.danguen.domain.image.entity;
 
-import com.example.danguen.domain.post.entity.Article;
+import com.example.danguen.domain.post.entity.ArticlePost;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,17 +11,16 @@ import javax.persistence.*;
 @NoArgsConstructor
 @Entity
 @DiscriminatorValue("A")
-public class ArticleImage extends Image{
+public class ArticleImage extends Image {
     @ManyToOne
     @JoinColumn(name = "ARTICLE_ID")
-    private Article article;
+    private ArticlePost articlePost;
 
     @Builder
-    public ArticleImage(String name, String url, Article article){
-        this.name = name;
+    public ArticleImage(String url, ArticlePost articlePost) {
         this.url = url;
-        this.article = article;
+        this.articlePost = articlePost;
 
-        article.addImage(this);
+        articlePost.addImage(this);
     }
 }

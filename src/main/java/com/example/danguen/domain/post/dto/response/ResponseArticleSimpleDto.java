@@ -1,7 +1,7 @@
 package com.example.danguen.domain.post.dto.response;
 
 import com.example.danguen.domain.base.Address;
-import com.example.danguen.domain.post.entity.Article;
+import com.example.danguen.domain.post.entity.ArticlePost;
 import lombok.Data;
 
 @Data
@@ -16,15 +16,15 @@ public class ResponseArticleSimpleDto {
 
     private Address dealHopeAddress; // 거래 희망 장소
 
-    public static ResponseArticleSimpleDto toResponse(Article article) {
+    public static ResponseArticleSimpleDto toResponse(ArticlePost articlePost) {
         ResponseArticleSimpleDto dto = new ResponseArticleSimpleDto();
 
-        dto.setId(article.getId());
-        dto.setTitle(article.getTitle());
-        dto.setPrice(article.getPrice());
-        dto.setViews(article.getViews());
-        dto.setDealHopeAddress(article.getDealHopeAddress());
-        dto.setImageUrl(article.getImages().get(0).getUrl());
+        dto.setId(articlePost.getId());
+        dto.setTitle(articlePost.getTitle());
+        dto.setPrice(articlePost.getPrice());
+        dto.setViews(articlePost.getViews());
+        dto.setDealHopeAddress(articlePost.getDealHopeAddress());
+        dto.setImageUrl(articlePost.getImages().get(0).getUrl());
 
         return dto;
     }

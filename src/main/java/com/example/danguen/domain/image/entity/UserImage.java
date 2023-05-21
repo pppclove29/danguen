@@ -14,14 +14,13 @@ import javax.persistence.OneToOne;
 @NoArgsConstructor
 @Entity
 @DiscriminatorValue("U")
-public class UserImage extends Image{
+public class UserImage extends Image {
     @OneToOne
     @JoinColumn(name = "USER_ID")
     private User user;
 
     @Builder
-    public UserImage(String name, String url, User user){
-        this.name = name;
+    public UserImage(String url, User user) {
         this.url = url;
         this.user = user;
 
