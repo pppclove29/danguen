@@ -20,7 +20,7 @@ import java.util.List;
 @Table(name = "USERS") // H2때문에 선언
 @Entity
 public class User extends BaseTimeEntity {
-
+//TODO 각종 컬럼에 대해 Nullable and unique 설정
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "USER_ID", nullable = false)

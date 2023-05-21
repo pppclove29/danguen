@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -29,16 +30,19 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public User getOrSave(String name, String email) {
-        return userRepository.findByEmail(email)
-                .orElse(
-                        userRepository.save(
-                                User.builder()
-                                        .name(name)
-                                        .email(email)
-                                        .build()
-                        )
-                );
+    public Optional<User> getUser(String email) {
+        return userRepository.findByEmail(email);
+    }
+
+    @Override
+    @Transactional
+    public User save(String name, String email) {
+        return userRepository.save(
+                User.builder()
+                        .name(name)
+                        .email(email)
+                        .build()
+        );
     }
 
     @Override

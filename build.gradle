@@ -34,7 +34,7 @@ dependencies {
 	implementation 'org.springframework:spring-messaging'
 	implementation 'org.springframework:spring-websocket'
 	implementation group: 'org.webjars', name: 'sockjs-client', version: '1.1.1'
-	implementation 'org.webjars:stomp-websocket:2.3.3'
+	implementation 'org.webjars:stomp-websocket:2.3.4'
 
 	compileOnly 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
@@ -53,10 +53,11 @@ dependencies {
 	testImplementation 'org.springframework.security:spring-security-test'
 	testImplementation 'com.jayway.jsonpath:json-path'
 
-	implementation group: 'commons-fileupload', name: 'commons-fileupload', version: '1.4'
-	implementation group: 'commons-io', name: 'commons-io', version: '2.7'
+	implementation 'io.jsonwebtoken:jjwt-api'
+	implementation 'io.jsonwebtoken:jjwt-impl'
+	implementation 'io.jsonwebtoken:jjwt-jackson'
 
-
+	testImplementation 'org.mockito:mockito-core'
 	implementation 'com.h2database:h2'
 }
 

@@ -30,7 +30,7 @@ public class SecurityConfig {
                     .authorizeHttpRequests()
                         .antMatchers(permitUri).permitAll()
                         .antMatchers("/admin").hasRole("ADMIN")
-                        .anyRequest().permitAll()
+                        .anyRequest().authenticated()
                 .and()
                     .logout()
                         .logoutSuccessUrl("/")

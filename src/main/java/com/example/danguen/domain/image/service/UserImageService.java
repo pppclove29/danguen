@@ -2,6 +2,7 @@ package com.example.danguen.domain.image.service;
 
 import com.example.danguen.domain.image.dto.ImageDto;
 import com.example.danguen.domain.image.entity.UserImage;
+import com.example.danguen.domain.image.repository.ImageRepository;
 import com.example.danguen.domain.image.repository.UserImageRepository;
 import com.example.danguen.domain.user.entity.User;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +19,7 @@ import java.util.Objects;
 @RequiredArgsConstructor
 @Service
 public class UserImageService {
-    private final UserImageRepository userImageRepository;
+    private final ImageRepository userImageRepository;
 
     @Value("${file.user.image.path}")
     private String savePath;

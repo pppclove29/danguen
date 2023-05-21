@@ -7,6 +7,7 @@ import com.example.danguen.domain.user.dto.response.ResponseUserSimpleDto;
 import com.example.danguen.domain.user.entity.User;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface UserService {
 
@@ -19,13 +20,21 @@ public interface UserService {
     ResponseUserPageDto getUserDto(Long userId);
 
     /**
-     * Email 을 통해 특정 유저가 있는지 판별 후 존재하면 반환, 없다면 새로 생성
+     * Email 을 통해 특정 유저가 있는지 판별 후 반환
      *
-     * @param name  새로 저장할 유저의 이름
      * @param email 판별할 유저의 Email
-     * @return 존재하는 유저 or 새로 생성된 유저
+     * @return Optional<User></>
      */
-    User getOrSave(String name, String email);
+    Optional<User> getUser(String email);
+
+    /**
+     * 이름과 이메일을 통해 유저를 DB에 저장
+     *
+     * @param name  사용자 이름
+     * @param email 사용자 이메일
+     * @return 저장한 유저의 Entity
+     */
+    User save(String name, String email);
 
     /**
      * 유저 업데이트 정보를 받아 기존 유저의 정보를 수정

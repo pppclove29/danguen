@@ -91,7 +91,7 @@ public class CommentTest extends BaseTest {
         dto.setContent(articleContent + " new");
 
         //when
-        MvcResult result = mockMvc.perform(put("/comment/" + commentId)
+        MvcResult result    = mockMvc.perform(put("/comment/" + commentId)
                         .param("content", commentContent + " new"))
                 .andExpect(status().isOk())
                 .andReturn();
