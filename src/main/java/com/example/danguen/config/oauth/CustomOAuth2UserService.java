@@ -30,7 +30,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                 .orElseGet(() ->
                 {
                     User newUser = userService.save(name, email);
-                    userImageService.UserImageSave(newUser, imageUrl);
+                    userImageService.userImageSave(newUser, imageUrl);
                     return newUser;
                 });
 

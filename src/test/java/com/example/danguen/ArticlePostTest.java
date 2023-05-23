@@ -1,21 +1,21 @@
 package com.example.danguen;
 
 
-import com.example.danguen.domain.comment.dto.response.ResponseCommentDto;
-import com.example.danguen.domain.image.exception.ArticleNotFoundException;
 import com.example.danguen.domain.base.Address;
-import com.example.danguen.domain.post.entity.ArticlePost;
+import com.example.danguen.domain.image.exception.ArticleNotFoundException;
 import com.example.danguen.domain.post.dto.request.RequestArticleSaveOrUpdateDto;
-import com.example.danguen.domain.post.dto.response.ResponseArticleDto;
 import com.example.danguen.domain.post.dto.response.ResponseArticleSimpleDto;
+import com.example.danguen.domain.post.entity.ArticlePost;
 import com.example.danguen.domain.post.repository.ArticlePostRepository;
 import com.example.danguen.domain.user.entity.User;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
@@ -196,9 +196,11 @@ public class ArticlePostTest extends BaseTest {
     }
 
     @DisplayName("물품 정보 요청")
+    @WithAnonymousUser
     @Test
     public void successLoadSimpleArticleInfo() throws Exception {
         //given
+        //todo 작성 시간 검증
         LocalDateTime testTime = LocalDateTime.now();
 
         Long articleId = makeMockArticle(0, getSessionUser()).getId();
@@ -219,7 +221,6 @@ public class ArticlePostTest extends BaseTest {
                 .andExpect(jsonPath("$.dealHopeAddress.zipcode").value(articleZipcode + 0))
                 .andExpect(jsonPath("$.seller").value(sessionName));
 
-        //todo 작성 시간 검증
     }
 
     @DisplayName("중고물품 등록자 회원탈퇴시 게시글 자동삭제")
@@ -239,18 +240,16 @@ public class ArticlePostTest extends BaseTest {
     }
 
     @DisplayName("존재하지 않는 중고물품 정보 요청")
-    @WithMockUser
+    @WithAnonymousUser
     @Test
     public void failLoadNonExistArticleInfo() throws Exception {
-        //given
-        Long articleId = makeMockArticle(0, getSessionUser()).getId();
-
         //when
         MvcResult result = mockMvc.perform(get("/article/999999999")).andReturn();
 
         //then
         assertThat(result.getResponse().getContentAsString()).contains(ArticleNotFoundException.message);
     }
+
     /*
      물품 지역 리스트
      idx     address
@@ -265,75 +264,186 @@ public class ArticlePostTest extends BaseTest {
      8       228
      9       339
      */
+    int articleSize = 10;
+    int pageSize = 6;
+
+
     @DisplayName("주소 없이 주소별 중고물품 리스트 요청")
+    @WithAnonymousUser
     @Test
-    public void 주소에_맞는_물품_리스트로딩() throws Exception {
+    public void successAddressSearchArticleListWithOutAddress() throws Exception {
         //given
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < articleSize; i++) {
             makeMockArticle(i, getSessionUser());
         }
 
         //when
-        MvcResult result;
-        List<ResponseArticleSimpleDto> articles;
-        String objKey = "articles";
-
-        result = mockMvc.perform(get("/address"))
-                .andExpect(status().isOk())
-                .andReturn(); // 검색 결과는 최신순으로 내림차순한다
-
-        articles = objToList(result, objKey);
-
-        assertThat(articles.size()).isEqualTo(6);
-        assertThat(articles.get(0).getTitle()).isEqualTo(articleTitle + 9);
-        assertThat(articles.get(5).getTitle()).isEqualTo(articleTitle + 4);
-
-        //같은 검색결과를 반환하는지 확인
-        result = mockMvc.perform(get("/address/희망주소1/희망주소1"))
+        MvcResult result = mockMvc.perform(get("/address"))
                 .andExpect(status().isOk())
                 .andReturn();
 
-        articles = objToList(result, objKey);
+        String responseBody = result.getResponse().getContentAsString();
 
-        assertThat(articles.size()).isEqualTo(3);
-        assertThat(articles.get(0).getTitle()).isEqualTo(articleTitle + 5);
-        assertThat(articles.get(2).getTitle()).isEqualTo(articleTitle + 3);
+        List<ResponseArticleSimpleDto> responseList = mapper.readValue(responseBody, new TypeReference<>() {
+        });
 
-        //단 하나의 단독결과만 반환하는지 확인
-        result = mockMvc.perform(get("/address/희망주소1/희망주소1/희망주소3"))
-                .andExpect(status().isOk())
-                .andReturn();
+        // then
+        assertThat(responseList.size()).isEqualTo(6);
 
-        articles = objToList(result, objKey);
+        for (int i = 1; i <= pageSize; i++) {
+            ResponseArticleSimpleDto res = responseList.get(i);
 
-        assertThat(articles.size()).isEqualTo(1);
-        assertThat(articles.get(0).getTitle()).isEqualTo(articleTitle + 3);
-
-        //없는 주소를 입력시 반환값이 없는지 확인
-        result = mockMvc.perform(get("/address/없는주소"))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        articles = objToList(result, objKey);
-
-        assertThat(articles.size()).isEqualTo(0);
-
-        //영어 url도 확인, 역시 없음
-        result = mockMvc.perform(get("/address/no-address"))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        articles = objToList(result, objKey);
-
-        assertThat(articles.size()).isEqualTo(0);
+            assertThat(res.getTitle()).isEqualTo(articleTitle + (articleSize - i));
+            assertThat(res.getPrice()).isEqualTo(articlePrice);
+            assertThat(res.getViews()).isEqualTo(0);
+            assertThat(res.getLikes()).isEqualTo(0);
+            assertThat(res.getDealHopeAddress()).isEqualTo(
+                    new Address(articleCity + i / 3, articleStreet + i / 3, articleZipcode + i)
+            );
+        }
     }
 
-
+    @DisplayName("도시만을 포함하는 주소별 중고물품 리스트 요청")
     @Test
-    public void 리스트_페이지_분할테스트() throws Exception {
+    public void successAddressSearchArticleListWithCity() throws Exception {
         //given
-        for (int i = 0; i < 10; i++) {
-            articleSaveProc(i);
+        for (int i = 0; i < articleSize; i++) {
+            makeMockArticle(i, getSessionUser());
+        }
+
+        //when
+        MvcResult result = mockMvc.perform(get("/address/희망주소1"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String responseBody = result.getResponse().getContentAsString();
+
+        List<ResponseArticleSimpleDto> responseList = mapper.readValue(responseBody, new TypeReference<>() {
+        });
+
+        // then
+        assertThat(responseList.size()).isEqualTo(3);
+
+        assertThat(responseList.get(0).getTitle()).isEqualTo(articleTitle + 5);
+        assertThat(responseList.get(1).getTitle()).isEqualTo(articleTitle + 4);
+        assertThat(responseList.get(2).getTitle()).isEqualTo(articleTitle + 3);
+
+        for (int i = 1; i <= responseList.size(); i++) {
+            ResponseArticleSimpleDto res = responseList.get(i);
+
+            assertThat(res.getPrice()).isEqualTo(articlePrice);
+            assertThat(res.getViews()).isEqualTo(0);
+            assertThat(res.getLikes()).isEqualTo(0);
+            assertThat(res.getDealHopeAddress()).isEqualTo(
+                    new Address("희망주소1", articleStreet + i / 3, articleZipcode + i)
+            );
+        }
+    }
+
+    @DisplayName("도시, 도로명만을 포함하는 주소별 중고물품 리스트 요청")
+    @WithAnonymousUser
+    @Test
+    public void successAddressSearchArticleListWithCityAndStreet() throws Exception {
+        //given
+        for (int i = 0; i < articleSize; i++) {
+            makeMockArticle(i, getSessionUser());
+        }
+
+        //when
+        MvcResult result = mockMvc.perform(get("/address/희망주소0/희망주소0"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String responseBody = result.getResponse().getContentAsString();
+
+        List<ResponseArticleSimpleDto> responseList = mapper.readValue(responseBody, new TypeReference<>() {
+        });
+
+        // then
+        assertThat(responseList.size()).isEqualTo(3);
+
+        assertThat(responseList.get(0).getTitle()).isEqualTo(articleTitle + 2);
+        assertThat(responseList.get(1).getTitle()).isEqualTo(articleTitle + 1);
+        assertThat(responseList.get(2).getTitle()).isEqualTo(articleTitle + 0);
+
+        for (int i = 1; i <= responseList.size(); i++) {
+            ResponseArticleSimpleDto res = responseList.get(i);
+
+            assertThat(res.getPrice()).isEqualTo(articlePrice);
+            assertThat(res.getViews()).isEqualTo(0);
+            assertThat(res.getLikes()).isEqualTo(0);
+            assertThat(res.getDealHopeAddress()).isEqualTo(
+                    new Address("희망주소1", "희망주소1", articleZipcode + i)
+            );
+        }
+    }
+
+    @DisplayName("모든 주소를 포함하는 주소별 중고물품 리스트 요청")
+    @WithAnonymousUser
+    @Test
+    public void successAddressSearchArticleListWithFullAddress() throws Exception {
+        //given
+        for (int i = 0; i < articleSize; i++) {
+            makeMockArticle(i, getSessionUser());
+        }
+
+        //when
+        MvcResult result = mockMvc.perform(get("/address/희망주소0/희망주소0/희망주소2"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String responseBody = result.getResponse().getContentAsString();
+
+        List<ResponseArticleSimpleDto> responseList = mapper.readValue(responseBody, new TypeReference<>() {
+        });
+
+        // then
+        assertThat(responseList.size()).isEqualTo(1);
+
+        assertThat(responseList.get(0).getTitle()).isEqualTo(articleTitle + 2);
+
+        for (int i = 1; i <= responseList.size(); i++) {
+            ResponseArticleSimpleDto res = responseList.get(i);
+
+            assertThat(res.getPrice()).isEqualTo(articlePrice);
+            assertThat(res.getViews()).isEqualTo(0);
+            assertThat(res.getLikes()).isEqualTo(0);
+            assertThat(res.getDealHopeAddress()).isEqualTo(
+                    new Address("희망주소1", "희망주소1", "희망주소0")
+            );
+        }
+    }
+
+    @DisplayName("존재하지않는 주소별 중고물품 리스트 요청")
+    @WithAnonymousUser
+    @Test
+    public void successAddressSearchArticleListWithNonExistAddress() throws Exception {
+        //given
+        for (int i = 0; i < articleSize; i++) {
+            makeMockArticle(i, getSessionUser());
+        }
+
+        //when
+        MvcResult result = mockMvc.perform(get("/address/none/exist/address"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String responseBody = result.getResponse().getContentAsString();
+
+        List<ResponseArticleSimpleDto> responseList = mapper.readValue(responseBody, new TypeReference<>() {
+        });
+
+        // then
+        assertThat(responseList.size()).isEqualTo(0);
+    }
+
+    @DisplayName("중고물품 리스트 결과 페이지 분할")
+    @WithAnonymousUser
+    @Test
+    public void successLoadArticleListSplit() throws Exception {
+        //given
+        for (int i = 0; i < articleSize; i++) {
+            makeMockArticle(i, getSessionUser());
         }
 
         // 첫번째 페이지

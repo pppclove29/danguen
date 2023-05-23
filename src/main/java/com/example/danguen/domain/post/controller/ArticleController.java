@@ -31,6 +31,8 @@ public class ArticleController {
     private final ArticleImageService articleImageService;
     private final CommentService commentService;
 
+    
+    //todo 권한별 역할 나눌것
     @PostMapping(value = "/article", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
     public void save(@ModelAttribute("request") RequestArticleSaveOrUpdateDto request,
                      @RequestParam(value = "images", required = false) List<MultipartFile> images,

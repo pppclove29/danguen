@@ -3,13 +3,13 @@ package com.example.danguen;
 import com.example.danguen.config.oauth.PrincipalUserDetails;
 import com.example.danguen.domain.base.Address;
 import com.example.danguen.domain.comment.entity.Comment;
+import com.example.danguen.domain.comment.repository.CommentRepository;
 import com.example.danguen.domain.image.repository.ImageRepository;
 import com.example.danguen.domain.post.entity.ArticlePost;
 import com.example.danguen.domain.post.entity.Post;
 import com.example.danguen.domain.post.repository.PostRepository;
 import com.example.danguen.domain.user.entity.User;
 import com.example.danguen.domain.user.repository.UserRepository;
-import com.example.danguen.domain.comment.repository.CommentRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,9 +50,11 @@ public class BaseTest {
     @Autowired
     ObjectMapper mapper;
 
+    private User sessionUser;
     String sessionName = "박이름";
     String sessionEmail = "email@temp.com";
 
+    private User otherUser;
     String noneSessionName = "김기타";
     String noneSessionEmail = "other@temp.com";
 
@@ -64,10 +66,10 @@ public class BaseTest {
                 .alwaysDo(print())
                 .build();
 
-        User user = makeMockUser(sessionName, sessionEmail);
-        registerUserToSession(user);
+        sessionUser = makeMockUser(sessionName, sessionEmail);
+        registerUserToSession(sessionUser);
 
-        makeMockUser(noneSessionName, noneSessionEmail);
+        otherUser = makeMockUser(noneSessionName, noneSessionEmail);
     }
 
     @AfterEach
@@ -89,6 +91,7 @@ public class BaseTest {
     String userStreet = "길로";
     String userZipcode = "1234";
 
+
     public User makeMockUser(String name, String email) {
         Address address = new Address(userCity, userStreet, userZipcode);
         User user = mock(User.class);
@@ -101,11 +104,11 @@ public class BaseTest {
     }
 
     public User getSessionUser() {
-        return userRepository.findByEmail(sessionEmail).orElseThrow(RuntimeException::new);
+        return sessionUser;
     }
 
     public User getOtherUser() {
-        return userRepository.findByEmail(noneSessionEmail).orElseThrow(RuntimeException::new);
+        return otherUser;
     }
 
 

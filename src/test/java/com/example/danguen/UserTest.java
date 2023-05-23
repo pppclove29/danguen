@@ -51,7 +51,7 @@ public class UserTest extends BaseTest {
         assertThat(user.getAddress().getCity()).isEqualTo(userCity);
         assertThat(user.getAddress().getStreet()).isEqualTo(userStreet);
         assertThat(user.getAddress().getZipcode()).isEqualTo(userZipcode);
-        assertThat(user.getRole()).isEqualTo(Role.ROLE_USER);
+        assertThat(user.getRole()).isEqualTo(Role.USER);
     }
 
     @DisplayName("존재하지 않는 유저 정보 검색")
@@ -93,7 +93,7 @@ public class UserTest extends BaseTest {
         assertThat(user.getAddress().getCity()).isEqualTo("부산광역시");
         assertThat(user.getAddress().getStreet()).isEqualTo("화지로");
         assertThat(user.getAddress().getZipcode()).isEqualTo("52");
-        assertThat(user.getRole()).isEqualTo(Role.ROLE_USER);
+        assertThat(user.getRole()).isEqualTo(Role.USER);
     }
 
     @DisplayName("유저 삭제")

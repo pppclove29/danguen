@@ -24,4 +24,15 @@ public class Address {
         return city + " " + street + " " + zipcode;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof Address))
+            return false;
+
+        Address other = (Address) obj;
+
+        return other.city.equals(this.city)
+                && other.street.equals(this.street)
+                && other.zipcode.equals(this.zipcode);
+    }
 }
