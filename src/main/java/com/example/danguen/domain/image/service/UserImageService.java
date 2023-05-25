@@ -7,6 +7,7 @@ import com.example.danguen.domain.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -26,6 +27,7 @@ public class UserImageService {
     @Value("${file.user.image.path}")
     private String savePath;
 
+    @Transactional
     public void userImageSave(User user, String imageUrl) {
         try {
             URL url = new URL(imageUrl);
@@ -48,7 +50,7 @@ public class UserImageService {
             UserImage userImage = new ImageDto(imagePath).toUserImage(user);
             userImageRepository.save(userImage);
 
-        } catch (IOException | InterruptedException | RuntimeException |ExecutionException e){
+        } catch (IOException | InterruptedException | RuntimeException | ExecutionException e) {
             throw new RuntimeException("Failed to save user image", e);
         }
     }

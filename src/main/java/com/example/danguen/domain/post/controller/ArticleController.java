@@ -14,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -31,9 +30,9 @@ public class ArticleController {
     private final ArticleImageService articleImageService;
     private final CommentService commentService;
 
-    
+
     //todo 권한별 역할 나눌것
-    @PostMapping(value = "/article", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
+    @PostMapping(value = "/article")
     public void save(@ModelAttribute("request") RequestArticleSaveOrUpdateDto request,
                      @RequestParam(value = "images", required = false) List<MultipartFile> images,
                      @SessionUserId Long userId) throws IOException {
@@ -43,8 +42,8 @@ public class ArticleController {
 
     @PutMapping("/article/{articleId}")
     public void update(@ModelAttribute("request") RequestArticleSaveOrUpdateDto request,
-                                    @PathVariable Long articleId,
-                                    @RequestParam(value = "images", required = false) List<MultipartFile> images) {
+                       @PathVariable Long articleId,
+                       @RequestParam(value = "images", required = false) List<MultipartFile> images) {
         articleService.update(request, articleId);
         articleImageService.update(images);
     }
@@ -57,7 +56,7 @@ public class ArticleController {
 
     @GetMapping("/article/{articleId}")
     public ResponseArticleDto getArticle(@PathVariable Long articleId) {
-        ResponseArticleDto post = articleService.getArticle(articleId);
+        ResponseArticleDto post = articleService.getArticleDto(articleId);
         List<ResponseCommentDto> commentDtoStream
                 = commentService.getComments(articleId);
 

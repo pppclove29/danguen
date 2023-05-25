@@ -19,13 +19,7 @@ public interface UserService {
      */
     ResponseUserPageDto getUserDto(Long userId);
 
-    /**
-     * Email 을 통해 특정 유저가 있는지 판별 후 반환
-     *
-     * @param email 판별할 유저의 Email
-     * @return Optional<User></>
-     */
-    Optional<User> getUser(String email);
+
 
     /**
      * 이름과 이메일을 통해 유저를 DB에 저장
@@ -90,5 +84,13 @@ public interface UserService {
      * @param userId 가져올 유저의 Id
      * @return User Entity
      */
-    User getUserFromDB(Long userId);
+    User getUserById(Long userId);
+
+    /**
+     * Email 을 통해 특정 유저가 있는지 판별 후 반환
+     *
+     * @param email 판별할 유저의 Email
+     * @return Optional<User></>
+     */
+    Optional<User> getUserByEmail(String email);
 }

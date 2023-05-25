@@ -1,7 +1,6 @@
 package com.example.danguen.domain.post.entity;
 
 import com.example.danguen.domain.base.Address;
-import com.example.danguen.domain.comment.entity.Comment;
 import com.example.danguen.domain.image.entity.ArticleImage;
 import com.example.danguen.domain.user.entity.User;
 import com.example.danguen.domain.post.dto.request.RequestArticleSaveOrUpdateDto;
@@ -65,9 +64,7 @@ public class ArticlePost extends Post {
     }
 
 
-    public ArticleImage addImage(ArticleImage image) {
+    public void addImage(ArticleImage image) {
         images.add(image);
-
-        return image;
     }
 }

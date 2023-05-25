@@ -33,8 +33,8 @@ public class ArticleServiceImpl implements ArticleService {
 
     @Override
     @Transactional
-    public ResponseArticleDto getArticle(Long articleId) {
-        ArticlePost articlePost = getArticleFromDB(articleId);
+    public ResponseArticleDto getArticleDto(Long articleId) {
+        ArticlePost articlePost = getArticleById(articleId);
         articlePost.addViewCount();
 
         return ResponseArticleDto.toResponse(articlePost);
@@ -68,7 +68,7 @@ public class ArticleServiceImpl implements ArticleService {
     @Override
     @Transactional(readOnly = true)
     public List<ResponseArticleSimpleDto> getInterestPage(Pageable pageable, Long userId) {
-        List<User> interestUser = userService.getUserFromDB(userId).getInterestUser();
+        List<User> interestUser = userService.getUserById(userId).getInterestUsers();
 
         Page<ArticlePost> page = articlePostRepository.findByInterestUser(pageable, interestUser);
 
@@ -80,7 +80,7 @@ public class ArticleServiceImpl implements ArticleService {
     public Long save(RequestArticleSaveOrUpdateDto request, Long userId) throws IOException {
         ArticlePost articlePost = request.toEntity();
 
-        User user = userService.getUserFromDB(userId);
+        User user = userService.getUserById(userId);
         user.addSellArticle(articlePost);
 
         return articlePostRepository.save(articlePost).getId();
@@ -89,7 +89,7 @@ public class ArticleServiceImpl implements ArticleService {
     @Override
     @Transactional
     public void update(RequestArticleSaveOrUpdateDto request, Long articleId) {
-        ArticlePost articlePost = getArticleFromDB(articleId);
+        ArticlePost articlePost = getArticleById(articleId);
 
         articlePost.updateArticle(request);
     }
@@ -97,7 +97,7 @@ public class ArticleServiceImpl implements ArticleService {
     @Override
     @Transactional
     public void delete(Long articleId) {
-        ArticlePost articlePost = getArticleFromDB(articleId);
+        ArticlePost articlePost = getArticleById(articleId);
         User user = articlePost.getSeller();
 
         user.removeSellArticle(articlePost);
@@ -108,7 +108,7 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     @Override
-    public ArticlePost getArticleFromDB(Long articleId) {
+    public ArticlePost getArticleById(Long articleId) {
         return articlePostRepository.findById(articleId).orElseThrow(ArticleNotFoundException::new);
     }
 }

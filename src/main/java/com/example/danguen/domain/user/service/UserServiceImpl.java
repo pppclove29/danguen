@@ -23,16 +23,12 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public ResponseUserPageDto getUserDto(Long userId) {
-        User user = getUserFromDB(userId);
+        User user = getUserById(userId);
 
         return ResponseUserPageDto.toResponse(user);
     }
 
-    @Override
-    @Transactional
-    public Optional<User> getUser(String email) {
-        return userRepository.findByEmail(email);
-    }
+
 
     @Override
     @Transactional
@@ -48,7 +44,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void update(RequestUserUpdateDto request, Long userId) {
-        User user = getUserFromDB(userId);
+        User user = getUserById(userId);
 
         user.updateUser(request);
     }
@@ -56,39 +52,32 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void delete(Long userId) {
-        User user = getUserFromDB(userId);
+        User user = getUserById(userId);
 
         user.giveUpComments();
 
         userRepository.deleteById(userId);
     }
 
-    @Transactional
-    public void reviewTest(Runnable runnable) {
-        runnable.run();
-    }
-
     @Override
     @Transactional
     public void review(RequestReviewDto request, Long otherUserId) {
-        User seller = getUserFromDB(otherUserId);
-
-        seller.review(request);
+        getUserById(otherUserId).review(request);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<ResponseUserSimpleDto> getIUserDtos(Long userId) {
-        User user = getUserFromDB(userId);
+        User user = getUserById(userId);
 
-        return user.getInterestUser().stream().map(ResponseUserSimpleDto::toResponse).collect(Collectors.toList());
+        return user.getInterestUsers().stream().map(ResponseUserSimpleDto::toResponse).collect(Collectors.toList());
     }
 
     @Override
     @Transactional
     public void addInterestUser(Long userId, Long iUserId) {
-        User user = getUserFromDB(userId);
-        User iUser = getUserFromDB(iUserId);
+        User user = getUserById(userId);
+        User iUser = getUserById(iUserId);
 
         if (!user.isInterestUser(iUser)) {
             user.addInterestUser(iUser);
@@ -98,8 +87,8 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void deleteInterestUser(Long userId, Long iUserId) {
-        User user = getUserFromDB(userId);
-        User iUser = getUserFromDB(iUserId);
+        User user = getUserById(userId);
+        User iUser = getUserById(iUserId);
 
         if (user.isInterestUser(iUser)) {
             user.deleteInterestUser(iUser);
@@ -107,7 +96,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User getUserFromDB(Long userId) {
+    @Transactional
+    public User getUserById(Long userId) {
         return userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
     }
+
+    @Override
+    public Optional<User> getUserByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
 }
+.

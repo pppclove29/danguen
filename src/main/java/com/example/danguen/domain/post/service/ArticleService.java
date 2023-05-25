@@ -17,7 +17,7 @@ public interface ArticleService {
      * @param articleId 조회할 게시글 번호
      * @return 조회된 게시글 정보
      */
-    ResponseArticleDto getArticle(Long articleId);
+    ResponseArticleDto getArticleDto(Long articleId);
 
     /**
      * 주소 정보에 따라 게시글 목록을 페이지로 표시
@@ -86,5 +86,5 @@ public interface ArticleService {
      * @param articleId 가져올 Article ID
      * @return DB 에서 가져온 Article Entity
      */
-    ArticlePost getArticleFromDB(Long articleId);
+    ArticlePost getArticleById(Long articleId);
 }

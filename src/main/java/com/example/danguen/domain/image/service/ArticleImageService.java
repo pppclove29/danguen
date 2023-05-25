@@ -26,7 +26,6 @@ public class ArticleImageService {
 
     @Transactional
     public void save(Long articleId, List<MultipartFile> images) {
-
         String articleImagePath = savePath + articleId;
 
         if (new File(articleImagePath).mkdirs()) {
@@ -35,14 +34,14 @@ public class ArticleImageService {
                     .filter(Optional::isPresent)
                     .map(uuid ->
                             ArticleImage.builder()
-                                    .url(uuid.get())
-                                    .articlePost(articleService.getArticleFromDB(articleId))
+                                    .uuid(uuid.get())
+                                    .articlePost(articleService.getArticleById(articleId))
                                     .build())
                     .forEach(articleImageRepository::save);
         }
     }
 
-    public Optional<String> saveToLocal(MultipartFile multipartFile, String articleImagePath) {
+    private Optional<String> saveToLocal(MultipartFile multipartFile, String articleImagePath) {
         UUID uuid = UUID.randomUUID();
         try {
             multipartFile.transferTo(new File(articleImagePath + "/" + uuid));
@@ -53,7 +52,7 @@ public class ArticleImageService {
         return Optional.of(articleImagePath + "/" + uuid);
     }
 
-    public void update(List<MultipartFile> images){
+    public void update(List<MultipartFile> images) {
         //todo 기존 사진 삭제를 하던 해서 새로운 사진 추가
     }
 }

@@ -26,7 +26,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         String email = oAuth2User.getAttribute("email");
         String imageUrl = oAuth2User.getAttribute("picture");
 
-        User user = userService.getUser(email)
+        User user = userService.getUserByEmail(email)
                 .orElseGet(() ->
                 {
                     User newUser = userService.save(name, email);

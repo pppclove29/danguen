@@ -20,8 +20,8 @@ public class UserImage extends Image {
     private User user;
 
     @Builder
-    public UserImage(String url, User user) {
-        this.url = url;
+    public UserImage(String uuid, User user) {
+        this.uuid = uuid;
         this.user = user;
 
         user.setImage(this);

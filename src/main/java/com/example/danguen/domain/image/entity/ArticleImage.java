@@ -17,8 +17,8 @@ public class ArticleImage extends Image {
     private ArticlePost articlePost;
 
     @Builder
-    public ArticleImage(String url, ArticlePost articlePost) {
-        this.url = url;
+    public ArticleImage(String uuid, ArticlePost articlePost) {
+        this.uuid = uuid;
         this.articlePost = articlePost;
 
         articlePost.addImage(this);

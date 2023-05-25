@@ -45,7 +45,7 @@ public class ResponseArticleDto {
         dto.setWrittenTime(articlePost.getCreatedTime());
 
         articlePost.getImages().stream()
-                .map(Image::getUrl)
+                .map(Image::getUuid)
                 .forEach(dto.getImageUrl()::add);
 
         return dto;

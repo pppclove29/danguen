@@ -14,5 +14,5 @@ public class Image {
     @Column(name = "IMAGE_ID")
     Long id;
 
-    String url;
+    String uuid;
 }

@@ -6,7 +6,6 @@ import com.example.danguen.domain.comment.entity.Comment;
 import com.example.danguen.domain.comment.dto.request.RequestCommentSaveDto;
 import com.example.danguen.domain.comment.dto.response.ResponseCommentDto;
 import com.example.danguen.domain.post.entity.Post;
-import com.example.danguen.domain.post.entity.PostKind;
 import com.example.danguen.domain.post.service.PostService;
 import com.example.danguen.domain.user.entity.User;
 import com.example.danguen.domain.comment.repository.CommentRepository;
@@ -31,7 +30,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional
     public void save(RequestCommentSaveDto request, Long postId, Long userId) {
-        User user = userService.getUserFromDB(userId);
+        User user = userService.getUserById(userId);
         Post post = postService.getPostFromDB(postId);
 
         Comment comment = request.toEntity(user, post);
@@ -74,7 +73,7 @@ public class CommentServiceImpl implements CommentService {
     public int like(Long commentId, Long userId) {
         Comment comment = getCommentFromDB(commentId);
 
-        comment.likesComment(userService.getUserFromDB(userId));
+        comment.likesComment(userService.getUserById(userId));
 
         return comment.getLikedUser().size();
     }

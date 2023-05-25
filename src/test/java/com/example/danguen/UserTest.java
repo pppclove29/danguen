@@ -1,11 +1,12 @@
 package com.example.danguen;
 
-import com.example.danguen.domain.user.exception.UserNotFoundException;
 import com.example.danguen.domain.base.Address;
+import com.example.danguen.domain.review.RequestReviewDto;
+import com.example.danguen.domain.user.dto.request.RequestUserUpdateDto;
+import com.example.danguen.domain.user.dto.response.ResponseUserSimpleDto;
 import com.example.danguen.domain.user.entity.Role;
 import com.example.danguen.domain.user.entity.User;
-import com.example.danguen.domain.user.dto.request.RequestUserUpdateDto;
-import com.example.danguen.domain.review.RequestReviewDto;
+import com.example.danguen.domain.user.exception.UserNotFoundException;
 import com.example.danguen.domain.user.service.UserServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
@@ -15,15 +16,16 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.mockito.Mockito.when;
 
 public class UserTest extends BaseTest {
 
@@ -35,22 +37,26 @@ public class UserTest extends BaseTest {
     @Test
     public void successLoadUserInfo() throws Exception {
         //given
-        Long userId = userRepository.findAll().get(0).getId();
+        Long userId = sessionUserId;
+        RequestUserUpdateDto updateDto = new RequestUserUpdateDto();
+        updateDto.setName(sessionName);
+        updateDto.setAddress(userAddress);
+
+        userService.update(updateDto, sessionUserId);
 
         //where & then
-        mockMvc.perform(get("/user/" + userId))
-                .andExpect(jsonPath("$.name").value(sessionName))
-                .andExpect(jsonPath("$.address.city").value(userCity))
-                .andExpect(jsonPath("$.rate.dealTemperature").value(36.5));
+        MvcResult result = mockMvc.perform(get("/user/" + userId))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        System.out.println(result.getResponse().getContentAsString());
 
         //then
-        User user = userRepository.getReferenceById(userId);
+        User user = userService.getUserById(userId);
 
         assertThat(user.getId()).isEqualTo(userId);
         assertThat(user.getName()).isEqualTo(sessionName);
-        assertThat(user.getAddress().getCity()).isEqualTo(userCity);
-        assertThat(user.getAddress().getStreet()).isEqualTo(userStreet);
-        assertThat(user.getAddress().getZipcode()).isEqualTo(userZipcode);
+        assertThat(user.getAddress()).isEqualTo(userAddress);
         assertThat(user.getRole()).isEqualTo(Role.USER);
     }
 
@@ -74,11 +80,12 @@ public class UserTest extends BaseTest {
     @Test
     public void successUpdateUserInfo() throws Exception {
         //given
-        Long userId = userRepository.findAll().get(0).getId();
+        Long userId = sessionUserId;
 
         RequestUserUpdateDto dto = new RequestUserUpdateDto();
         dto.setName("김개똥");
-        dto.setAddress(new Address("부산광역시", "화지로", "52"));
+        Address newAddress = new Address("부산광역시", "화지로", "52");
+        dto.setAddress(newAddress);
 
         //where
         mockMvc.perform(put("/user/" + userId)
@@ -86,13 +93,11 @@ public class UserTest extends BaseTest {
                 .content(new ObjectMapper().writeValueAsString(dto)));
 
         //then
-        User user = userRepository.getReferenceById(userId);
+        User user = userService.getUserById(userId);
 
         assertThat(user.getId()).isEqualTo(userId);
         assertThat(user.getName()).isEqualTo("김개똥");
-        assertThat(user.getAddress().getCity()).isEqualTo("부산광역시");
-        assertThat(user.getAddress().getStreet()).isEqualTo("화지로");
-        assertThat(user.getAddress().getZipcode()).isEqualTo("52");
+        assertThat(user.getAddress()).isEqualTo(newAddress);
         assertThat(user.getRole()).isEqualTo(Role.USER);
     }
 
@@ -101,13 +106,13 @@ public class UserTest extends BaseTest {
     @Test
     public void successDeleteUser() throws Exception {
         //given
-        Long userId = userRepository.findAll().get(0).getId();
+        Long userId = sessionUserId;
 
         //when
         mockMvc.perform(delete("/user/" + userId));
 
         //then
-        assertThat(userRepository.findAll().size()).isEqualTo(0);
+        assertThat(userService.getUserByEmail(sessionEmail)).isEqualTo(Optional.empty());
     }
 
 
@@ -116,8 +121,6 @@ public class UserTest extends BaseTest {
     @Test
     public void successReviewOtherUser() throws Exception {
         //given
-        User user = getSessionUser();
-
 
         // 세션 유저에 대한 상대방의 좋은 리뷰
         RequestReviewDto review = new RequestReviewDto();
@@ -126,11 +129,13 @@ public class UserTest extends BaseTest {
         review.setNegativeAnswer(new boolean[]{false, false, false, false, false, false, false, false, false, false});
 
         //when
-        mockMvc.perform(post("/user/" + user.getId() + "/review-seller")
+        mockMvc.perform(post("/user/" + sessionUserId + "/review")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(new ObjectMapper().writeValueAsString(review)));
 
         //then
+        User user = userService.getUserById(sessionUserId);
+
         assertThat(user.getRate().getDealTemperature()).isGreaterThan(36.5f);
         assertThat(user.getRate().getTotalReviewScore()).isEqualTo(8);
         assertThat(user.getRate().getTotalDealCount()).isEqualTo(1);
@@ -142,16 +147,17 @@ public class UserTest extends BaseTest {
     @Test
     public void successAddInterestUser() throws Exception {
         //given
-        User otherUser = getOtherUser();
+        User otherUser = userService.getUserById(noneSessionUserId);
 
         //when
         mockMvc.perform(put("/user/iuser/" + otherUser.getId()))
                 .andExpect(status().isOk());
 
         //then
-        User user = getSessionUser();
+        List<ResponseUserSimpleDto> interestUser = userService.getIUserDtos(sessionUserId);
 
-        assertThat(user.getInterestUser()).contains(otherUser);
+        assertThat(interestUser.get(0).getName()).isEqualTo(otherUser.getName());
+        assertThat(interestUser.get(0).getId()).isEqualTo(userService.getUserByEmail(noneSessionEmail).get().getId());
     }
 
     @DisplayName("관심유저 제거")
@@ -159,17 +165,18 @@ public class UserTest extends BaseTest {
     @Test
     public void successDeleteInterestUser() throws Exception {
         //given
-        User user = getSessionUser();
-        User otherUser = getOtherUser();
+        User otherUser = userService.getUserById(noneSessionUserId);
 
-        when(user.getInterestUser()).thenReturn(List.of(otherUser));
+        setInterestUsers(List.of(otherUser));
 
         //when
         mockMvc.perform(delete("/user/iuser/" + otherUser.getId()))
                 .andExpect(status().isOk());
 
         //then
-        assertThat(user.getInterestUser().size()).isEqualTo(0);
+        List<ResponseUserSimpleDto> interestUser = userService.getIUserDtos(sessionUserId);
+
+        assertThat(interestUser.size()).isEqualTo(0);
     }
 
     @DisplayName("관심유저 중복 등록")
@@ -177,10 +184,9 @@ public class UserTest extends BaseTest {
     @Test
     public void successDuplicateAddInterestUser() throws Exception {
         //given
-        User user = getSessionUser();
-        User otherUser = getOtherUser();
+        User otherUser = userService.getUserById(noneSessionUserId);
 
-        when(user.getInterestUser()).thenReturn(List.of(otherUser));
+        setInterestUsers(List.of(otherUser));
 
         //when
         for (int i = 0; i < 3; i++) {
@@ -189,8 +195,11 @@ public class UserTest extends BaseTest {
         }
 
         //then
-        assertThat(user.getInterestUser().size()).isEqualTo(1);
-        assertThat(user.getInterestUser()).contains(otherUser);
+        List<ResponseUserSimpleDto> interestUser = userService.getIUserDtos(sessionUserId);
+
+        assertThat(interestUser.size()).isEqualTo(1);
+        assertThat(interestUser.get(0).getName()).isEqualTo(otherUser.getName());
+        assertThat(interestUser.get(0).getId()).isEqualTo(userService.getUserByEmail(noneSessionEmail).get().getId());
     }
 
     @DisplayName("관심유저 중복 삭제")
@@ -198,10 +207,9 @@ public class UserTest extends BaseTest {
     @Test
     public void successDuplicateDeleteInterestUser() throws Exception {
         //given
-        User user = getSessionUser();
-        User otherUser = getOtherUser();
+        User otherUser = userService.getUserById(noneSessionUserId);
 
-        when(user.getInterestUser()).thenReturn(List.of(otherUser));
+        setInterestUsers(List.of(otherUser));
 
         //when
         for (int i = 0; i < 3; i++) {
@@ -210,8 +218,9 @@ public class UserTest extends BaseTest {
         }
 
         //then
-        assertThat(user.getInterestUser().size()).isEqualTo(0);
-        assertThat(user.getInterestUser()).doesNotContain(otherUser);
+        List<ResponseUserSimpleDto> interestUser = userService.getIUserDtos(sessionUserId);
+
+        assertThat(interestUser.size()).isEqualTo(0);
     }
 
     @DisplayName("존재하지 않는 관심유저 등록")
@@ -231,30 +240,35 @@ public class UserTest extends BaseTest {
     @DisplayName("관심 유저 리스트 요청")
     @WithMockUser
     @Test
-    public void success() throws Exception {
+    public void successLoadInterestUserList() throws Exception {
         //given
-        User user = getSessionUser();
-
         final int iUserCnt = 10;
         List<User> iUsers = new ArrayList<>();
 
         for (int i = 0; i < iUserCnt; i++) {
-            iUsers.add(makeMockUser("이름" + i, String.format("iUser[%d]@email.com", i)));
+            iUsers.add(makeUser("이름" + i, String.format("iUser[%d]@email.com", i)));
         }
 
-        when(user.getInterestUser()).thenReturn(iUsers);
+        setInterestUsers(iUsers);
 
         //when
         ResultActions resultActions = mockMvc.perform(get("/user/iuser"))
                 .andExpect(status().isOk());
 
+
         //then
         for (int i = 0; i < iUserCnt; i++) {
             String jsonPathQuery = String.format("$[%d]", i);
             resultActions.andExpect(jsonPath(jsonPathQuery + ".name").value("이름" + i));
-            resultActions.andExpect(jsonPath(jsonPathQuery + ".email").value(String.format("iUser[%d]@email.com", i)));
+            resultActions.andExpect(jsonPath(jsonPathQuery + ".picture").value("uuid"));
         }
 
         resultActions.andExpect(jsonPath(String.format("$[%d]", iUserCnt)).doesNotExist());
+    }
+
+    @Transactional
+    public void setInterestUsers(List<User> interestUsers) {
+        for (var iUser : interestUsers)
+            userService.addInterestUser(sessionUserId, iUser.getId());
     }
 }

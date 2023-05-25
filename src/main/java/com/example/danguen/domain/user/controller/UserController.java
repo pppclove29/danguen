@@ -37,9 +37,7 @@ public class UserController {
     @PostMapping("/user/{otherUserId}/review")
     public void reviewSeller(@RequestBody RequestReviewDto request,
                              @PathVariable Long otherUserId) {
-        userService.reviewTest(() ->
-                userService.getUserFromDB(otherUserId).review(request)
-        );
+        userService.review(request, otherUserId);
     }
 
     @GetMapping("/user/iuser")

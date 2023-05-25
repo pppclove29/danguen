@@ -5,8 +5,8 @@ import com.example.danguen.domain.base.BaseTimeEntity;
 import com.example.danguen.domain.comment.entity.Comment;
 import com.example.danguen.domain.image.entity.UserImage;
 import com.example.danguen.domain.post.entity.ArticlePost;
-import com.example.danguen.domain.user.dto.request.RequestUserUpdateDto;
 import com.example.danguen.domain.review.RequestReviewDto;
+import com.example.danguen.domain.user.dto.request.RequestUserUpdateDto;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,13 +20,14 @@ import java.util.List;
 @Table(name = "USERS") // H2때문에 선언
 @Entity
 public class User extends BaseTimeEntity {
-//TODO 각종 컬럼에 대해 Nullable and unique 설정
+    //TODO 각종 컬럼에 대해 Nullable and unique 설정
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "USER_ID", nullable = false)
     private Long id;
 
     private String name;
+    @Column(unique = true)
     private String email;
 
     @Embedded
@@ -37,8 +38,13 @@ public class User extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    @OneToMany
-    private final List<User> interestUser = new ArrayList<>();
+    @ManyToMany
+    @JoinTable(
+            name = "USER_INTEREST",
+            joinColumns = @JoinColumn(name = "USER_ID"),
+            inverseJoinColumns = @JoinColumn(name = "INTEREST_USER_ID")
+    )
+    private final List<User> interestUsers = new ArrayList<>();
 
     @OneToMany(mappedBy = "seller", cascade = CascadeType.ALL)
     private final List<ArticlePost> sellArticlePosts = new ArrayList<>(); // 판매상품
@@ -60,11 +66,10 @@ public class User extends BaseTimeEntity {
 
         rate = new UserRate();
 
-        role = Role.ROLE_USER;
+        role = Role.USER;
     }
 
     public void updateUser(RequestUserUpdateDto request) {
-        //현 유저에 대한 정보를 변경한다
         this.address = request.getAddress();
         this.name = request.getName();
     }
@@ -84,15 +89,15 @@ public class User extends BaseTimeEntity {
     }
 
     public boolean isInterestUser(User iUser) {
-        return interestUser.contains(iUser);
+        return interestUsers.contains(iUser);
     }
 
     public void addInterestUser(User iUser) {
-        interestUser.add(iUser);
+        interestUsers.add(iUser);
     }
 
     public void deleteInterestUser(User iUser) {
-        interestUser.remove(iUser);
+        interestUsers.remove(iUser);
     }
 
     public void addComment(Comment comment) {
@@ -110,9 +115,7 @@ public class User extends BaseTimeEntity {
         }
     }
 
-    public UserImage setImage(UserImage userImage) {
+    public void setImage(UserImage userImage) {
         this.image = userImage;
-
-        return userImage;
     }
 }
