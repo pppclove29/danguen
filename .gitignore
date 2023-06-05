@@ -22,6 +22,7 @@ application-oauth.yml
 application-local.yml
 application-h2.yml
 application-mysql.yml
+JwtProperties
 .idea
 *.iws
 *.iml

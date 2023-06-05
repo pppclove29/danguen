@@ -1,6 +1,7 @@
 package com.example.danguen.domain.user.controller;
 
 import com.example.danguen.annotation.SessionUserId;
+import com.example.danguen.config.oauth.PrincipalUserDetails;
 import com.example.danguen.domain.review.RequestReviewDto;
 import com.example.danguen.domain.user.dto.request.RequestUserUpdateDto;
 import com.example.danguen.domain.user.dto.response.ResponseUserPageDto;
@@ -8,6 +9,9 @@ import com.example.danguen.domain.user.dto.response.ResponseUserSimpleDto;
 import com.example.danguen.domain.user.exception.UserNotFoundException;
 import com.example.danguen.domain.user.service.UserServiceImpl;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,6 +21,20 @@ import java.util.List;
 public class UserController {
 
     private final UserServiceImpl userService;
+
+    @GetMapping("/test")
+    public String test() {
+        System.out.println("test");
+        return "test";
+    }
+
+    @GetMapping("/auth")
+    public String auth() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        System.out.println("authentication : " + authentication);
+        System.out.println("principal : " + authentication.getPrincipal());
+        return "auth";
+    }
 
     @GetMapping("/user/{userId}")
     public ResponseUserPageDto getInfo(@PathVariable Long userId) {

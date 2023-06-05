@@ -1,4 +1,4 @@
-package com.example.danguen.config;
+package com.example.danguen.config.socket;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.SimpMessageType;
