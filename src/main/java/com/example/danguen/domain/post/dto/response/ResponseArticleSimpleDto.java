@@ -9,11 +9,12 @@ public class ResponseArticleSimpleDto {
     private Long id;
     private String title;
     private String imageUrl;
+    private String seller;
 
     private int price;
-    private int views;
-    private int likes;
-
+    private int likeCount;
+    private int chatCount;
+    private int commentCount;
     private Address dealHopeAddress; // 거래 희망 장소
 
     public static ResponseArticleSimpleDto toResponse(ArticlePost articlePost) {
@@ -22,7 +23,11 @@ public class ResponseArticleSimpleDto {
         dto.setId(articlePost.getId());
         dto.setTitle(articlePost.getTitle());
         dto.setPrice(articlePost.getPrice());
-        dto.setViews(articlePost.getViews());
+        dto.setSeller(articlePost.getSeller().getName());
+        dto.setLikeCount(articlePost.getInterests().size());
+        //todo chat 횟수 적용
+        dto.setChatCount(0);
+        dto.setCommentCount(articlePost.getComments().size());
         dto.setDealHopeAddress(articlePost.getDealHopeAddress());
         dto.setImageUrl(articlePost.getImages().get(0).getUuid());
 

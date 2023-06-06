@@ -43,8 +43,14 @@ public class ArticleServiceImpl implements ArticleService {
     @Override
     @Transactional(readOnly = true)
     public List<ResponseArticleSimpleDto> getArticleByAddressPage(Pageable pageable, Address address) {
+        System.out.println(address.toString());
         Page<ArticlePost> page =
-                articlePostRepository.findAllByDealHopeAddressLikeOrderByCreatedTimeDesc(pageable, address);
+                articlePostRepository.findAllByDealHopeAddressLikeOrderByCreatedTimeDesc(
+                        address.getCity(),
+                        address.getStreet(),
+                        address.getZipcode(),
+                        pageable
+                );
 
         return page.stream().map(ResponseArticleSimpleDto::toResponse).collect(Collectors.toList());
     }

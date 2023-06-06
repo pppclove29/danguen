@@ -27,12 +27,17 @@ public class ArticlePost extends Post {
     @JoinColumn(name = "USER_ID")
     private User seller; // 판매자
 
-    //@ManyToMany(mappedBy = "")
-    //List<User> interests;
+    @ManyToMany
+    @JoinTable(
+            name = "article_interest",
+            joinColumns = @JoinColumn(name = "ARTICLE_ID"),
+            inverseJoinColumns = @JoinColumn(name = "USER_ID")
+    )
+    private List<User> interests = new ArrayList<>();
 
 
     @OneToMany(mappedBy = "articlePost", cascade = CascadeType.ALL)
-    private List<ArticleImage> images = new ArrayList<>();
+    private final List<ArticleImage> images = new ArrayList<>();
 
     public ArticlePost() {
         isSold = false;
@@ -66,5 +71,10 @@ public class ArticlePost extends Post {
 
     public void addImage(ArticleImage image) {
         images.add(image);
+    }
+
+    @Override
+    public Kind getKind() {
+        return Kind.ARTICLE;
     }
 }

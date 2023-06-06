@@ -34,7 +34,7 @@ public class ArticleController {
     //todo 권한별 역할 나눌것
     @PostMapping(value = "/article")
     public void save(@ModelAttribute("request") RequestArticleSaveOrUpdateDto request,
-                     @RequestParam(value = "images", required = false) List<MultipartFile> images,
+                     @RequestParam(value = "images") List<MultipartFile> images,
                      @SessionUserId Long userId) throws IOException {
         Long articleId = articleService.save(request, userId);
         articleImageService.save(articleId, images);
@@ -43,7 +43,7 @@ public class ArticleController {
     @PutMapping("/article/{articleId}")
     public void update(@ModelAttribute("request") RequestArticleSaveOrUpdateDto request,
                        @PathVariable Long articleId,
-                       @RequestParam(value = "images", required = false) List<MultipartFile> images) {
+                       @RequestParam(value = "images") List<MultipartFile> images) {
         articleService.update(request, articleId);
         articleImageService.update(images);
     }
@@ -65,14 +65,21 @@ public class ArticleController {
         return post;
     }
 
-    @GetMapping("/address/**")
+    @GetMapping(value = {
+            "/address",
+            "/address/{city}",
+            "/address/{city}/{street}",
+            "/address/{city}/{street}/{zipcode}"})
     public List<ResponseArticleSimpleDto> getArticlePage(@PageableDefault(size = 6) Pageable pageable,
-                                                         HttpServletRequest servletRequest) {
+                                                         @PathVariable(required = false) String city,
+                                                         @PathVariable(required = false) String street,
+                                                         @PathVariable(required = false) String zipcode) {
         return articleService.getArticleByAddressPage(
-                pageable, (Address) servletRequest.getAttribute("address")
+                pageable, new Address(city, street, zipcode)
         );
     }
 
+    //todo 조회수, 좋아요, 댓글 수, 채팅 수에 점수 메기고 그에 따라 정렬
     @GetMapping("/hot-articles")
     public List<ResponseArticleSimpleDto> getHotArticlePage(@PageableDefault(size = 6) Pageable pageable) {
         return articleService.getHotArticlePage(pageable);

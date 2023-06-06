@@ -15,6 +15,9 @@ server:
     encoding:
       charset: UTF-8
       force: true
+      enabled: true
+
+
 
 
 

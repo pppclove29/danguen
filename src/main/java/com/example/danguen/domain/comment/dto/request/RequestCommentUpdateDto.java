@@ -5,6 +5,6 @@ import lombok.Data;
 
 @Data
 public class RequestCommentUpdateDto {
-    private PostKind kind;
+    private PostKind.Kind kind;
     private String comment;
 }

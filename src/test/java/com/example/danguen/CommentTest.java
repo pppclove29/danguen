@@ -3,7 +3,10 @@
 //import com.example.danguen.domain.comment.exception.AlreadyDeletedCommentException;
 //import com.example.danguen.domain.comment.entity.Comment;
 //import com.example.danguen.domain.comment.dto.request.RequestCommentSaveDto;
+//import com.example.danguen.domain.post.entity.PostKind;
 //import com.example.danguen.domain.user.entity.User;
+//import org.junit.jupiter.api.BeforeEach;
+//import org.junit.jupiter.api.DisplayName;
 //import org.junit.jupiter.api.Test;
 //import org.springframework.security.test.context.support.WithMockUser;
 //import org.springframework.test.web.servlet.MvcResult;
@@ -19,12 +22,25 @@
 //
 //        ResponseCommentDto comment = (ResponseCommentDto)result.getModelAndView().getModel().get("comment");
 //     */
+//
+//    Long postId;
+//
+//    @BeforeEach
+//    public void init() throws Exception {
+//        postId = makeArticle(0, sessionUserId);
+//    }
+//    @DisplayName("중고물품에 댓글 달기")
 //    @WithMockUser
 //    @Test
-//    public void 중고물품에_댓글_달기() throws Exception {
+//    public void successSaveCommentOnArticle() throws Exception {
 //        //given
+//        RequestCommentSaveDto dto = new RequestCommentSaveDto();
+//
+//        dto.setContent(commentContent);
+//        dto.setKind(PostKind.Kind.ARTICLE);
+//
+//        mockMvc.perform(post(""))
 //        //when
-//        commentSaveProc();
 //
 //        //then
 //        Comment comment = commentRepository.findAll().get(0);

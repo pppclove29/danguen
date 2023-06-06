@@ -7,12 +7,13 @@ import com.example.danguen.domain.post.entity.Post;
 import com.example.danguen.domain.user.entity.User;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
-
+@NoArgsConstructor
 @Getter
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
@@ -36,7 +37,13 @@ public class Comment extends BaseTimeEntity {
 
     @OneToMany
     @JoinColumn(name = "COMMENT_ID")
-    private List<User> likedUser = new ArrayList<>(); // 좋아요을 누른 유저를 저장한다.
+    private final List<User> likedUser = new ArrayList<>(); // 좋아요을 누른 유저를 저장한다.
+
+    @ManyToOne
+    private Comment parentComment;
+
+    @OneToMany(mappedBy = "parentComment", cascade = CascadeType.ALL)
+    private final List<Comment> childrenComment = new ArrayList<>();
 
     @Builder
     public Comment(User writer, Post post, String content) {
@@ -47,7 +54,6 @@ public class Comment extends BaseTimeEntity {
         writer.addComment(this);
         post.addComment(this);
     }
-
 
 
     public void updateComment(String content) {

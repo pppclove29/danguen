@@ -20,7 +20,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     @Transactional
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
-        System.out.println("loadUser");
         OAuth2User oAuth2User = super.loadUser(userRequest);
 
         String name = oAuth2User.getAttribute("name");

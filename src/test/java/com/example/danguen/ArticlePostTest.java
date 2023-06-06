@@ -12,6 +12,7 @@ import com.example.danguen.domain.user.entity.User;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hibernate.Hibernate;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.FileInputStream;
 import java.io.UnsupportedEncodingException;
@@ -40,7 +42,7 @@ public class ArticlePostTest extends BaseTest {
     @DisplayName("이미지 없이 중고물품 등록")
     @WithMockUser
     @Test
-    public void successSaveArticleWithOutImages() throws Exception {
+    public void failSaveArticleWithOutImages() throws Exception {
         //given
         Address dealAddress = new Address(articleCity, articleStreet, articleZipcode);
 
@@ -52,24 +54,11 @@ public class ArticlePostTest extends BaseTest {
                 .dealHopeAddress(dealAddress)
                 .build();
 
-        //when
+        //when & then
         mockMvc.perform(multipart("/article")
                         .flashAttr("request", dto)
                         .contentType(MediaType.MULTIPART_FORM_DATA))
-                .andExpect(status().isOk());
-
-        //then
-        ArticlePost articlePost = articlePostRepository.findAll().get(0);
-
-        assertThat(articlePost.getTitle()).isEqualTo(articleTitle);
-        assertThat(articlePost.getCategory()).isEqualTo(articleCategory);
-        assertThat(articlePost.getContent()).isEqualTo(articleContent);
-        assertThat(articlePost.getImages().size()).isEqualTo(1);
-        assertThat(articlePost.getDealHopeAddress()).isEqualTo(dealAddress);
-        assertThat(articlePost.getPrice()).isEqualTo(10000);
-        assertThat(articlePost.getSeller().getName()).isEqualTo(sessionName);
-        assertThat(articlePost.getSeller().getEmail()).isEqualTo(sessionEmail);
-        assertThat(articlePost.getImages().size()).isEqualTo(1);
+                .andExpect(status().is4xxClientError());
     }
 
     @DisplayName("이미지가 포함된 중고물품 등록")
@@ -137,7 +126,6 @@ public class ArticlePostTest extends BaseTest {
                 .build();
 
         //when
-        //todo update 메서드 파라미터 변경으로 다른 방안 모색
         mockMvc.perform(put("/article/" + articleId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(dto)))
@@ -249,7 +237,6 @@ public class ArticlePostTest extends BaseTest {
      9       339
      */
     int articleSize = 10;
-    int pageSize = 6;
 
 
     @DisplayName("주소 없이 주소별 중고물품 리스트 요청")
@@ -273,16 +260,20 @@ public class ArticlePostTest extends BaseTest {
 
         // then
         assertThat(responseList.size()).isEqualTo(6);
+        int size = responseList.size();
 
-        for (int i = 1; i <= pageSize; i++) {
+        for (int i = 0; i < size; i++) {
             ResponseArticleSimpleDto res = responseList.get(i);
 
-            assertThat(res.getTitle()).isEqualTo(articleTitle + (articleSize - i));
+            int idx = articleSize - i;
+
+            assertThat(res.getTitle()).isEqualTo(articleTitle + idx);
             assertThat(res.getPrice()).isEqualTo(articlePrice);
-            assertThat(res.getViews()).isEqualTo(0);
-            assertThat(res.getLikes()).isEqualTo(0);
+            assertThat(res.getLikeCount()).isEqualTo(0);
+            assertThat(res.getChatCount()).isEqualTo(0); //todo
+            assertThat(res.getCommentCount()).isEqualTo(0);
             assertThat(res.getDealHopeAddress()).isEqualTo(
-                    new Address(articleCity + i / 3, articleStreet + i / 3, articleZipcode + i)
+                    new Address(articleCity + idx / 3, articleStreet + idx / 3, articleZipcode + idx)
             );
         }
     }
@@ -304,19 +295,21 @@ public class ArticlePostTest extends BaseTest {
 
         // then
         assertThat(responseList.size()).isEqualTo(3);
+        int size = responseList.size();
 
         assertThat(responseList.get(0).getTitle()).isEqualTo(articleTitle + 5);
         assertThat(responseList.get(1).getTitle()).isEqualTo(articleTitle + 4);
         assertThat(responseList.get(2).getTitle()).isEqualTo(articleTitle + 3);
 
-        for (int i = 1; i <= responseList.size(); i++) {
+        for (int i = 0; i < size; i++) {
             ResponseArticleSimpleDto res = responseList.get(i);
 
             assertThat(res.getPrice()).isEqualTo(articlePrice);
-            assertThat(res.getViews()).isEqualTo(0);
-            assertThat(res.getLikes()).isEqualTo(0);
+            assertThat(res.getLikeCount()).isEqualTo(0);
+            assertThat(res.getChatCount()).isEqualTo(0); //todo
+            assertThat(res.getCommentCount()).isEqualTo(0);
             assertThat(res.getDealHopeAddress()).isEqualTo(
-                    new Address("희망주소1", articleStreet + i / 3, articleZipcode + i)
+                    new Address("희망주소1", articleStreet + i / 3, articleZipcode + (size - i))
             );
         }
     }
@@ -339,19 +332,21 @@ public class ArticlePostTest extends BaseTest {
 
         // then
         assertThat(responseList.size()).isEqualTo(3);
+        int size = responseList.size();
 
         assertThat(responseList.get(0).getTitle()).isEqualTo(articleTitle + 2);
         assertThat(responseList.get(1).getTitle()).isEqualTo(articleTitle + 1);
         assertThat(responseList.get(2).getTitle()).isEqualTo(articleTitle + 0);
 
-        for (int i = 1; i <= responseList.size(); i++) {
+        for (int i = 0; i < size; i++) {
             ResponseArticleSimpleDto res = responseList.get(i);
 
             assertThat(res.getPrice()).isEqualTo(articlePrice);
-            assertThat(res.getViews()).isEqualTo(0);
-            assertThat(res.getLikes()).isEqualTo(0);
+            assertThat(res.getLikeCount()).isEqualTo(0);
+            assertThat(res.getChatCount()).isEqualTo(0); //todo
+            assertThat(res.getCommentCount()).isEqualTo(0);
             assertThat(res.getDealHopeAddress()).isEqualTo(
-                    new Address("희망주소1", "희망주소1", articleZipcode + i)
+                    new Address("희망주소0", "희망주소0", articleZipcode + (size - i))
             );
         }
     }
@@ -377,16 +372,16 @@ public class ArticlePostTest extends BaseTest {
 
         assertThat(responseList.get(0).getTitle()).isEqualTo(articleTitle + 2);
 
-        for (int i = 1; i <= responseList.size(); i++) {
-            ResponseArticleSimpleDto res = responseList.get(i);
-
+        for (var res : responseList) {
             assertThat(res.getPrice()).isEqualTo(articlePrice);
-            assertThat(res.getViews()).isEqualTo(0);
-            assertThat(res.getLikes()).isEqualTo(0);
+            assertThat(res.getLikeCount()).isEqualTo(0);
+            assertThat(res.getChatCount()).isEqualTo(0); //todo
+            assertThat(res.getCommentCount()).isEqualTo(0);
             assertThat(res.getDealHopeAddress()).isEqualTo(
-                    new Address("희망주소1", "희망주소1", "희망주소0")
+                    new Address("희망주소0", "희망주소0", "희망주소2")
             );
         }
+
     }
 
     @DisplayName("존재하지않는 주소별 중고물품 리스트 요청")
@@ -457,7 +452,7 @@ public class ArticlePostTest extends BaseTest {
 
         mockMvc.perform(get("/article/" + articleId))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.view").value(1));
+                .andExpect(jsonPath("$.views").value(1));
     }
 
     @DisplayName("인기 순위별 리스트 요청")
@@ -474,7 +469,6 @@ public class ArticlePostTest extends BaseTest {
         int[] viewCount = new int[]{10, 7, 4, 2};
         int[] targetIndex = new int[]{5, 8, 1, 4};
 
-        //todo mock 로 간단하게 변경할것
         for (int i = 0; i < 4; i++) {
             watchArticle(targetIndex[i], viewCount[i]);
         }
@@ -490,7 +484,6 @@ public class ArticlePostTest extends BaseTest {
         assertThat(responseList.size()).isEqualTo(6); // 페이지 사이즈만큼 출력
         for (int i = 0; i < 4; i++) {
             assertThat(responseList.get(i).getTitle()).isEqualTo(articleTitle + targetIndex[i]);
-            assertThat(responseList.get(i).getViews()).isEqualTo(viewCount[i]);
         }
     }
 
@@ -571,9 +564,7 @@ public class ArticlePostTest extends BaseTest {
 
             interestUserList.add(newUser);
         }
-
-        UserTest userTest = new UserTest();
-        userTest.setInterestUsers(interestUserList);
+        setInterestUsers(interestUserList);
 
         //when
         MvcResult result = mockMvc.perform(get("/interest"))
@@ -585,9 +576,10 @@ public class ArticlePostTest extends BaseTest {
         //then
         assertThat(responseList.size()).isEqualTo(3);
         for (var res : responseList) {
-            assertThat(res.getTitle()).contains("김관심");
+            assertThat(res.getSeller()).contains("김관심");
         }
     }
+    //todo like, chat
 
     public void watchArticle(int idx, int count) throws Exception { // 조회수 증가
         Long articleId = articlePostRepository.findAll().get(idx).getId();

@@ -3,6 +3,7 @@ package com.example.danguen.domain.post.entity;
 import com.example.danguen.domain.base.BaseTimeEntity;
 import com.example.danguen.domain.comment.entity.Comment;
 import lombok.Getter;
+import org.springframework.util.Assert;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -12,7 +13,7 @@ import java.util.List;
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
 @DiscriminatorColumn
-public class Post extends BaseTimeEntity {
+public abstract class Post extends BaseTimeEntity implements PostKind {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "POST_ID", nullable = false)
@@ -37,5 +38,10 @@ public class Post extends BaseTimeEntity {
 
     public void addViewCount() {
         views++;
+    }
+
+    @Override
+    public Kind getKind() {
+        return null;
     }
 }

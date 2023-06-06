@@ -1,9 +1,14 @@
 package com.example.danguen;
 
+import com.auth0.jwt.JWT;
+import com.example.danguen.config.jwt.JwtAuthenticationToken;
+import com.example.danguen.config.jwt.JwtProperties;
 import com.example.danguen.config.oauth.PrincipalUserDetails;
 import com.example.danguen.domain.base.Address;
+import com.example.danguen.domain.comment.dto.request.RequestCommentSaveDto;
 import com.example.danguen.domain.comment.entity.Comment;
 import com.example.danguen.domain.comment.repository.CommentRepository;
+import com.example.danguen.domain.comment.service.CommentServiceImpl;
 import com.example.danguen.domain.image.entity.ArticleImage;
 import com.example.danguen.domain.image.entity.UserImage;
 import com.example.danguen.domain.image.exception.ArticleNotFoundException;
@@ -27,6 +32,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -37,6 +43,7 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
 
 import java.io.FileInputStream;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -60,6 +67,8 @@ public class BaseTest {
     ArticleServiceImpl articleService;
     @Autowired
     ArticleImageService articleImageService;
+    @Autowired
+    CommentServiceImpl commentService;
 
     @Autowired
     private UserRepository userRepository;
@@ -82,7 +91,7 @@ public class BaseTest {
     String noneSessionEmail = "other@temp.com";
 
     @BeforeEach
-    public void init() {
+    public void init() throws Exception {
         mockMvc = MockMvcBuilders
                 .webAppContextSetup(ctx)
                 .addFilters(new CharacterEncodingFilter("UTF-8", true))  // 필터 추가
@@ -105,9 +114,12 @@ public class BaseTest {
 
 
     public void registerUserToSession(User user) {
-        PrincipalUserDetails userDetails = new PrincipalUserDetails(user);
-        SecurityContext context = SecurityContextHolder.getContext();
-        context.setAuthentication(new UsernamePasswordAuthenticationToken(userDetails, userDetails.getPassword(), userDetails.getAuthorities()));
+        PrincipalUserDetails principalUserDetails = new PrincipalUserDetails(user);
+
+        Authentication authentication
+                = new JwtAuthenticationToken(null, principalUserDetails, principalUserDetails.getAuthorities());
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
     Address userAddress = new Address("서울시", "길로", "1234");
@@ -124,6 +136,11 @@ public class BaseTest {
         return user;
     }
 
+    public void setInterestUsers(List<User> interestUsers) {
+        for (var iUser : interestUsers)
+            userService.addInterestUser(sessionUserId, iUser.getId());
+    }
+
     String articleTitle = "제목 ";
     String articleCategory = "카테고리";
     String articleContent = "게시글 내용";
@@ -131,8 +148,8 @@ public class BaseTest {
     String articleCity = "희망주소";
     String articleStreet = "희망주소";
     String articleZipcode = "희망주소";
-@Transactional
-    public Long makeArticle(int idx, Long sellerId) throws Exception { // 중고 물품 등록
+
+    public Long makeArticle(int idx, Long userId) throws Exception { // 중고 물품 등록
         RequestArticleSaveOrUpdateDto dto = RequestArticleSaveOrUpdateDto.builder()
                 .title(articleTitle + idx)
                 .content(articleContent)
@@ -145,13 +162,14 @@ public class BaseTest {
                                 articleZipcode + idx)
                 )
                 .build();
+        ArticlePost post = dto.toEntity();
+        post.setSeller(userRepository.getReferenceById(userId));
 
-        Long articleId = articleService.save(dto, sellerId);
-        ArticlePost articlePost = articleService.getArticleById(articleId);
+        ArticlePost articlePost = postRepository.save(post);
 
         makeArticleImage(articlePost);
 
-        return articleId;
+        return articlePost.getId();
     }
 
     public void makeArticleImage(ArticlePost articlePost) throws Exception {
@@ -161,24 +179,22 @@ public class BaseTest {
                 "image/png",
                 new FileInputStream("src/test/java/testImage/input.png"));
 
-        Stream.of(image)
-                .map(uuid ->
-                        ArticleImage.builder()
-                                .uuid("uuid")
-                                .articlePost(articlePost)
-                                .build())
-                .forEach(imageRepository::save);
+        imageRepository.save(
+                ArticleImage.builder()
+                        .uuid("uuid")
+                        .articlePost(articlePost)
+                        .build()
+        );
     }
 
     String commentContent = "댓글 내용";
 
-    public void makeMockComment(Post post, User user) { // 댓글 등록
-        Comment comment = mock(Comment.class);
+    public void makeComment(Long postId, Long userId) { // 댓글 등록
+        RequestCommentSaveDto dto = new RequestCommentSaveDto();
 
-        when(comment.getWriter()).thenReturn(user);
-        when(comment.getPost()).thenReturn(post);
-        when(comment.getContent()).thenReturn(commentContent);
+        dto.setContent(commentContent);
+        dto.setKind(postRepository.getReferenceById(postId).getKind());
 
-        commentRepository.save(comment);
+        commentService.save(dto, postId, userId);
     }
 }

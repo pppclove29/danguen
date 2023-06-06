@@ -53,8 +53,8 @@ public class User extends BaseTimeEntity {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private UserImage image;
 
-    //@OneToMany(cascade = CascadeType.ALL) -> OneToMany일까 ManyToMany일까?
-    //List<Article> interestArticles; // 관심상품
+    @ManyToMany(mappedBy = "interests", cascade = CascadeType.ALL)
+    private final List<ArticlePost> interests = new ArrayList<>();
 
     @Builder
     private User(String name, String email, Address address) {

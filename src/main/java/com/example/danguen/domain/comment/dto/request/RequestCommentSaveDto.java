@@ -9,7 +9,7 @@ import lombok.Data;
 
 @Data
 public class RequestCommentSaveDto {
-    private PostKind kind;
+    private PostKind.Kind kind;
     private String content;
 
     public Comment toEntity(User user, Post post) {

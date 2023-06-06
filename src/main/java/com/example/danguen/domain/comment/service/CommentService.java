@@ -23,7 +23,6 @@ public interface CommentService {
     /**
      * 특정 게시글에 등록된 모든 댓글을 표시
      *
-     * @param kind   게시글 유형(PostKind Enum)
      * @param postId 게시글 ID
      * @return 특정 게시물에 등록된 댓글 리스트
      */

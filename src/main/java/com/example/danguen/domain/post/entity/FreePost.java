@@ -9,4 +9,8 @@ import javax.persistence.Entity;
 @Entity
 @DiscriminatorValue("F")
 public class FreePost extends Post{
+    @Override
+    public Kind getKind() {
+        return Kind.FREE;
+    }
 }

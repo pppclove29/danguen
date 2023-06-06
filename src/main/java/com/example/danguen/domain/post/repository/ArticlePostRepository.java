@@ -1,6 +1,5 @@
 package com.example.danguen.domain.post.repository;
 
-import com.example.danguen.domain.base.Address;
 import com.example.danguen.domain.post.entity.ArticlePost;
 import com.example.danguen.domain.user.entity.User;
 import org.springframework.data.domain.Page;
@@ -13,7 +12,15 @@ import java.util.List;
 
 public interface ArticlePostRepository extends JpaRepository<ArticlePost, Long> {
 
-    Page<ArticlePost> findAllByDealHopeAddressLikeOrderByCreatedTimeDesc(Pageable pageable, @Param("address") Address address);
+    @Query("select a from ArticlePost a " +
+            "where a.dealHopeAddress.city like %:city% and " +
+            "a.dealHopeAddress.street like %:street% and " +
+            "a.dealHopeAddress.zipcode like %:zipcode% " +
+            "order by a.createdTime desc")
+    Page<ArticlePost> findAllByDealHopeAddressLikeOrderByCreatedTimeDesc(
+            @Param("city") String city,
+            @Param("street") String street,
+            @Param("zipcode") String zipcode, Pageable pageable);
 
     Page<ArticlePost> findByTitleContainingOrderByIdDesc(Pageable pageable, String title);
 

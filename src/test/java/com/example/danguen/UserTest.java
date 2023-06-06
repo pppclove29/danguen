@@ -29,9 +29,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 public class UserTest extends BaseTest {
 
-    @Autowired
-    UserServiceImpl userService;
-
     @DisplayName("특정 유저 정보 요청")
     @WithMockUser
     @Test
@@ -44,12 +41,10 @@ public class UserTest extends BaseTest {
 
         userService.update(updateDto, sessionUserId);
 
-        //where & then
-        MvcResult result = mockMvc.perform(get("/user/" + userId))
+        //when
+        mockMvc.perform(get("/user/" + userId))
                 .andExpect(status().isOk())
                 .andReturn();
-
-        System.out.println(result.getResponse().getContentAsString());
 
         //then
         User user = userService.getUserById(userId);
@@ -266,9 +261,5 @@ public class UserTest extends BaseTest {
         resultActions.andExpect(jsonPath(String.format("$[%d]", iUserCnt)).doesNotExist());
     }
 
-    @Transactional
-    public void setInterestUsers(List<User> interestUsers) {
-        for (var iUser : interestUsers)
-            userService.addInterestUser(sessionUserId, iUser.getId());
-    }
+
 }
