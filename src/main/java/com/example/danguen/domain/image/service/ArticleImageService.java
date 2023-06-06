@@ -2,6 +2,7 @@ package com.example.danguen.domain.image.service;
 
 import com.example.danguen.domain.image.entity.ArticleImage;
 import com.example.danguen.domain.image.repository.ArticleImageRepository;
+import com.example.danguen.domain.post.entity.ArticlePost;
 import com.example.danguen.domain.post.service.ArticleServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,6 +12,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -26,11 +31,11 @@ public class ArticleImageService {
 
     @Transactional
     public void save(Long articleId, List<MultipartFile> images) {
-        String articleImagePath = savePath + articleId;
+        String folderPath = savePath + articleId;
 
-        if (new File(articleImagePath).mkdirs()) {
+        if (new File(folderPath).mkdirs()) {
             images.stream()
-                    .map((image) -> saveToLocal(image, articleImagePath))
+                    .map((image) -> saveToLocal(image, folderPath))
                     .filter(Optional::isPresent)
                     .map(uuid ->
                             ArticleImage.builder()
@@ -52,7 +57,27 @@ public class ArticleImageService {
         return Optional.of(articleImagePath + "/" + uuid);
     }
 
-    public void update(List<MultipartFile> images) {
-        //todo 기존 사진 삭제를 하던 해서 새로운 사진 추가
+    @Transactional
+    public void update(Long articleId, List<MultipartFile> images) {
+        ArticlePost articlePost = articleService.getArticleById(articleId);
+        articleImageRepository.deleteArticleImageByArticlePost(articlePost);
+        deleteFolder(articleId);
+
+        save(articleId, images);
+    }
+
+    public void deleteFolder(Long articleId) {
+        String folderPath = savePath + articleId;
+        Path path = Paths.get(folderPath);
+        try {
+            try (var stream = Files.walk(path)) {
+                stream.sorted(Comparator.reverseOrder())
+                        .map(Path::toFile)
+                        .forEach(File::delete);
+            }
+        } catch (Exception e) {
+            //todo throw error message to client
+            System.out.println("폴더 삭제 중 오류가 발생했습니다: " + e.getMessage());
+        }
     }
 }

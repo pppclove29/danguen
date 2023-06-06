@@ -1,7 +1,6 @@
 package com.example.danguen.domain.user.controller;
 
 import com.example.danguen.annotation.SessionUserId;
-import com.example.danguen.config.oauth.PrincipalUserDetails;
 import com.example.danguen.domain.review.RequestReviewDto;
 import com.example.danguen.domain.user.dto.request.RequestUserUpdateDto;
 import com.example.danguen.domain.user.dto.response.ResponseUserPageDto;
@@ -9,10 +8,8 @@ import com.example.danguen.domain.user.dto.response.ResponseUserSimpleDto;
 import com.example.danguen.domain.user.exception.UserNotFoundException;
 import com.example.danguen.domain.user.service.UserServiceImpl;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.ui.Model;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -63,7 +60,8 @@ public class UserController {
     }
 
     @ExceptionHandler(UserNotFoundException.class)
-    public String handleUserNotFound() {
-        return UserNotFoundException.message;
+    public ResponseEntity<?> handleUserNotFound() {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(UserNotFoundException.message);
     }
 }

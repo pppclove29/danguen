@@ -1,29 +1,23 @@
 package com.example.danguen;
 
-import com.auth0.jwt.JWT;
 import com.example.danguen.config.jwt.JwtAuthenticationToken;
-import com.example.danguen.config.jwt.JwtProperties;
 import com.example.danguen.config.oauth.PrincipalUserDetails;
 import com.example.danguen.domain.base.Address;
 import com.example.danguen.domain.comment.dto.request.RequestCommentSaveDto;
-import com.example.danguen.domain.comment.entity.Comment;
 import com.example.danguen.domain.comment.repository.CommentRepository;
 import com.example.danguen.domain.comment.service.CommentServiceImpl;
 import com.example.danguen.domain.image.entity.ArticleImage;
 import com.example.danguen.domain.image.entity.UserImage;
-import com.example.danguen.domain.image.exception.ArticleNotFoundException;
 import com.example.danguen.domain.image.repository.ImageRepository;
 import com.example.danguen.domain.image.service.ArticleImageService;
 import com.example.danguen.domain.post.dto.request.RequestArticleSaveOrUpdateDto;
 import com.example.danguen.domain.post.entity.ArticlePost;
-import com.example.danguen.domain.post.entity.Post;
 import com.example.danguen.domain.post.repository.PostRepository;
 import com.example.danguen.domain.post.service.ArticleServiceImpl;
 import com.example.danguen.domain.user.entity.User;
 import com.example.danguen.domain.user.repository.UserRepository;
 import com.example.danguen.domain.user.service.UserServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.hibernate.Hibernate;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,9 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
@@ -43,13 +35,7 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
 
 import java.io.FileInputStream;
-import java.util.Date;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Stream;
-
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ExtendWith(SpringExtension.class)
@@ -198,3 +184,5 @@ public class BaseTest {
         commentService.save(dto, postId, userId);
     }
 }
+
+

@@ -10,14 +10,16 @@ import com.example.danguen.domain.post.dto.request.RequestArticleSaveOrUpdateDto
 import com.example.danguen.domain.post.dto.response.ResponseArticleDto;
 import com.example.danguen.domain.post.dto.response.ResponseArticleSimpleDto;
 import com.example.danguen.domain.post.service.ArticleServiceImpl;
+import com.example.danguen.domain.user.exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.List;
 
@@ -45,7 +47,7 @@ public class ArticleController {
                        @PathVariable Long articleId,
                        @RequestParam(value = "images") List<MultipartFile> images) {
         articleService.update(request, articleId);
-        articleImageService.update(images);
+        articleImageService.update(articleId, images);
     }
 
     @DeleteMapping("/article/{articleId}")
@@ -57,8 +59,7 @@ public class ArticleController {
     @GetMapping("/article/{articleId}")
     public ResponseArticleDto getArticle(@PathVariable Long articleId) {
         ResponseArticleDto post = articleService.getArticleDto(articleId);
-        List<ResponseCommentDto> commentDtoStream
-                = commentService.getComments(articleId);
+        List<ResponseCommentDto> commentDtoStream = commentService.getComments(articleId);
 
         post.addComments(commentDtoStream);
 
@@ -98,7 +99,8 @@ public class ArticleController {
     }
 
     @ExceptionHandler(ArticleNotFoundException.class)
-    public String handleArticleNotFound() {
-        return ArticleNotFoundException.message;
+    public ResponseEntity<?> handleArticleNotFound() {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ArticleNotFoundException.message);
     }
 }

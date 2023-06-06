@@ -2,14 +2,13 @@ package com.example.danguen.config.oauth;
 
 import com.example.danguen.domain.user.entity.User;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
-public class PrincipalUserDetails implements UserDetails, OAuth2User {
+public class PrincipalUserDetails implements OAuth2User {
 
     private final User user;
 
@@ -24,20 +23,7 @@ public class PrincipalUserDetails implements UserDetails, OAuth2User {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        Collection<GrantedAuthority> list = new ArrayList<>();
-        list.add((GrantedAuthority) () -> user.getRole().toString());
-
-        return list;
-    }
-
-    @Override
-    public String getPassword() {
-        return null;
-    }
-
-    @Override
-    public String getUsername() {
-        return user.getName();
+        return List.of((GrantedAuthority) () -> user.getRole().toString());
     }
 
     public Long getUserId() {
@@ -45,27 +31,7 @@ public class PrincipalUserDetails implements UserDetails, OAuth2User {
     }
 
     @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
-    }
-
-    @Override
     public String getName() {
-        return null;
+        return user.getName();
     }
 }

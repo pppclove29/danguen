@@ -8,7 +8,6 @@ import org.springframework.security.config.annotation.web.socket.AbstractSecurit
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
-import org.springframework.web.socket.server.support.DefaultHandshakeHandler;
 
 @Configuration
 @EnableWebSocketMessageBroker
@@ -25,7 +24,7 @@ public class WebSocketBrokerConfig extends AbstractSecurityWebSocketMessageBroke
         // topic 1:N 공지
         // queue 1:1 개인
         registry.enableSimpleBroker("/queue", "/topic");// 메시지 큐 나누는 용도?
-         registry.setApplicationDestinationPrefixes("/pub");
+        registry.setApplicationDestinationPrefixes("/pub");
     }
 
     @Override

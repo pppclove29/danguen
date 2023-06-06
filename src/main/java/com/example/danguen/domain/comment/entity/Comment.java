@@ -1,8 +1,6 @@
 package com.example.danguen.domain.comment.entity;
 
 import com.example.danguen.domain.base.BaseTimeEntity;
-import com.example.danguen.domain.comment.dto.response.ResponseCommentDto;
-import com.example.danguen.domain.post.entity.ArticlePost;
 import com.example.danguen.domain.post.entity.Post;
 import com.example.danguen.domain.user.entity.User;
 import lombok.Builder;

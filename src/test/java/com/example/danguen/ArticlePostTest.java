@@ -11,11 +11,10 @@ import com.example.danguen.domain.post.repository.ArticlePostRepository;
 import com.example.danguen.domain.user.entity.User;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.hibernate.Hibernate;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithAnonymousUser;
@@ -56,11 +55,12 @@ public class ArticlePostTest extends BaseTest {
 
         //when & then
         mockMvc.perform(multipart("/article")
-                        .flashAttr("request", dto)
+                        .param("request", mapper.writeValueAsString(dto))
                         .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().is4xxClientError());
     }
 
+    @Transactional
     @DisplayName("이미지가 포함된 중고물품 등록")
     @WithMockUser
     @Test
@@ -107,10 +107,10 @@ public class ArticlePostTest extends BaseTest {
         assertThat(articlePost.getImages().size()).isEqualTo(3);
     }
 
-    @DisplayName("이미지 수정 없이 물품 정보 수정")
+    @DisplayName("물품 정보 수정")
     @WithMockUser
     @Test
-    public void successUpdateArticleInfoWithOutImages() throws Exception {
+    public void successUpdateArticleInfo() throws Exception {
         //given
         Long articleId = makeArticle(0, sessionUserId);
 
@@ -125,14 +125,22 @@ public class ArticlePostTest extends BaseTest {
                         "new" + articleZipcode))
                 .build();
 
+        MockMultipartFile image = new MockMultipartFile(
+                "images",
+                "input.png",
+                "image/png",
+                new FileInputStream("src/test/java/testImage/input.png"));
+
+
         //when
-        mockMvc.perform(put("/article/" + articleId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(new ObjectMapper().writeValueAsString(dto)))
+        mockMvc.perform(multipart(HttpMethod.PUT, "/article/" + articleId)
+                        .file(image)
+                        .flashAttr("request", dto)
+                        .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isOk());
 
         //then
-        ArticlePost articlePost = articlePostRepository.getReferenceById(articleId);
+        ArticlePost articlePost = articleService.getArticleById(articleId);
         assertThat(articlePost.getTitle()).isEqualTo("new" + articleTitle);
         assertThat(articlePost.getCategory()).isEqualTo("new" + articleCategory);
         assertThat(articlePost.getContent()).isEqualTo("new" + articleContent);
@@ -142,13 +150,7 @@ public class ArticlePostTest extends BaseTest {
         assertThat(articlePost.getPrice()).isEqualTo(30000);
     }
 
-    @DisplayName("이미지를 포함한 물품 정보 수정")
-    @WithMockUser
-    @Test
-    public void successUpdateArticleInfoWithImages() throws Exception {
-        //TODO 이미지 포함 테스트 시도
-    }
-
+    @Transactional
     @DisplayName("중고물품 삭제")
     @WithMockUser
     @Test
@@ -182,9 +184,9 @@ public class ArticlePostTest extends BaseTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
+        //then
         ResponseArticleDto articleDto = toArticleDto(result);
 
-        //then
         assertThat(articleDto.getId()).isEqualTo(articleId);
         assertThat(articleDto.getTitle()).isEqualTo(articleTitle + 0);
         assertThat(articleDto.getContent()).isEqualTo(articleContent);
@@ -248,6 +250,8 @@ public class ArticlePostTest extends BaseTest {
             makeArticle(i, sessionUserId);
         }
 
+        int[] expectPostIndex = new int[]{9, 8, 7, 6, 5, 4};
+
         //when
         MvcResult result = mockMvc.perform(get("/address"))
                 .andExpect(status().isOk())
@@ -260,20 +264,19 @@ public class ArticlePostTest extends BaseTest {
 
         // then
         assertThat(responseList.size()).isEqualTo(6);
-        int size = responseList.size();
-
-        for (int i = 0; i < size; i++) {
+        for (int i = 0; i < responseList.size(); i++) {
             ResponseArticleSimpleDto res = responseList.get(i);
 
-            int idx = articleSize - i;
-
-            assertThat(res.getTitle()).isEqualTo(articleTitle + idx);
+            assertThat(res.getTitle()).isEqualTo(articleTitle + expectPostIndex[i]);
             assertThat(res.getPrice()).isEqualTo(articlePrice);
             assertThat(res.getLikeCount()).isEqualTo(0);
             assertThat(res.getChatCount()).isEqualTo(0); //todo
             assertThat(res.getCommentCount()).isEqualTo(0);
             assertThat(res.getDealHopeAddress()).isEqualTo(
-                    new Address(articleCity + idx / 3, articleStreet + idx / 3, articleZipcode + idx)
+                    new Address(
+                            articleCity + expectPostIndex[i] / 3,
+                            articleStreet + expectPostIndex[i] / 3,
+                            articleZipcode + expectPostIndex[i])
             );
         }
     }
@@ -286,6 +289,8 @@ public class ArticlePostTest extends BaseTest {
             makeArticle(i, sessionUserId);
         }
 
+        int[] expectPostIndex = new int[]{5, 4, 3};
+
         //when
         MvcResult result = mockMvc.perform(get("/address/희망주소1"))
                 .andExpect(status().isOk())
@@ -295,21 +300,19 @@ public class ArticlePostTest extends BaseTest {
 
         // then
         assertThat(responseList.size()).isEqualTo(3);
-        int size = responseList.size();
-
-        assertThat(responseList.get(0).getTitle()).isEqualTo(articleTitle + 5);
-        assertThat(responseList.get(1).getTitle()).isEqualTo(articleTitle + 4);
-        assertThat(responseList.get(2).getTitle()).isEqualTo(articleTitle + 3);
-
-        for (int i = 0; i < size; i++) {
+        for (int i = 0; i < responseList.size(); i++) {
             ResponseArticleSimpleDto res = responseList.get(i);
 
+            assertThat(res.getTitle()).isEqualTo(articleTitle + expectPostIndex[i]);
             assertThat(res.getPrice()).isEqualTo(articlePrice);
             assertThat(res.getLikeCount()).isEqualTo(0);
             assertThat(res.getChatCount()).isEqualTo(0); //todo
             assertThat(res.getCommentCount()).isEqualTo(0);
             assertThat(res.getDealHopeAddress()).isEqualTo(
-                    new Address("희망주소1", articleStreet + i / 3, articleZipcode + (size - i))
+                    new Address(
+                            "희망주소1",
+                            articleStreet + expectPostIndex[i] / 3,
+                            articleZipcode + expectPostIndex[i])
             );
         }
     }
@@ -323,6 +326,8 @@ public class ArticlePostTest extends BaseTest {
             makeArticle(i, sessionUserId);
         }
 
+        int[] expectPostIndex = new int[]{2, 1, 0};
+
         //when
         MvcResult result = mockMvc.perform(get("/address/희망주소0/희망주소0"))
                 .andExpect(status().isOk())
@@ -332,21 +337,19 @@ public class ArticlePostTest extends BaseTest {
 
         // then
         assertThat(responseList.size()).isEqualTo(3);
-        int size = responseList.size();
-
-        assertThat(responseList.get(0).getTitle()).isEqualTo(articleTitle + 2);
-        assertThat(responseList.get(1).getTitle()).isEqualTo(articleTitle + 1);
-        assertThat(responseList.get(2).getTitle()).isEqualTo(articleTitle + 0);
-
-        for (int i = 0; i < size; i++) {
+        for (int i = 0; i < responseList.size(); i++) {
             ResponseArticleSimpleDto res = responseList.get(i);
 
+            assertThat(res.getTitle()).isEqualTo(articleTitle + expectPostIndex[i]);
             assertThat(res.getPrice()).isEqualTo(articlePrice);
             assertThat(res.getLikeCount()).isEqualTo(0);
             assertThat(res.getChatCount()).isEqualTo(0); //todo
             assertThat(res.getCommentCount()).isEqualTo(0);
             assertThat(res.getDealHopeAddress()).isEqualTo(
-                    new Address("희망주소0", "희망주소0", articleZipcode + (size - i))
+                    new Address(
+                            "희망주소0",
+                            "희망주소0",
+                            articleZipcode + expectPostIndex[i])
             );
         }
     }
@@ -360,6 +363,8 @@ public class ArticlePostTest extends BaseTest {
             makeArticle(i, sessionUserId);
         }
 
+        int[] expectPostIndex = new int[]{2};
+
         //when
         MvcResult result = mockMvc.perform(get("/address/희망주소0/희망주소0/희망주소2"))
                 .andExpect(status().isOk())
@@ -369,16 +374,19 @@ public class ArticlePostTest extends BaseTest {
 
         // then
         assertThat(responseList.size()).isEqualTo(1);
+        for (int i = 0; i < responseList.size(); i++) {
+            ResponseArticleSimpleDto res = responseList.get(i);
 
-        assertThat(responseList.get(0).getTitle()).isEqualTo(articleTitle + 2);
-
-        for (var res : responseList) {
+            assertThat(res.getTitle()).isEqualTo(articleTitle + expectPostIndex[i]);
             assertThat(res.getPrice()).isEqualTo(articlePrice);
             assertThat(res.getLikeCount()).isEqualTo(0);
             assertThat(res.getChatCount()).isEqualTo(0); //todo
             assertThat(res.getCommentCount()).isEqualTo(0);
             assertThat(res.getDealHopeAddress()).isEqualTo(
-                    new Address("희망주소0", "희망주소0", "희망주소2")
+                    new Address(
+                            "희망주소0",
+                            "희망주소0",
+                            "희망주소2")
             );
         }
 

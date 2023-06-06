@@ -7,16 +7,13 @@ import com.example.danguen.domain.user.dto.response.ResponseUserSimpleDto;
 import com.example.danguen.domain.user.entity.Role;
 import com.example.danguen.domain.user.entity.User;
 import com.example.danguen.domain.user.exception.UserNotFoundException;
-import com.example.danguen.domain.user.service.UserServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,6 +61,7 @@ public class UserTest extends BaseTest {
 
         //when
         MvcResult result = mockMvc.perform(get("/user/" + userId))
+                .andExpect(status().is4xxClientError())
                 .andReturn();
 
         //then
@@ -152,7 +150,7 @@ public class UserTest extends BaseTest {
         List<ResponseUserSimpleDto> interestUser = userService.getIUserDtos(sessionUserId);
 
         assertThat(interestUser.get(0).getName()).isEqualTo(otherUser.getName());
-        assertThat(interestUser.get(0).getId()).isEqualTo(userService.getUserByEmail(noneSessionEmail).get().getId());
+        assertThat(interestUser.get(0).getId()).isEqualTo(noneSessionUserId);
     }
 
     @DisplayName("관심유저 제거")
@@ -194,7 +192,7 @@ public class UserTest extends BaseTest {
 
         assertThat(interestUser.size()).isEqualTo(1);
         assertThat(interestUser.get(0).getName()).isEqualTo(otherUser.getName());
-        assertThat(interestUser.get(0).getId()).isEqualTo(userService.getUserByEmail(noneSessionEmail).get().getId());
+        assertThat(interestUser.get(0).getId()).isEqualTo(noneSessionUserId);
     }
 
     @DisplayName("관심유저 중복 삭제")
@@ -221,15 +219,25 @@ public class UserTest extends BaseTest {
     @DisplayName("존재하지 않는 관심유저 등록")
     @WithMockUser
     @Test
-    //todo 성공할지 말지 결정
-    public void AddNonExistInterestUser() {
+    public void failAddNonExistInterestUser() throws Exception {
+        MvcResult result = mockMvc.perform(put("/user/iuser/" + 99999999))
+                .andExpect(status().is4xxClientError())
+                .andReturn();
+
+        String body = result.getResponse().getContentAsString();
+        assertThat(body).contains(UserNotFoundException.message);
     }
 
     @DisplayName("존재하지 않는 관심유저 삭제")
     @WithMockUser
     @Test
-    //todo 성공할지 말지 결정
-    public void DeleteNonExistInterestUser() {
+    public void failDeleteNonExistInterestUser() throws Exception {
+        MvcResult result = mockMvc.perform(delete("/user/iuser/" + 99999999))
+                .andExpect(status().is4xxClientError())
+                .andReturn();
+
+        String body = result.getResponse().getContentAsString();
+        assertThat(body).contains(UserNotFoundException.message);
     }
 
     @DisplayName("관심 유저 리스트 요청")
@@ -260,6 +268,4 @@ public class UserTest extends BaseTest {
 
         resultActions.andExpect(jsonPath(String.format("$[%d]", iUserCnt)).doesNotExist());
     }
-
-
 }

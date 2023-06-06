@@ -8,4 +8,6 @@ import java.util.List;
 
 public interface ArticleImageRepository extends JpaRepository<ArticleImage, Long> {
     List<ArticleImage> findByArticlePost(ArticlePost articlePost);
+
+    void deleteArticleImageByArticlePost(ArticlePost articlePost);
 }

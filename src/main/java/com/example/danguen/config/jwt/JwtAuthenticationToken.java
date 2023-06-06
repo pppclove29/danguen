@@ -6,14 +6,9 @@ import org.springframework.security.core.GrantedAuthority;
 import java.util.Collection;
 
 public class JwtAuthenticationToken extends AbstractAuthenticationToken {
-    /**
-     * Creates a token with the supplied array of authorities.
-     *
-     * @param authorities the collection of <tt>GrantedAuthority</tt>s for the principal
-     * represented by this authentication object.
-     */
-    private Object credentials;
-    private Object principal;
+
+    private final Object credentials;
+    private final Object principal;
 
     public JwtAuthenticationToken(Object credentials, Object principal, Collection<? extends GrantedAuthority> authorities) {
         super(authorities);
