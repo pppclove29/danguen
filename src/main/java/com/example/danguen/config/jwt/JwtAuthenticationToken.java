@@ -19,6 +19,8 @@ public class JwtAuthenticationToken extends AbstractAuthenticationToken {
         super(authorities);
         this.credentials = credentials;
         this.principal = principal;
+
+        super.setAuthenticated(true);
     }
 
 

@@ -22,20 +22,6 @@ public class UserController {
 
     private final UserServiceImpl userService;
 
-    @GetMapping("/test")
-    public String test() {
-        System.out.println("test");
-        return "test";
-    }
-
-    @GetMapping("/auth")
-    public String auth() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        System.out.println("authentication : " + authentication);
-        System.out.println("principal : " + authentication.getPrincipal());
-        return "auth";
-    }
-
     @GetMapping("/user/{userId}")
     public ResponseUserPageDto getInfo(@PathVariable Long userId) {
         return userService.getUserDto(userId);
