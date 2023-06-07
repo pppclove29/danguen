@@ -20,6 +20,11 @@ public class UserController {
 
     private final UserServiceImpl userService;
 
+    @GetMapping("/test")
+    public Long test(@SessionUserId Long userId) {
+        return userId;
+    }
+
     @GetMapping("/user/{userId}")
     public ResponseUserPageDto getInfo(@PathVariable Long userId) {
         return userService.getUserDto(userId);

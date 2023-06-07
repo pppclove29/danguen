@@ -1,60 +1,25 @@
 package com.example.danguen.domain.post.controller;
 
-import com.example.danguen.annotation.SessionUserId;
 import com.example.danguen.domain.base.Address;
 import com.example.danguen.domain.comment.dto.response.ResponseCommentDto;
 import com.example.danguen.domain.comment.service.CommentService;
-import com.example.danguen.domain.image.exception.ArticleNotFoundException;
-import com.example.danguen.domain.image.service.ArticleImageService;
-import com.example.danguen.domain.post.dto.request.RequestArticleSaveOrUpdateDto;
 import com.example.danguen.domain.post.dto.response.ResponseArticleDto;
 import com.example.danguen.domain.post.dto.response.ResponseArticleSimpleDto;
 import com.example.danguen.domain.post.service.ArticleServiceImpl;
-import com.example.danguen.domain.user.exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 
-@Slf4j
+@RequestMapping("/public")
 @RequiredArgsConstructor
 @RestController
-public class ArticleController {
+public class PublicArticleController {
 
     private final ArticleServiceImpl articleService;
-    private final ArticleImageService articleImageService;
     private final CommentService commentService;
-
-
-    //todo 권한별 역할 나눌것
-    @PostMapping(value = "/article")
-    public void save(@ModelAttribute("request") RequestArticleSaveOrUpdateDto request,
-                     @RequestParam(value = "images") List<MultipartFile> images,
-                     @SessionUserId Long userId) throws IOException {
-        Long articleId = articleService.save(request, userId);
-        articleImageService.save(articleId, images);
-    }
-
-    @PutMapping("/article/{articleId}")
-    public void update(@ModelAttribute("request") RequestArticleSaveOrUpdateDto request,
-                       @PathVariable Long articleId,
-                       @RequestParam(value = "images") List<MultipartFile> images) {
-        articleService.update(request, articleId);
-        articleImageService.update(articleId, images);
-    }
-
-    @DeleteMapping("/article/{articleId}")
-    public void delete(@PathVariable Long articleId) {
-        articleService.delete(articleId);
-    }
-
 
     @GetMapping("/article/{articleId}")
     public ResponseArticleDto getArticle(@PathVariable Long articleId) {
@@ -90,17 +55,5 @@ public class ArticleController {
     public List<ResponseArticleSimpleDto> getSearchPage(@PageableDefault(size = 6) Pageable pageable,
                                                         @RequestParam("keyword") String title) {
         return articleService.getSearchArticlePage(pageable, title);
-    }
-
-    @GetMapping("/interest")
-    public List<ResponseArticleSimpleDto> getInterestPage(@PageableDefault(size = 6) Pageable pageable,
-                                                          @SessionUserId Long userId) {
-        return articleService.getInterestPage(pageable, userId);
-    }
-
-    @ExceptionHandler(ArticleNotFoundException.class)
-    public ResponseEntity<?> handleArticleNotFound() {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(ArticleNotFoundException.message);
     }
 }

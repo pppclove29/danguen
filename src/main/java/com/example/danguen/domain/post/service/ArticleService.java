@@ -46,13 +46,22 @@ public interface ArticleService {
     List<ResponseArticleSimpleDto> getSearchArticlePage(Pageable pageable, String title);
 
     /**
+     * 특정 사용자가 관심가진 게시글을 페이지로 분류하여 표시
+     *
+     * @param pageable 사용자에게 표시할 페이지 정보
+     * @param userId   특정 사용자
+     * @return 관심 등록한 게시글 목록
+     */
+    List<ResponseArticleSimpleDto> getInterestArticlePage(Pageable pageable, Long userId);
+
+    /**
      * 특정 사용자가 관심가진 유저들이 등록한 게시글을 페이지로 분류하여 표시
      *
      * @param pageable 사용자에게 표시할 페이지 정보
      * @param userId   특정 사용자
      * @return 관심 유저들이 등록한 게시글 목록
      */
-    List<ResponseArticleSimpleDto> getInterestPage(Pageable pageable, Long userId);
+    List<ResponseArticleSimpleDto> getInterestUsersArticlePage(Pageable pageable, Long userId);
 
     /**
      * 게시글의 정보를 받아 새로운 게시글을 등록

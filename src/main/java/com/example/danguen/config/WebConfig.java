@@ -1,12 +1,15 @@
 package com.example.danguen.config;
 
 import com.example.danguen.argumentResolver.SessionUserIdArgumentResolver;
+import com.example.danguen.interceptor.ArticlePostAuthInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
-import org.springframework.web.servlet.config.annotation.*;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.List;
 
@@ -14,6 +17,7 @@ import java.util.List;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
     private final SessionUserIdArgumentResolver sessionUserIdArgumentResolver;
+    private final ArticlePostAuthInterceptor articlePostAuthInterceptor;
     @Value("${file.article.image.local}")
     private String articlePath;
 
@@ -24,6 +28,8 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(articlePostAuthInterceptor)
+                .addPathPatterns("/secured/article/*");
     }
 
     @Override
@@ -36,7 +42,7 @@ public class WebConfig implements WebMvcConfigurer {
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
                 .allowedOrigins("*")
-                //.allowCredentials(true)
+                //.allowCredentials(true) todo postman 요청 주소 허락
                 .maxAge(3600);
     }
 }

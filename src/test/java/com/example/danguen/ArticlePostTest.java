@@ -54,7 +54,7 @@ public class ArticlePostTest extends BaseTest {
                 .build();
 
         //when & then
-        mockMvc.perform(multipart("/article")
+        mockMvc.perform(multipart("/secured/article")
                         .param("request", mapper.writeValueAsString(dto))
                         .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().is4xxClientError());
@@ -93,7 +93,7 @@ public class ArticlePostTest extends BaseTest {
                 new FileInputStream("src/test/java/testImage/input.png"));
 
         //when
-        mockMvc.perform(multipart("/article")
+        mockMvc.perform(multipart("/secured/article")
                         .file(image1)
                         .file(image2)
                         .file(image3)
@@ -133,7 +133,7 @@ public class ArticlePostTest extends BaseTest {
 
 
         //when
-        mockMvc.perform(multipart(HttpMethod.PUT, "/article/" + articleId)
+        mockMvc.perform(multipart(HttpMethod.PUT, "/secured/article/" + articleId)
                         .file(image)
                         .flashAttr("request", dto)
                         .contentType(MediaType.MULTIPART_FORM_DATA))
@@ -159,7 +159,7 @@ public class ArticlePostTest extends BaseTest {
         Long articleId = makeArticle(0, sessionUserId);
 
         //when
-        mockMvc.perform(delete("/article/" + articleId))
+        mockMvc.perform(delete("/secured/article/" + articleId))
                 .andExpect(status().isOk());
 
         //then
@@ -180,7 +180,7 @@ public class ArticlePostTest extends BaseTest {
         Long articleId = makeArticle(0, sessionUserId);
 
         //when
-        MvcResult result = mockMvc.perform(get("/article/" + articleId))
+        MvcResult result = mockMvc.perform(get("/public/article/" + articleId))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -218,7 +218,7 @@ public class ArticlePostTest extends BaseTest {
     @Test
     public void failLoadNonExistArticleInfo() throws Exception {
         //when
-        MvcResult result = mockMvc.perform(get("/article/999999999")).andReturn();
+        MvcResult result = mockMvc.perform(get("/public/article/999999999")).andReturn();
 
         //then
         assertThat(result.getResponse().getContentAsString()).contains(ArticleNotFoundException.message);
@@ -253,7 +253,7 @@ public class ArticlePostTest extends BaseTest {
         int[] expectPostIndex = new int[]{9, 8, 7, 6, 5, 4};
 
         //when
-        MvcResult result = mockMvc.perform(get("/address"))
+        MvcResult result = mockMvc.perform(get("/public/address"))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -292,7 +292,7 @@ public class ArticlePostTest extends BaseTest {
         int[] expectPostIndex = new int[]{5, 4, 3};
 
         //when
-        MvcResult result = mockMvc.perform(get("/address/희망주소1"))
+        MvcResult result = mockMvc.perform(get("/public/address/희망주소1"))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -329,7 +329,7 @@ public class ArticlePostTest extends BaseTest {
         int[] expectPostIndex = new int[]{2, 1, 0};
 
         //when
-        MvcResult result = mockMvc.perform(get("/address/희망주소0/희망주소0"))
+        MvcResult result = mockMvc.perform(get("/public/address/희망주소0/희망주소0"))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -366,7 +366,7 @@ public class ArticlePostTest extends BaseTest {
         int[] expectPostIndex = new int[]{2};
 
         //when
-        MvcResult result = mockMvc.perform(get("/address/희망주소0/희망주소0/희망주소2"))
+        MvcResult result = mockMvc.perform(get("/public/address/희망주소0/희망주소0/희망주소2"))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -402,7 +402,7 @@ public class ArticlePostTest extends BaseTest {
         }
 
         //when
-        MvcResult result = mockMvc.perform(get("/address/none/exist/address"))
+        MvcResult result = mockMvc.perform(get("/public/address/none/exist/address"))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -422,7 +422,7 @@ public class ArticlePostTest extends BaseTest {
         }
 
         // 첫번째 페이지
-        mockMvc.perform(get("/search?size=3&page=0&keyword="))
+        mockMvc.perform(get("/public/search?size=3&page=0&keyword="))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].title").value((articleTitle + 9)))
                 .andExpect(jsonPath("$[1].title").value((articleTitle + 8)))
@@ -430,7 +430,7 @@ public class ArticlePostTest extends BaseTest {
                 .andExpect(jsonPath("$[3]").doesNotExist());
 
         // 두번째 페이지
-        mockMvc.perform(get("/search?size=3&page=1&keyword="))
+        mockMvc.perform(get("/public/search?size=3&page=1&keyword="))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].title").value((articleTitle + 6)))
                 .andExpect(jsonPath("$[1].title").value((articleTitle + 5)))
@@ -438,7 +438,7 @@ public class ArticlePostTest extends BaseTest {
                 .andExpect(jsonPath("$[3]").doesNotExist());
 
         // 세번째 페이지
-        mockMvc.perform(get("/search?size=3&page=2&keyword="))
+        mockMvc.perform(get("/public/search?size=3&page=2&keyword="))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].title").value((articleTitle + 3)))
                 .andExpect(jsonPath("$[1].title").value((articleTitle + 2)))
@@ -446,7 +446,7 @@ public class ArticlePostTest extends BaseTest {
                 .andExpect(jsonPath("$[3]").doesNotExist());
 
         // 마지막 페이지
-        mockMvc.perform(get("/search?size=3&page=3&keyword="))
+        mockMvc.perform(get("/public/search?size=3&page=3&keyword="))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].title").value((articleTitle + 0)))
                 .andExpect(jsonPath("$[1]").doesNotExist());
@@ -458,7 +458,7 @@ public class ArticlePostTest extends BaseTest {
     public void successIncreaseArticleView() throws Exception {
         Long articleId = makeArticle(0, sessionUserId);
 
-        mockMvc.perform(get("/article/" + articleId))
+        mockMvc.perform(get("/public/article/" + articleId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.views").value(1));
     }
@@ -482,7 +482,7 @@ public class ArticlePostTest extends BaseTest {
         }
 
         //when
-        MvcResult result = mockMvc.perform(get("/hot-articles"))
+        MvcResult result = mockMvc.perform(get("/public/hot-articles"))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -512,7 +512,7 @@ public class ArticlePostTest extends BaseTest {
         }
 
         //when
-        MvcResult result = mockMvc.perform(get("/search?keyword=" + keyword))
+        MvcResult result = mockMvc.perform(get("/public/search?keyword=" + keyword))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -542,7 +542,7 @@ public class ArticlePostTest extends BaseTest {
         }
 
         //when
-        MvcResult result = mockMvc.perform(get("/search?keyword=" + keyword))
+        MvcResult result = mockMvc.perform(get("/public/search?keyword=" + keyword))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -575,7 +575,7 @@ public class ArticlePostTest extends BaseTest {
         setInterestUsers(interestUserList);
 
         //when
-        MvcResult result = mockMvc.perform(get("/interest"))
+        MvcResult result = mockMvc.perform(get("/public/interest"))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -593,7 +593,7 @@ public class ArticlePostTest extends BaseTest {
         Long articleId = articlePostRepository.findAll().get(idx).getId();
 
         for (int i = 0; i < count; i++) {
-            mockMvc.perform(get("/article/" + articleId));
+            mockMvc.perform(get("/public/article/" + articleId));
         }
     }
 

@@ -28,7 +28,7 @@ file:
   article:
     image:
       path: src/test/resources/articleImage/
-      local: file///C:\\Users\\82103\\IdeaProjects\\danguen\\src\\test\\resources\\userImage\\
+      local: file///C:\\Users\\82103\\IdeaProjects\\danguen\\src\\test\\resources\\articleImage\\
 
 websocket:
   url:

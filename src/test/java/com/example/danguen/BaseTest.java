@@ -78,6 +78,7 @@ public class BaseTest {
 
     @BeforeEach
     public void init() throws Exception {
+        System.out.println("Base Init");
         mockMvc = MockMvcBuilders
                 .webAppContextSetup(ctx)
                 .addFilters(new CharacterEncodingFilter("UTF-8", true))  // 필터 추가
@@ -90,8 +91,10 @@ public class BaseTest {
         noneSessionUserId = makeUser(noneSessionName, noneSessionEmail).getId();
     }
 
+    @Transactional
     @AfterEach
     public void clear() {
+        System.out.println("Base Clear");
         commentRepository.deleteAll();
         imageRepository.deleteAll();
         postRepository.deleteAll();

@@ -1,5 +1,7 @@
 package com.example.danguen.domain.post.service;
 
+import com.example.danguen.config.exception.MissingSessionPrincipalDetailsException;
+import com.example.danguen.config.oauth.PrincipalUserDetails;
 import com.example.danguen.domain.base.Address;
 import com.example.danguen.domain.comment.entity.Comment;
 import com.example.danguen.domain.image.exception.ArticleNotFoundException;
@@ -14,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -71,9 +74,16 @@ public class ArticleServiceImpl implements ArticleService {
         return page.stream().map(ResponseArticleSimpleDto::toResponse).collect(Collectors.toList());
     }
 
-    @Override
     @Transactional(readOnly = true)
-    public List<ResponseArticleSimpleDto> getInterestPage(Pageable pageable, Long userId) {
+    @Override
+    public List<ResponseArticleSimpleDto> getInterestArticlePage(Pageable pageable, Long userId) {
+        //todo 관심한 게시글 모아보기 기능
+        return null;
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<ResponseArticleSimpleDto> getInterestUsersArticlePage(Pageable pageable, Long userId) {
         List<User> interestUser = userService.getUserById(userId).getInterestUsers();
 
         Page<ArticlePost> page = articlePostRepository.findByInterestUser(pageable, interestUser);
@@ -107,8 +117,9 @@ public class ArticleServiceImpl implements ArticleService {
         User user = articlePost.getSeller();
 
         user.removeSellArticle(articlePost);
-        for (Comment comment : articlePost.getComments())
+        for (Comment comment : articlePost.getComments()) {
             comment.getWriter().removeComment(comment);
+        }
 
         articlePostRepository.deleteById(articleId);
     }
@@ -116,5 +127,21 @@ public class ArticleServiceImpl implements ArticleService {
     @Override
     public ArticlePost getArticleById(Long articleId) {
         return articlePostRepository.findById(articleId).orElseThrow(ArticleNotFoundException::new);
+    }
+
+    @Transactional(readOnly = true)
+    public boolean isUsersCreation(Long articleId) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (principal.equals("anonymousUser")) {
+            throw new MissingSessionPrincipalDetailsException();
+        }
+
+        PrincipalUserDetails userDetails = (PrincipalUserDetails) principal;
+
+        User user = userService.getUserById(userDetails.getUserId());
+        ArticlePost articlePost = getArticleById(articleId);
+
+        return user.getSellArticlePosts().contains(articlePost);
     }
 }
