@@ -3,6 +3,7 @@ package com.example.danguen.domain.comment.entity;
 import com.example.danguen.domain.base.BaseTimeEntity;
 import com.example.danguen.domain.post.entity.Post;
 import com.example.danguen.domain.user.entity.User;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,6 +11,7 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @NoArgsConstructor
 @Getter
@@ -20,14 +22,15 @@ public class Comment extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "COMMENT_ID", nullable = false)
-    Long id;
+    private Long id;
 
-    String content;
-    boolean isDeleted = false;
+    private String content;
+    private boolean isDeleted = false;
 
+    @Getter(AccessLevel.NONE)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "USER_ID")
-    User writer;
+    private User writer;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "POST_ID")
@@ -37,6 +40,8 @@ public class Comment extends BaseTimeEntity {
     @JoinColumn(name = "COMMENT_ID")
     private final List<User> likedUser = new ArrayList<>(); // 좋아요을 누른 유저를 저장한다.
 
+
+    //todo 대댓글 기능 구현
     @ManyToOne
     private Comment parentComment;
 
@@ -60,6 +65,10 @@ public class Comment extends BaseTimeEntity {
 
     public void delete() {
         this.isDeleted = true;
+    }
+
+    public Optional<User> getWriter() {
+        return Optional.ofNullable(this.writer);
     }
 
     public void deleteUser() {

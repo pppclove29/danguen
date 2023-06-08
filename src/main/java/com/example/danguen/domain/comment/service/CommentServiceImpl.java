@@ -29,18 +29,18 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     @Transactional
-    public void save(RequestCommentSaveDto request, Long postId, Long userId) {
+    public Comment save(RequestCommentSaveDto request, Long postId, Long userId) {
         User user = userService.getUserById(userId);
-        Post post = postService.getPostFromDB(postId);
+        Post post = postService.getPostById(postId);
 
         Comment comment = request.toEntity(user, post);
-        commentRepository.save(comment);
+        return commentRepository.save(comment);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<ResponseCommentDto> getComments(Long postId) {
-        Post post = postService.getPostFromDB(postId);
+        Post post = postService.getPostById(postId);
 
         return commentRepository.findAllByPost(post)
                 .map(ResponseCommentDto::toResponse)
@@ -50,7 +50,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional
     public void update(RequestCommentSaveDto request, Long commentId) throws AlreadyDeletedCommentException {
-        Comment comment = getCommentFromDB(commentId);
+        Comment comment = getCommentById(commentId);
 
         if (comment.isDeleted()) // 삭제된 댓글에 대해서는 수정을 막는다
             throw new AlreadyDeletedCommentException();
@@ -61,9 +61,10 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional
     public void delete(Long commentId) {
-        Comment comment = getCommentFromDB(commentId);
-        comment.getWriter().removeComment(comment);
-
+        Comment comment = getCommentById(commentId);
+        if (comment.getWriter().isPresent()) {
+            comment.getWriter().get().removeComment(comment);
+        }
         comment.updateComment("삭제된 메세지입니다.");
         comment.delete();
     }
@@ -71,7 +72,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional
     public int like(Long commentId, Long userId) {
-        Comment comment = getCommentFromDB(commentId);
+        Comment comment = getCommentById(commentId);
 
         comment.likesComment(userService.getUserById(userId));
 
@@ -80,7 +81,7 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     @Transactional
-    public Comment getCommentFromDB(Long commentId) {
+    public Comment getCommentById(Long commentId) {
         return commentRepository.findById(commentId).orElseThrow(CommentNotFoundException::new);
     }
 

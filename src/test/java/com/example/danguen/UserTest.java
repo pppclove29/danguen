@@ -39,7 +39,7 @@ public class UserTest extends BaseTest {
         userService.update(updateDto, sessionUserId);
 
         //when
-        mockMvc.perform(get("/user/" + userId))
+        mockMvc.perform(get("/secured/user/" + userId))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -60,7 +60,7 @@ public class UserTest extends BaseTest {
         long userId = -1L;
 
         //when
-        MvcResult result = mockMvc.perform(get("/user/" + userId))
+        MvcResult result = mockMvc.perform(get("/secured/user/" + userId))
                 .andExpect(status().is4xxClientError())
                 .andReturn();
 
@@ -81,7 +81,7 @@ public class UserTest extends BaseTest {
         dto.setAddress(newAddress);
 
         //where
-        mockMvc.perform(put("/user/" + userId)
+        mockMvc.perform(put("/secured/user/" + userId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(new ObjectMapper().writeValueAsString(dto)));
 
@@ -102,7 +102,7 @@ public class UserTest extends BaseTest {
         Long userId = sessionUserId;
 
         //when
-        mockMvc.perform(delete("/user/" + userId));
+        mockMvc.perform(delete("/secured/user/" + userId));
 
         //then
         assertThat(userService.getUserByEmail(sessionEmail)).isEqualTo(Optional.empty());
@@ -122,7 +122,7 @@ public class UserTest extends BaseTest {
         review.setNegativeAnswer(new boolean[]{false, false, false, false, false, false, false, false, false, false});
 
         //when
-        mockMvc.perform(post("/user/" + sessionUserId + "/review")
+        mockMvc.perform(post("/secured/user/" + sessionUserId + "/review")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(new ObjectMapper().writeValueAsString(review)));
 
@@ -143,7 +143,7 @@ public class UserTest extends BaseTest {
         User otherUser = userService.getUserById(noneSessionUserId);
 
         //when
-        mockMvc.perform(put("/user/iuser/" + otherUser.getId()))
+        mockMvc.perform(put("/secured/user/iuser/" + otherUser.getId()))
                 .andExpect(status().isOk());
 
         //then
@@ -163,13 +163,13 @@ public class UserTest extends BaseTest {
         setInterestUsers(List.of(otherUser));
 
         //when
-        mockMvc.perform(delete("/user/iuser/" + otherUser.getId()))
+        mockMvc.perform(delete("/secured/user/iuser/" + otherUser.getId()))
                 .andExpect(status().isOk());
 
         //then
         List<ResponseUserSimpleDto> interestUser = userService.getIUserDtos(sessionUserId);
 
-        assertThat(interestUser.size()).isEqualTo(0);
+        assertThat(interestUser).isEmpty();
     }
 
     @DisplayName("관심유저 중복 등록")
@@ -183,7 +183,7 @@ public class UserTest extends BaseTest {
 
         //when
         for (int i = 0; i < 3; i++) {
-            mockMvc.perform(put("/user/iuser/" + otherUser.getId()))
+            mockMvc.perform(put("/secured/user/iuser/" + otherUser.getId()))
                     .andExpect(status().isOk());
         }
 
@@ -206,21 +206,21 @@ public class UserTest extends BaseTest {
 
         //when
         for (int i = 0; i < 3; i++) {
-            mockMvc.perform(delete("/user/iuser/" + otherUser.getId()))
+            mockMvc.perform(delete("/secured/user/iuser/" + otherUser.getId()))
                     .andExpect(status().isOk());
         }
 
         //then
         List<ResponseUserSimpleDto> interestUser = userService.getIUserDtos(sessionUserId);
 
-        assertThat(interestUser.size()).isEqualTo(0);
+        assertThat(interestUser).isEmpty();
     }
 
     @DisplayName("존재하지 않는 관심유저 등록")
     @WithMockUser
     @Test
     public void failAddNonExistInterestUser() throws Exception {
-        MvcResult result = mockMvc.perform(put("/user/iuser/" + 99999999))
+        MvcResult result = mockMvc.perform(put("/secured/user/iuser/" + 99999999))
                 .andExpect(status().is4xxClientError())
                 .andReturn();
 
@@ -232,7 +232,7 @@ public class UserTest extends BaseTest {
     @WithMockUser
     @Test
     public void failDeleteNonExistInterestUser() throws Exception {
-        MvcResult result = mockMvc.perform(delete("/user/iuser/" + 99999999))
+        MvcResult result = mockMvc.perform(delete("/secured/user/iuser/" + 99999999))
                 .andExpect(status().is4xxClientError())
                 .andReturn();
 
@@ -255,7 +255,7 @@ public class UserTest extends BaseTest {
         setInterestUsers(iUsers);
 
         //when
-        ResultActions resultActions = mockMvc.perform(get("/user/iuser"))
+        ResultActions resultActions = mockMvc.perform(get("/secured/user/iuser"))
                 .andExpect(status().isOk());
 
 

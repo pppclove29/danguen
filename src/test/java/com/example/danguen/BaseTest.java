@@ -14,17 +14,18 @@ import com.example.danguen.domain.post.dto.request.RequestArticleSaveOrUpdateDto
 import com.example.danguen.domain.post.entity.ArticlePost;
 import com.example.danguen.domain.post.repository.PostRepository;
 import com.example.danguen.domain.post.service.ArticleServiceImpl;
+import com.example.danguen.domain.post.service.PostService;
 import com.example.danguen.domain.user.entity.User;
 import com.example.danguen.domain.user.repository.UserRepository;
 import com.example.danguen.domain.user.service.UserServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -34,13 +35,14 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
 
-import java.io.FileInputStream;
 import java.util.List;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ExtendWith(SpringExtension.class)
 @AutoConfigureMockMvc
 public class BaseTest {
+
+    //todo 각 http 요청에 대해 더욱 자세하게 검증, is4XX (x), isBadRequest (o)
 
     @Autowired
     MockMvc mockMvc;
@@ -49,6 +51,8 @@ public class BaseTest {
 
     @Autowired
     UserServiceImpl userService;
+    @Autowired
+    PostService postService;
     @Autowired
     ArticleServiceImpl articleService;
     @Autowired
@@ -76,9 +80,9 @@ public class BaseTest {
     String noneSessionName = "김기타";
     String noneSessionEmail = "other@temp.com";
 
+    @Order(0)
     @BeforeEach
-    public void init() throws Exception {
-        System.out.println("Base Init");
+    public void baseInit() {
         mockMvc = MockMvcBuilders
                 .webAppContextSetup(ctx)
                 .addFilters(new CharacterEncodingFilter("UTF-8", true))  // 필터 추가
@@ -94,7 +98,7 @@ public class BaseTest {
     @Transactional
     @AfterEach
     public void clear() {
-        System.out.println("Base Clear");
+        //todo delete articleImage
         commentRepository.deleteAll();
         imageRepository.deleteAll();
         postRepository.deleteAll();
@@ -138,7 +142,7 @@ public class BaseTest {
     String articleStreet = "희망주소";
     String articleZipcode = "희망주소";
 
-    public Long makeArticle(int idx, Long userId) throws Exception { // 중고 물품 등록
+    public Long makeArticle(int idx, Long userId) { // 중고 물품 등록
         RequestArticleSaveOrUpdateDto dto = RequestArticleSaveOrUpdateDto.builder()
                 .title(articleTitle + idx)
                 .content(articleContent)
@@ -161,13 +165,7 @@ public class BaseTest {
         return articlePost.getId();
     }
 
-    public void makeArticleImage(ArticlePost articlePost) throws Exception {
-        MockMultipartFile image = new MockMultipartFile(
-                "images",
-                "input1.png",
-                "image/png",
-                new FileInputStream("src/test/java/testImage/input.png"));
-
+    public void makeArticleImage(ArticlePost articlePost) {
         imageRepository.save(
                 ArticleImage.builder()
                         .uuid("uuid")
@@ -178,13 +176,13 @@ public class BaseTest {
 
     String commentContent = "댓글 내용";
 
-    public void makeComment(Long postId, Long userId) { // 댓글 등록
+    public Long makeComment(Long postId, Long userId) { // 댓글 등록
         RequestCommentSaveDto dto = new RequestCommentSaveDto();
 
         dto.setContent(commentContent);
-        dto.setKind(postRepository.getReferenceById(postId).getKind());
+        dto.setKind(postRepository.findById(postId).get().getKind());
 
-        commentService.save(dto, postId, userId);
+        return commentService.save(dto, postId, userId).getId();
     }
 }
 

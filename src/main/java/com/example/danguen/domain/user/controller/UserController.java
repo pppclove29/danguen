@@ -14,16 +14,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@RequestMapping("/secured")
 @RequiredArgsConstructor
 @RestController
 public class UserController {
 
     private final UserServiceImpl userService;
-
-    @GetMapping("/test")
-    public Long test(@SessionUserId Long userId) {
-        return userId;
-    }
 
     @GetMapping("/user/{userId}")
     public ResponseUserPageDto getInfo(@PathVariable Long userId) {

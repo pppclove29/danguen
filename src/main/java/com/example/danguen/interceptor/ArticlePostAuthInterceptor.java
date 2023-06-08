@@ -18,18 +18,20 @@ public class ArticlePostAuthInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
-        //참 드럽다
         if (handler instanceof HandlerMethod) {
             Long postId = getPostIdFromPath(request.getRequestURI());
 
             boolean hasAuth = articleService.isUsersCreation(postId);
 
             if (!hasAuth) {
+                System.out.println("11");
                 response.setStatus(HttpStatus.FORBIDDEN.value());
                 return false;
             }
+            System.out.println("22");
             return true;
         }
+        System.out.println("33");
         return false;
     }
 

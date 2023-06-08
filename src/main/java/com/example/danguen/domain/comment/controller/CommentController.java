@@ -5,7 +5,10 @@ import com.example.danguen.domain.comment.exception.AlreadyDeletedCommentExcepti
 import com.example.danguen.domain.comment.exception.CommentNotFoundException;
 import com.example.danguen.domain.comment.dto.request.RequestCommentSaveDto;
 import com.example.danguen.domain.comment.service.CommentService;
+import com.example.danguen.domain.image.exception.ArticleNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
@@ -39,13 +42,17 @@ public class CommentController {
         return commentService.like(commentId, userId);
     }
 
-    @ExceptionHandler(CommentNotFoundException.class)
-    public String handleCommentNotFound() {
-        return CommentNotFoundException.message;
+    @ExceptionHandler(AlreadyDeletedCommentException.class)
+    public ResponseEntity<?> handleCommentAlreadyDeleted() {
+        System.out.println("에러처리");
+        
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(AlreadyDeletedCommentException.message);
     }
 
-    @ExceptionHandler(AlreadyDeletedCommentException.class)
-    public String handleArticleDeleted() {
-        return AlreadyDeletedCommentException.message;
+    @ExceptionHandler(CommentNotFoundException.class)
+    public ResponseEntity<?> handleCommentNotFound() {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(CommentNotFoundException.message);
     }
 }

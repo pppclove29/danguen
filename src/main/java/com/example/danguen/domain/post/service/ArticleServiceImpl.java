@@ -3,7 +3,6 @@ package com.example.danguen.domain.post.service;
 import com.example.danguen.config.exception.MissingSessionPrincipalDetailsException;
 import com.example.danguen.config.oauth.PrincipalUserDetails;
 import com.example.danguen.domain.base.Address;
-import com.example.danguen.domain.comment.entity.Comment;
 import com.example.danguen.domain.image.exception.ArticleNotFoundException;
 import com.example.danguen.domain.post.dto.request.RequestArticleSaveOrUpdateDto;
 import com.example.danguen.domain.post.dto.response.ResponseArticleDto;
@@ -117,9 +116,10 @@ public class ArticleServiceImpl implements ArticleService {
         User user = articlePost.getSeller();
 
         user.removeSellArticle(articlePost);
-        for (Comment comment : articlePost.getComments()) {
-            comment.getWriter().removeComment(comment);
-        }
+
+        articlePost.getComments().stream()
+                .filter(comment -> comment.getWriter().isPresent())
+                .forEach(comment -> comment.getWriter().get().removeComment(comment));
 
         articlePostRepository.deleteById(articleId);
     }
@@ -139,9 +139,8 @@ public class ArticleServiceImpl implements ArticleService {
 
         PrincipalUserDetails userDetails = (PrincipalUserDetails) principal;
 
-        User user = userService.getUserById(userDetails.getUserId());
         ArticlePost articlePost = getArticleById(articleId);
 
-        return user.getSellArticlePosts().contains(articlePost);
+        return articlePost.getSeller().getId().equals(userDetails.getUserId());
     }
 }

@@ -33,6 +33,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+//todo anonymousUser의 secured 접근에 대한 테스트 진행
+//todo admin의 작업에 대한 anonymousUser, normal User, admin User의 접근 테스트 진행
 public class ArticlePostTest extends BaseTest {
 
     @Autowired
@@ -165,8 +167,8 @@ public class ArticlePostTest extends BaseTest {
         //then
         User user = userService.getUserById(sessionUserId);
 
-        assertThat(articlePostRepository.findAll().size()).isEqualTo(0);
-        assertThat(user.getSellArticlePosts().size()).isEqualTo(0);
+        assertThat(articlePostRepository.findAll()).isEmpty();
+        assertThat(user.getSellArticlePosts()).isEmpty();
     }
 
     @DisplayName("물품 정보 요청")
@@ -175,7 +177,7 @@ public class ArticlePostTest extends BaseTest {
     public void successLoadSimpleArticleInfo() throws Exception {
         //given
         LocalDateTime testTime = LocalDateTime.now();
-        Thread.sleep(1000);
+        Thread.sleep(500);
 
         Long articleId = makeArticle(0, sessionUserId);
 
@@ -207,10 +209,10 @@ public class ArticlePostTest extends BaseTest {
         makeArticle(0, noneSessionUserId);
 
         //when
-        mockMvc.perform(delete("/user/" + noneSessionUserId));
+        mockMvc.perform(delete("/secured/user/" + noneSessionUserId));
 
         //then
-        assertThat(articlePostRepository.findAll().size()).isEqualTo(0);
+        assertThat(articlePostRepository.findAll()).isEmpty();
     }
 
     @DisplayName("존재하지 않는 중고물품 정보 요청")
@@ -409,7 +411,7 @@ public class ArticlePostTest extends BaseTest {
         List<ResponseArticleSimpleDto> responseList = toSimpleArticleList(result);
 
         // then
-        assertThat(responseList.size()).isEqualTo(0);
+        assertThat(responseList).isEmpty();
     }
 
     @DisplayName("중고물품 리스트 결과 페이지 분할")

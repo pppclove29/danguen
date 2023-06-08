@@ -1,5 +1,7 @@
 package com.example.danguen.domain.user.service;
 
+import com.example.danguen.domain.comment.entity.Comment;
+import com.example.danguen.domain.comment.repository.CommentRepository;
 import com.example.danguen.domain.review.RequestReviewDto;
 import com.example.danguen.domain.user.dto.request.RequestUserUpdateDto;
 import com.example.danguen.domain.user.dto.response.ResponseUserPageDto;
@@ -27,7 +29,6 @@ public class UserServiceImpl implements UserService {
 
         return ResponseUserPageDto.toResponse(user);
     }
-
 
 
     @Override
@@ -58,6 +59,8 @@ public class UserServiceImpl implements UserService {
 
         userRepository.deleteById(userId);
     }
+
+    private final CommentRepository commentRepository;
 
     @Override
     @Transactional

@@ -14,7 +14,11 @@ public class PostService {
 
     private final PostRepository postRepository;
 
-    public Post getPostFromDB(Long postId){
+    public Post getPostById(Long postId) {
         return postRepository.findById(postId).orElseThrow(ArticleNotFoundException::new);
+    }
+
+    public void delete(Long postId) {
+        postRepository.deleteById(postId);
     }
 }
