@@ -21,7 +21,7 @@ import java.util.concurrent.ExecutionException;
 
 @RequiredArgsConstructor
 @Service
-public class UserImageService {
+public class UserImageService implements ImageService{
     private final ImageRepository userImageRepository;
 
     @Value("${file.user.image.path}")

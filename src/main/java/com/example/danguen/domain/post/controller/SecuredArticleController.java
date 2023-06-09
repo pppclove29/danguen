@@ -6,6 +6,7 @@ import com.example.danguen.domain.post.dto.request.RequestArticleSaveOrUpdateDto
 import com.example.danguen.domain.post.dto.response.ResponseArticleSimpleDto;
 import com.example.danguen.domain.post.service.ArticleServiceImpl;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +19,9 @@ import java.util.List;
 @RequiredArgsConstructor
 @RestController
 public class SecuredArticleController {
+    //todo 실제 s3에 저장하는거 마냥 할거면 이거 필요없음
+    @Value("${file.article.image.path}")
+    private String savePath;
     private final ArticleImageService articleImageService;
     private final ArticleServiceImpl articleService;
 
@@ -25,8 +29,6 @@ public class SecuredArticleController {
     public void save(@ModelAttribute("request") RequestArticleSaveOrUpdateDto request,
                      @RequestParam(value = "images") List<MultipartFile> images,
                      @SessionUserId Long userId) throws IOException {
-
-        System.out.println(images.size());
         Long articleId = articleService.save(request, userId);
         articleImageService.save(articleId, images);
     }
@@ -42,7 +44,7 @@ public class SecuredArticleController {
     @DeleteMapping("/article/{articleId}")
     public void delete(@PathVariable Long articleId) {
         articleService.delete(articleId);
-        articleImageService.deleteFolder(articleId);
+        articleImageService.deleteFolder(savePath + articleId);
     }
 
     //todo

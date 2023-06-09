@@ -1,10 +1,11 @@
 package com.example.danguen;
 
-import com.example.danguen.domain.comment.dto.response.ResponseCommentDto;
-import com.example.danguen.domain.comment.exception.AlreadyDeletedCommentException;
-import com.example.danguen.domain.comment.entity.Comment;
 import com.example.danguen.domain.comment.dto.request.RequestCommentSaveDto;
+import com.example.danguen.domain.comment.dto.response.ResponseCommentDto;
+import com.example.danguen.domain.comment.entity.Comment;
+import com.example.danguen.domain.comment.exception.AlreadyDeletedCommentException;
 import com.example.danguen.domain.comment.repository.CommentRepository;
+import com.example.danguen.domain.post.controller.SecuredArticleController;
 import com.example.danguen.domain.post.entity.ArticlePost;
 import com.example.danguen.domain.post.entity.Post;
 import com.example.danguen.domain.post.entity.PostKind;
@@ -13,6 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MvcResult;
@@ -24,6 +26,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 
 public class CommentTest extends BaseTest {
 
@@ -210,6 +213,7 @@ public class CommentTest extends BaseTest {
     }
 
     @DisplayName("글 삭제시 댓글 삭제 검증")
+    @WithMockUser
     @Test
     public void successDeleteCommentWhenPostDeleted() throws Exception {
         //given
@@ -225,5 +229,4 @@ public class CommentTest extends BaseTest {
         assertThat(commentRepository.findAll()).isEmpty();
         assertThat(user.getComments()).isEmpty();
     }
-
 }

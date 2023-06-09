@@ -3,17 +3,24 @@ package com.example.danguen;
 
 import com.example.danguen.domain.base.Address;
 import com.example.danguen.domain.image.exception.ArticleNotFoundException;
+import com.example.danguen.domain.image.service.ArticleImageService;
+import com.example.danguen.domain.post.controller.SecuredArticleController;
 import com.example.danguen.domain.post.dto.request.RequestArticleSaveOrUpdateDto;
 import com.example.danguen.domain.post.dto.response.ResponseArticleDto;
 import com.example.danguen.domain.post.dto.response.ResponseArticleSimpleDto;
 import com.example.danguen.domain.post.entity.ArticlePost;
 import com.example.danguen.domain.post.repository.ArticlePostRepository;
+import com.example.danguen.domain.post.service.ArticleServiceImpl;
 import com.example.danguen.domain.user.entity.User;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
@@ -21,12 +28,15 @@ import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.FileInputStream;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Method;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -35,32 +45,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 //todo anonymousUser의 secured 접근에 대한 테스트 진행
 //todo admin의 작업에 대한 anonymousUser, normal User, admin User의 접근 테스트 진행
+//@WebMvcTest(SecuredArticleController.class)
 public class ArticlePostTest extends BaseTest {
+
+    @MockBean
+    ArticleImageService articleImageService;
 
     @Autowired
     ArticlePostRepository articlePostRepository;
-
-    @DisplayName("이미지 없이 중고물품 등록")
-    @WithMockUser
-    @Test
-    public void failSaveArticleWithOutImages() throws Exception {
-        //given
-        Address dealAddress = new Address(articleCity, articleStreet, articleZipcode);
-
-        RequestArticleSaveOrUpdateDto dto = RequestArticleSaveOrUpdateDto.builder()
-                .title(articleTitle)
-                .content(articleContent)
-                .price(articlePrice)
-                .category(articleCategory)
-                .dealHopeAddress(dealAddress)
-                .build();
-
-        //when & then
-        mockMvc.perform(multipart("/secured/article")
-                        .param("request", mapper.writeValueAsString(dto))
-                        .contentType(MediaType.MULTIPART_FORM_DATA))
-                .andExpect(status().is4xxClientError());
-    }
 
     @Transactional
     @DisplayName("이미지가 포함된 중고물품 등록")
@@ -68,6 +60,7 @@ public class ArticlePostTest extends BaseTest {
     @Test
     public void successSaveArticleWithImages() throws Exception {
         //given
+        //todo local 등 저장소에 저장하는 작업을 막아야함 s3를 사용하던가
         RequestArticleSaveOrUpdateDto dto = RequestArticleSaveOrUpdateDto.builder()
                 .title(articleTitle)
                 .content(articleContent)
@@ -107,6 +100,28 @@ public class ArticlePostTest extends BaseTest {
         ArticlePost articlePost = articlePostRepository.findAll().get(0);
 
         assertThat(articlePost.getImages().size()).isEqualTo(3);
+    }
+
+    @DisplayName("이미지 없이 중고물품 등록")
+    @WithMockUser
+    @Test
+    public void failSaveArticleWithOutImages() throws Exception {
+        //given
+        Address dealAddress = new Address(articleCity, articleStreet, articleZipcode);
+
+        RequestArticleSaveOrUpdateDto dto = RequestArticleSaveOrUpdateDto.builder()
+                .title(articleTitle)
+                .content(articleContent)
+                .price(articlePrice)
+                .category(articleCategory)
+                .dealHopeAddress(dealAddress)
+                .build();
+
+        //when & then
+        mockMvc.perform(multipart("/secured/article")
+                        .param("request", mapper.writeValueAsString(dto))
+                        .contentType(MediaType.MULTIPART_FORM_DATA))
+                .andExpect(status().is4xxClientError());
     }
 
     @DisplayName("물품 정보 수정")
