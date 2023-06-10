@@ -1,7 +1,5 @@
 package com.example.danguen.domain.user.service;
 
-import com.example.danguen.domain.comment.entity.Comment;
-import com.example.danguen.domain.comment.repository.CommentRepository;
 import com.example.danguen.domain.review.RequestReviewDto;
 import com.example.danguen.domain.user.dto.request.RequestUserUpdateDto;
 import com.example.danguen.domain.user.dto.response.ResponseUserPageDto;
@@ -13,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -20,6 +20,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Service
 public class UserServiceImpl implements UserService {
+    @PersistenceContext
+    private EntityManager entityManager;
     private final UserRepository userRepository;
 
     @Override
@@ -56,11 +58,10 @@ public class UserServiceImpl implements UserService {
         User user = getUserById(userId);
 
         user.giveUpComments();
+        entityManager.flush();
 
         userRepository.deleteById(userId);
     }
-
-    private final CommentRepository commentRepository;
 
     @Override
     @Transactional

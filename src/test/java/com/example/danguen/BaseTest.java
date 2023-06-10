@@ -4,6 +4,7 @@ import com.example.danguen.config.jwt.JwtAuthenticationToken;
 import com.example.danguen.config.oauth.PrincipalUserDetails;
 import com.example.danguen.domain.base.Address;
 import com.example.danguen.domain.comment.dto.request.RequestCommentSaveDto;
+import com.example.danguen.domain.comment.entity.Comment;
 import com.example.danguen.domain.comment.repository.CommentRepository;
 import com.example.danguen.domain.comment.service.CommentServiceImpl;
 import com.example.danguen.domain.image.entity.ArticleImage;
@@ -18,6 +19,8 @@ import com.example.danguen.domain.post.service.PostService;
 import com.example.danguen.domain.user.entity.User;
 import com.example.danguen.domain.user.repository.UserRepository;
 import com.example.danguen.domain.user.service.UserServiceImpl;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,12 +33,18 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -176,6 +185,19 @@ public class BaseTest {
         );
     }
 
+    public <T> List<T> mappingResponse(MvcResult result, Class<T> responseType) throws UnsupportedEncodingException, JsonProcessingException {
+        String responseBody = result.getResponse().getContentAsString();
+        List<LinkedHashMap<String, Object>> resultList = mapper.readValue(responseBody, new TypeReference<List<LinkedHashMap<String, Object>>>() {});
+
+        List<T> mappedList = new ArrayList<>();
+        for (LinkedHashMap<String, Object> resultMap : resultList) {
+            T mappedObject = mapper.convertValue(resultMap, responseType);
+            mappedList.add(mappedObject);
+        }
+
+        return mappedList;
+    }
+
     protected String commentContent = "댓글 내용";
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -186,6 +208,17 @@ public class BaseTest {
         dto.setKind(postRepository.findById(postId).get().getKind());
 
         return commentService.saveInPost(dto, postId, userId).getId();
+    }
+    @PersistenceContext
+    EntityManager entityManager;
+
+    @Transactional(propagation =Propagation.REQUIRES_NEW)
+    public void saveEntity(){
+        System.out.println("parent before "+commentRepository.findAll().size());
+        commentRepository.save(new Comment());
+        entityManager.flush();
+
+        System.out.println("parent after "+commentRepository.findAll().size());
     }
 }
 

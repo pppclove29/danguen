@@ -14,11 +14,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -29,6 +33,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 public class CommentTest extends BaseTest {
     //todo 여러 post에 대한 테스트 진행
+    @Test
+    @Transactional(readOnly = true)
+    public void saveTest(){
+        saveEntity();
+
+        System.out.println("child "+commentRepository.findAll().size());
+    }
 
     @Autowired
     CommentRepository commentRepository;
@@ -164,6 +175,7 @@ public class CommentTest extends BaseTest {
         assertThat(comment.getContent()).isEqualTo(newContent);
     }
 
+    @Transactional(readOnly = true)
     @DisplayName("댓글 삭제")
     @WithMockUser
     @Test
@@ -214,6 +226,10 @@ public class CommentTest extends BaseTest {
         assertThat(result.getResponse().getContentAsString()).contains(AlreadyDeletedCommentException.message);
     }
 
+    @PersistenceContext
+    EntityManager entityManager;
+
+    @Transactional(readOnly = true)
     @DisplayName("유저 삭제시 댓글 유지 검증")
     @WithMockUser
     @Test
@@ -222,12 +238,10 @@ public class CommentTest extends BaseTest {
         Long commentId = makeComment(postId, sessionUserId);
 
         //when
-        mockMvc.perform(delete("/secured/user/" + sessionUserId))
+        mockMvc.perform(delete("/secured/user"))
                 .andExpect(status().isOk());
 
         //then
-        System.out.println(commentRepository.findAll().size());
-
         Comment comment = commentService.getCommentById(commentId);
 
         assertThat(comment).isNotNull();
@@ -243,6 +257,7 @@ public class CommentTest extends BaseTest {
         assertThat(commentDto.getContent()).isEqualTo(commentContent);
     }
 
+    @Transactional(readOnly = true)
     @DisplayName("글 삭제시 댓글 삭제 검증")
     @WithMockUser
     @Test

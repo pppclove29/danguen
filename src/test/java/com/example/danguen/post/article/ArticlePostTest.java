@@ -11,10 +11,6 @@ import com.example.danguen.domain.post.dto.response.ResponseArticleSimpleDto;
 import com.example.danguen.domain.post.entity.ArticlePost;
 import com.example.danguen.domain.post.repository.ArticlePostRepository;
 import com.example.danguen.domain.user.entity.User;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +24,6 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.FileInputStream;
-import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -199,9 +194,8 @@ public class ArticlePostTest extends BaseTest {
                 .andReturn();
 
         //then
-        List<ResponseArticleDto> dtoList = mappingResponse(ResponseArticleDto.class, result);
-
-        ResponseArticleDto articleDto = dtoList.get(0);
+        ResponseArticleDto articleDto
+                = mapper.readValue(result.getResponse().getContentAsString(), ResponseArticleDto.class);
 
         assertThat(articleDto.getId()).isEqualTo(articleId);
         assertThat(articleDto.getTitle()).isEqualTo(articleTitle + 0);
@@ -220,10 +214,10 @@ public class ArticlePostTest extends BaseTest {
     @Test
     public void successAutoDeleteArticleWhenSellerWithdrawal() throws Exception {
         //given
-        makeArticle(0, noneSessionUserId);
+        makeArticle(0, sessionUserId);
 
         //when
-        mockMvc.perform(delete("/secured/user/" + noneSessionUserId))
+        mockMvc.perform(delete("/secured/user"))
                 .andExpect(status().isOk());
 
         //then
@@ -276,7 +270,7 @@ public class ArticlePostTest extends BaseTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        List<ResponseArticleSimpleDto> responseList = mappingResponse(ResponseArticleSimpleDto.class, result);
+        List<ResponseArticleSimpleDto> responseList = mappingResponse(result, ResponseArticleSimpleDto.class);
 
         // then
         assertThat(responseList.size()).isEqualTo(6);
@@ -312,7 +306,7 @@ public class ArticlePostTest extends BaseTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        List<ResponseArticleSimpleDto> responseList = mappingResponse(ResponseArticleSimpleDto.class, result);
+        List<ResponseArticleSimpleDto> responseList = mappingResponse(result, ResponseArticleSimpleDto.class);
 
         // then
         assertThat(responseList.size()).isEqualTo(3);
@@ -349,7 +343,7 @@ public class ArticlePostTest extends BaseTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        List<ResponseArticleSimpleDto> responseList = mappingResponse(ResponseArticleSimpleDto.class, result);
+        List<ResponseArticleSimpleDto> responseList = mappingResponse(result, ResponseArticleSimpleDto.class);
 
         // then
         assertThat(responseList.size()).isEqualTo(3);
@@ -386,7 +380,7 @@ public class ArticlePostTest extends BaseTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        List<ResponseArticleSimpleDto> responseList = mappingResponse(ResponseArticleSimpleDto.class, result);
+        List<ResponseArticleSimpleDto> responseList = mappingResponse(result, ResponseArticleSimpleDto.class);
 
         // then
         assertThat(responseList.size()).isEqualTo(1);
@@ -422,7 +416,7 @@ public class ArticlePostTest extends BaseTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        List<ResponseArticleSimpleDto> responseList = mappingResponse(ResponseArticleSimpleDto.class, result);
+        List<ResponseArticleSimpleDto> responseList = mappingResponse(result, ResponseArticleSimpleDto.class);
 
         // then
         assertThat(responseList).isEmpty();
@@ -502,7 +496,7 @@ public class ArticlePostTest extends BaseTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        List<ResponseArticleSimpleDto> responseList = mappingResponse(ResponseArticleSimpleDto.class, result);
+        List<ResponseArticleSimpleDto> responseList = mappingResponse(result, ResponseArticleSimpleDto.class);
 
         //then
         assertThat(responseList.size()).isEqualTo(6); // 페이지 사이즈만큼 출력
@@ -532,7 +526,7 @@ public class ArticlePostTest extends BaseTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        List<ResponseArticleSimpleDto> responseList = mappingResponse(ResponseArticleSimpleDto.class, result);
+        List<ResponseArticleSimpleDto> responseList = mappingResponse(result, ResponseArticleSimpleDto.class);
 
         //then
         assertThat(responseList.size()).isEqualTo(5);
@@ -562,7 +556,7 @@ public class ArticlePostTest extends BaseTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        List<ResponseArticleSimpleDto> responseList = mappingResponse(ResponseArticleSimpleDto.class, result);
+        List<ResponseArticleSimpleDto> responseList = mappingResponse(result, ResponseArticleSimpleDto.class);
 
         //then
         assertThat(responseList.size()).isEqualTo(6);
@@ -580,7 +574,7 @@ public class ArticlePostTest extends BaseTest {
         Long articleId = makeArticle(0, sessionUserId);
 
         //when
-        mockMvc.perform(post("/article/" + articleId + "/interest"))
+        mockMvc.perform(post("/secured/article/" + articleId + "/interest"))
                 .andExpect(status().isOk());
 
         //then
@@ -606,11 +600,5 @@ public class ArticlePostTest extends BaseTest {
         }
     }
 
-    public static <T> List<T> mappingResponse(Class<T> clazz, MvcResult result) throws UnsupportedEncodingException, JsonProcessingException {
-        String responseBody = result.getResponse().getContentAsString();
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
-        return objectMapper.readValue(responseBody, new TypeReference<>() {
-        });
-    }
+
 }

@@ -20,6 +20,6 @@ public class AdminUserApiTest extends BaseTest {
                 .andExpect(status().isOk());
 
         //then
-        assertThat(userService.getUserById(noneSessionUserId)).isNull();
+        assertThat(userService.getUserByEmail(noneSessionEmail)).isEmpty();
     }
 }

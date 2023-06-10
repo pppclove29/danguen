@@ -52,7 +52,6 @@ public class Comment extends BaseTimeEntity {
         this.post = post;
         this.content = content;
 
-        //todo 불안
         parentComment = null;
 
         writer.addComment(this);
@@ -66,6 +65,10 @@ public class Comment extends BaseTimeEntity {
 
     public void delete() {
         this.isDeleted = true;
+        if (getWriter().isPresent()) {
+            this.writer.removeComment(this);
+        }
+        this.post.removeComment(this);
     }
 
     private void setParentComment(Comment parent) {

@@ -75,9 +75,6 @@ public class CommentServiceImpl implements CommentService {
     @Transactional
     public void delete(Long commentId) {
         Comment comment = getCommentById(commentId);
-        if (comment.getWriter().isPresent()) {
-            comment.getWriter().get().removeComment(comment);
-        }
         comment.updateComment("삭제된 메세지입니다.");
         comment.delete();
     }

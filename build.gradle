@@ -62,10 +62,6 @@ dependencies {
 
 	// https://mvnrepository.com/artifact/com.auth0/java-jwt
 	implementation 'com.auth0:java-jwt:4.4.0'
-
-	// LocalDateTime 직렬화 문제해결
-	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.14.2'
-
 }
 
 tasks.named('test') {

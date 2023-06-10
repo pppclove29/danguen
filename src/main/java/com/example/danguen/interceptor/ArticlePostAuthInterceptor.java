@@ -24,14 +24,11 @@ public class ArticlePostAuthInterceptor implements HandlerInterceptor {
             boolean hasAuth = articleService.isUsersCreation(postId);
 
             if (!hasAuth) {
-                System.out.println("11");
                 response.setStatus(HttpStatus.FORBIDDEN.value());
                 return false;
             }
-            System.out.println("22");
             return true;
         }
-        System.out.println("33");
         return false;
     }
 

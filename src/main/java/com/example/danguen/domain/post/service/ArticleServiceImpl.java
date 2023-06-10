@@ -45,7 +45,6 @@ public class ArticleServiceImpl implements ArticleService {
     @Override
     @Transactional(readOnly = true)
     public List<ResponseArticleSimpleDto> getArticleByAddressPage(Pageable pageable, Address address) {
-        System.out.println(address.toString());
         Page<ArticlePost> page =
                 articlePostRepository.findAllByDealHopeAddressLikeOrderByCreatedTimeDesc(
                         address.getCity(),
@@ -87,8 +86,9 @@ public class ArticleServiceImpl implements ArticleService {
     public List<ResponseArticleSimpleDto> getInterestArticlePage(Pageable pageable, Long userId) {
         List<ArticlePost> interestArticles = userService.getUserById(userId).getInterestArticles();
 
+        Page<ArticlePost> page = articlePostRepository.findByInterestArticles(pageable, interestArticles);
 
-        return null;
+        return page.stream().map(ResponseArticleSimpleDto::toResponse).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
@@ -96,7 +96,7 @@ public class ArticleServiceImpl implements ArticleService {
     public List<ResponseArticleSimpleDto> getInterestUsersArticlePage(Pageable pageable, Long userId) {
         List<User> interestUser = userService.getUserById(userId).getInterestUsers();
 
-        Page<ArticlePost> page = articlePostRepository.findByInterestUser(pageable, interestUser);
+        Page<ArticlePost> page = articlePostRepository.findByInterestUsersArticle(pageable, interestUser);
 
         return page.stream().map(ResponseArticleSimpleDto::toResponse).collect(Collectors.toList());
     }

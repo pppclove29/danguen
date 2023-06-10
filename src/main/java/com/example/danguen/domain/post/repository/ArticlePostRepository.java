@@ -24,11 +24,11 @@ public interface ArticlePostRepository extends JpaRepository<ArticlePost, Long> 
 
     Page<ArticlePost> findByTitleContainingOrderByIdDesc(Pageable pageable, String title);
 
-    @Query("select a from ArticlePost a where a.seller in :interestUser")
-    Page<ArticlePost> findByInter(Pageable pageable, @Param("interestUser") List<User> interestUser);
+    @Query("select a from ArticlePost a where a in :interestArticles")
+    Page<ArticlePost> findByInterestArticles(Pageable pageable, @Param("interestArticles")  List<ArticlePost> interestArticles);
 
-    @Query("select a from ArticlePost a where a.seller in :interestUser")
-    Page<ArticlePost> findByInterestUser(Pageable pageable, @Param("interestUser") List<User> interestUser);
+    @Query("select a from ArticlePost a where a.seller in :interestUsers")
+    Page<ArticlePost> findByInterestUsersArticle(Pageable pageable, @Param("interestUsers") List<User> interestUsers);
 
     // 일단은 조회수로만 하자, 관심등록 및 댓글 수는 후에 추가한다, 계산은 통계영역이므로 일단 보류한다
     @Query("select a from ArticlePost a order by a.views desc")

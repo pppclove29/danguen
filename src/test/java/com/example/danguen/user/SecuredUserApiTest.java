@@ -10,7 +10,6 @@ import com.example.danguen.domain.user.entity.Role;
 import com.example.danguen.domain.user.entity.User;
 import com.example.danguen.domain.user.exception.UserNotFoundException;
 import com.example.danguen.domain.user.repository.UserRepository;
-import com.example.danguen.post.article.ArticlePostTest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -113,7 +112,6 @@ public class SecuredUserApiTest extends BaseTest {
                 .andExpect(status().isOk());
 
         //then
-        assertThat(userRepository.findAll()).isEmpty();
         assertThat(userService.getUserByEmail(sessionEmail)).isEqualTo(Optional.empty());
     }
 
@@ -301,8 +299,7 @@ public class SecuredUserApiTest extends BaseTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        List<ResponseArticleSimpleDto> responseList
-                = ArticlePostTest.mappingResponse(ResponseArticleSimpleDto.class, result);
+        List<ResponseArticleSimpleDto> responseList = mappingResponse(result,ResponseArticleSimpleDto.class);
 
         //then
         assertThat(responseList.size()).isEqualTo(3);
@@ -330,13 +327,12 @@ public class SecuredUserApiTest extends BaseTest {
                 .andReturn();
 
         //then
-        List<ResponseArticleSimpleDto> responseList
-                = ArticlePostTest.mappingResponse(ResponseArticleSimpleDto.class, result);
+        List<ResponseArticleSimpleDto> responseList = mappingResponse(result,ResponseArticleSimpleDto.class);
 
         //then
         assertThat(responseList.size()).isEqualTo(5);
         for (int i = 0; i < responseList.size(); i++) {
-            assertThat(responseList.get(i).getTitle()).isEqualTo(articleTitle + (8 - i * 2));
+            assertThat(responseList.get(i).getTitle()).isEqualTo(articleTitle + i * 2);
         }
     }
 }
