@@ -29,12 +29,25 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     @Transactional
-    public Comment save(RequestCommentSaveDto request, Long postId, Long userId) {
+    public Comment saveInPost(RequestCommentSaveDto request, Long postId, Long userId) {
         User user = userService.getUserById(userId);
         Post post = postService.getPostById(postId);
 
         Comment comment = request.toEntity(user, post);
         return commentRepository.save(comment);
+    }
+
+    @Override
+    @Transactional
+    public Comment saveInComment(RequestCommentSaveDto request, Long commentId, Long userId) {
+        User user = userService.getUserById(userId);
+        Comment parentComment = getCommentById(commentId);
+
+        Comment childComment = request.toEntity(user, parentComment.getPost());
+
+        parentComment.setChildComment(childComment);
+
+        return commentRepository.save(childComment);
     }
 
     @Override

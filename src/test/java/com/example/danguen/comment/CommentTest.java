@@ -1,11 +1,11 @@
-package com.example.danguen;
+package com.example.danguen.comment;
 
+import com.example.danguen.BaseTest;
 import com.example.danguen.domain.comment.dto.request.RequestCommentSaveDto;
 import com.example.danguen.domain.comment.dto.response.ResponseCommentDto;
 import com.example.danguen.domain.comment.entity.Comment;
 import com.example.danguen.domain.comment.exception.AlreadyDeletedCommentException;
 import com.example.danguen.domain.comment.repository.CommentRepository;
-import com.example.danguen.domain.post.controller.SecuredArticleController;
 import com.example.danguen.domain.post.entity.ArticlePost;
 import com.example.danguen.domain.post.entity.Post;
 import com.example.danguen.domain.post.entity.PostKind;
@@ -14,7 +14,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MvcResult;
@@ -29,14 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 
 public class CommentTest extends BaseTest {
-
     //todo 여러 post에 대한 테스트 진행
-
-    /* 댓글 불러오기 확인 테스트 할것
-    assertThat(result.getModelAndView().getModel().get("comment")).isInstanceOf(ResponseCommentDto.class);
-
-    ResponseCommentDto comment = (ResponseCommentDto)result.getModelAndView().getModel().get("comment");
-     */
 
     @Autowired
     CommentRepository commentRepository;
@@ -61,7 +53,7 @@ public class CommentTest extends BaseTest {
         dto.setKind(PostKind.Kind.ARTICLE);
 
         //when
-        mockMvc.perform(post(String.format("/post/%d/comment", postId))
+        mockMvc.perform(post("/secured/post/" + postId + "/comment")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(dto)))
                 .andExpect(status().isOk());
@@ -69,7 +61,8 @@ public class CommentTest extends BaseTest {
         //then
         Comment comment = commentRepository.findAll().get(0);
 
-        //todo parent comment, children comment 검증
+        assertThat(comment.getParentComment()).isNull();
+        assertThat(comment.getChildrenComment()).isEmpty();
         assertThat(comment.getLikedUser()).isEmpty();
         assertThat(comment.getContent()).isEqualTo(commentContent);
         assertThat(comment.getPost().getId()).isEqualTo(postId);
@@ -91,7 +84,7 @@ public class CommentTest extends BaseTest {
         dto.setKind(PostKind.Kind.ARTICLE);
 
         //when
-        mockMvc.perform(post(String.format("/post/%d/comment", postId))
+        mockMvc.perform(post("/secured/post/" + postId + "/comment")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(dto)))
                 .andExpect(status().isOk());
@@ -109,6 +102,44 @@ public class CommentTest extends BaseTest {
         assertThat(commentDto.getWrittenTime()).isAfter(testTime);
     }
 
+    @Transactional
+    @DisplayName("대댓글 등록")
+    @WithMockUser
+    @Test
+    public void successSaveCommentOnComment() throws Exception {
+        //given
+        Long parentCommentId = makeComment(postId, sessionUserId);
+
+        RequestCommentSaveDto dto = new RequestCommentSaveDto();
+        LocalDateTime testTime = LocalDateTime.now();
+
+        dto.setContent(commentContent);
+        dto.setKind(PostKind.Kind.ARTICLE);
+
+        //when
+        mockMvc.perform(post("/secured/comment/" + parentCommentId + "/comment")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(dto)))
+                .andExpect(status().isOk());
+
+        //then
+        Comment parentComment = commentService.getCommentById(parentCommentId);
+
+        assertThat(parentComment.getChildrenComment().size()).isEqualTo(1);
+
+        Comment childComment = commentRepository.findAll().get(1);
+
+        assertThat(childComment.getParentComment()).isNotNull();
+        assertThat(childComment.getChildrenComment()).isEmpty();
+        assertThat(childComment.getLikedUser()).isEmpty();
+        assertThat(childComment.getContent()).isEqualTo(commentContent);
+        assertThat(childComment.getPost().getId()).isEqualTo(postId);
+        assertThat(childComment.isDeleted()).isFalse();
+        assertThat(childComment.getWriter().isPresent()).isTrue();
+        assertThat(childComment.getWriter().get().getId()).isEqualTo(sessionUserId);
+        assertThat(childComment.getCreatedTime()).isAfter(testTime);
+    }
+
     @DisplayName("댓글 수정")
     @WithMockUser
     @Test
@@ -122,7 +153,7 @@ public class CommentTest extends BaseTest {
         Long commentId = makeComment(postId, sessionUserId);
 
         //when
-        mockMvc.perform(put("/comment/{commentId}", commentId)
+        mockMvc.perform(put("/secured/comment/{commentId}", commentId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(dto)))
                 .andExpect(status().isOk());
@@ -141,7 +172,7 @@ public class CommentTest extends BaseTest {
         Long commentId = makeComment(postId, sessionUserId);
 
         //when
-        mockMvc.perform(delete("/comment/" + commentId))
+        mockMvc.perform(delete("/secured/comment/" + commentId))
                 .andExpect(status().isOk());
 
         //then
@@ -173,7 +204,7 @@ public class CommentTest extends BaseTest {
         dto.setContent("new " + commentContent);
 
         //when
-        MvcResult result = mockMvc.perform(put("/comment/" + commentId)
+        MvcResult result = mockMvc.perform(put("/secured/comment/" + commentId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(dto)))
                 .andExpect(status().isBadRequest())

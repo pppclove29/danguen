@@ -31,6 +31,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
@@ -41,44 +42,43 @@ import java.util.List;
 @ExtendWith(SpringExtension.class)
 @AutoConfigureMockMvc
 public class BaseTest {
-
-    //todo 각 http 요청에 대해 더욱 자세하게 검증, is4XX (x), isBadRequest (o)
-
-    @Autowired
-    MockMvc mockMvc;
-    @Autowired
-    WebApplicationContext ctx;
+    //todo json 객체 검증 말고 json을 dto로 변환해서 검증하도록
 
     @Autowired
-    UserServiceImpl userService;
+    protected MockMvc mockMvc;
     @Autowired
-    PostService postService;
-    @Autowired
-    ArticleServiceImpl articleService;
-    @Autowired
-    ArticleImageService articleImageService;
-    @Autowired
-    CommentServiceImpl commentService;
+    private WebApplicationContext ctx;
 
     @Autowired
-    private UserRepository userRepository;
+    protected UserServiceImpl userService;
     @Autowired
-    private PostRepository postRepository;
+    protected PostService postService;
     @Autowired
-    private CommentRepository commentRepository;
+    protected ArticleServiceImpl articleService;
     @Autowired
-    private ImageRepository imageRepository;
+    protected ArticleImageService articleImageService;
+    @Autowired
+    protected CommentServiceImpl commentService;
 
     @Autowired
-    ObjectMapper mapper;
+    protected UserRepository userRepository;
+    @Autowired
+    protected PostRepository postRepository;
+    @Autowired
+    protected CommentRepository commentRepository;
+    @Autowired
+    protected ImageRepository imageRepository;
 
-    Long sessionUserId;
-    String sessionName = "박이름";
-    String sessionEmail = "email@temp.com";
+    @Autowired
+    protected ObjectMapper mapper;
 
-    Long noneSessionUserId;
-    String noneSessionName = "김기타";
-    String noneSessionEmail = "other@temp.com";
+    protected Long sessionUserId;
+    protected String sessionName = "박이름";
+    protected String sessionEmail = "email@temp.com";
+
+    protected Long noneSessionUserId;
+    protected String noneSessionName = "김기타";
+    protected String noneSessionEmail = "other@temp.com";
 
     @Order(0)
     @BeforeEach
@@ -115,8 +115,9 @@ public class BaseTest {
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
-    Address userAddress = new Address("서울시", "길로", "1234");
+    protected Address userAddress = new Address("서울시", "길로", "1234");
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public User makeUser(String name, String email) {
         User user = userService.save(name, email);
 
@@ -134,14 +135,15 @@ public class BaseTest {
             userService.addInterestUser(sessionUserId, iUser.getId());
     }
 
-    String articleTitle = "제목 ";
-    String articleCategory = "카테고리";
-    String articleContent = "게시글 내용";
-    int articlePrice = 10000;
-    String articleCity = "희망주소";
-    String articleStreet = "희망주소";
-    String articleZipcode = "희망주소";
+    protected String articleTitle = "제목 ";
+    protected String articleCategory = "카테고리";
+    protected String articleContent = "게시글 내용";
+    protected int articlePrice = 10000;
+    protected String articleCity = "희망주소";
+    protected String articleStreet = "희망주소";
+    protected String articleZipcode = "희망주소";
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Long makeArticle(int idx, Long userId) { // 중고 물품 등록
         RequestArticleSaveOrUpdateDto dto = RequestArticleSaveOrUpdateDto.builder()
                 .title(articleTitle + idx)
@@ -174,15 +176,16 @@ public class BaseTest {
         );
     }
 
-    String commentContent = "댓글 내용";
+    protected String commentContent = "댓글 내용";
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Long makeComment(Long postId, Long userId) { // 댓글 등록
         RequestCommentSaveDto dto = new RequestCommentSaveDto();
 
         dto.setContent(commentContent);
         dto.setKind(postRepository.findById(postId).get().getKind());
 
-        return commentService.save(dto, postId, userId).getId();
+        return commentService.saveInPost(dto, postId, userId).getId();
     }
 }
 

@@ -5,24 +5,30 @@ import com.example.danguen.domain.comment.exception.AlreadyDeletedCommentExcepti
 import com.example.danguen.domain.comment.exception.CommentNotFoundException;
 import com.example.danguen.domain.comment.dto.request.RequestCommentSaveDto;
 import com.example.danguen.domain.comment.service.CommentService;
-import com.example.danguen.domain.image.exception.ArticleNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@RequestMapping("/secured")
 @RequiredArgsConstructor
 @RestController
-public class CommentController {
+public class SecuredCommentController {
 
     private final CommentService commentService;
 
     @PostMapping("/post/{postId}/comment") // 댓글이 달릴 객체 필요
-    public void save(@RequestBody RequestCommentSaveDto requestCommentSaveDto,
-                     @PathVariable Long postId,
-                     @SessionUserId Long userId) {
+    public void saveInPost(@RequestBody RequestCommentSaveDto requestCommentSaveDto,
+                           @PathVariable Long postId,
+                           @SessionUserId Long userId) {
+        commentService.saveInPost(requestCommentSaveDto, postId, userId);
+    }
 
-        commentService.save(requestCommentSaveDto, postId, userId);
+    @PostMapping("/comment/{commentId}/comment")
+    public void saveInComment(@RequestBody RequestCommentSaveDto requestCommentSaveDto,
+                              @PathVariable Long commentId,
+                              @SessionUserId Long userId) {
+        commentService.saveInComment(requestCommentSaveDto, commentId, userId);
     }
 
     @PutMapping("/comment/{commentId}")
@@ -44,8 +50,6 @@ public class CommentController {
 
     @ExceptionHandler(AlreadyDeletedCommentException.class)
     public ResponseEntity<?> handleCommentAlreadyDeleted() {
-        System.out.println("에러처리");
-        
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(AlreadyDeletedCommentException.message);
     }

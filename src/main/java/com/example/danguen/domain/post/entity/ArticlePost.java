@@ -29,11 +29,11 @@ public class ArticlePost extends Post {
 
     @ManyToMany
     @JoinTable(
-            name = "article_interest",
+            name = "ARTICLE_INTEREST",
             joinColumns = @JoinColumn(name = "ARTICLE_ID"),
             inverseJoinColumns = @JoinColumn(name = "USER_ID")
     )
-    private List<User> interests = new ArrayList<>();
+    private List<User> interestingUsers = new ArrayList<>();
 
 
     @OneToMany(mappedBy = "articlePost", cascade = CascadeType.ALL)
@@ -60,12 +60,14 @@ public class ArticlePost extends Post {
     }
 
 
-    public void addInterest() {
-
+    public void addInterest(User user) {
+        interestingUsers.add(user);
+        user.addInterestArticle(this);
     }
 
-    public void removeInterest() {
-
+    public void removeInterest(User user) {
+        interestingUsers.remove(user);
+        user.removeInterestArticle(this);
     }
 
 

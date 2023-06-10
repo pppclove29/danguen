@@ -6,7 +6,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Comparator;
 
-//todo 아래 구현체 두개 연결
 public interface ImageService {
     default void deleteFolder(String folderPath) {
         Path path = Paths.get(folderPath);

@@ -1,25 +1,23 @@
-package com.example.danguen;
+package com.example.danguen.post.article;
 
 
+import com.example.danguen.BaseTest;
 import com.example.danguen.domain.base.Address;
 import com.example.danguen.domain.image.exception.ArticleNotFoundException;
 import com.example.danguen.domain.image.service.ArticleImageService;
-import com.example.danguen.domain.post.controller.SecuredArticleController;
 import com.example.danguen.domain.post.dto.request.RequestArticleSaveOrUpdateDto;
 import com.example.danguen.domain.post.dto.response.ResponseArticleDto;
 import com.example.danguen.domain.post.dto.response.ResponseArticleSimpleDto;
 import com.example.danguen.domain.post.entity.ArticlePost;
 import com.example.danguen.domain.post.repository.ArticlePostRepository;
-import com.example.danguen.domain.post.service.ArticleServiceImpl;
 import com.example.danguen.domain.user.entity.User;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
@@ -28,15 +26,11 @@ import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.FileInputStream;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Method;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -117,11 +111,14 @@ public class ArticlePostTest extends BaseTest {
                 .dealHopeAddress(dealAddress)
                 .build();
 
-        //when & then
+        //when
         mockMvc.perform(multipart("/secured/article")
-                        .param("request", mapper.writeValueAsString(dto))
+                        .flashAttr("request", dto)
                         .contentType(MediaType.MULTIPART_FORM_DATA))
-                .andExpect(status().is4xxClientError());
+                .andExpect(status().isBadRequest());
+
+        //then
+        assertThat(articlePostRepository.findAll()).isEmpty();
     }
 
     @DisplayName("물품 정보 수정")
@@ -202,7 +199,9 @@ public class ArticlePostTest extends BaseTest {
                 .andReturn();
 
         //then
-        ResponseArticleDto articleDto = toArticleDto(result);
+        List<ResponseArticleDto> dtoList = mappingResponse(ResponseArticleDto.class, result);
+
+        ResponseArticleDto articleDto = dtoList.get(0);
 
         assertThat(articleDto.getId()).isEqualTo(articleId);
         assertThat(articleDto.getTitle()).isEqualTo(articleTitle + 0);
@@ -224,7 +223,8 @@ public class ArticlePostTest extends BaseTest {
         makeArticle(0, noneSessionUserId);
 
         //when
-        mockMvc.perform(delete("/secured/user/" + noneSessionUserId));
+        mockMvc.perform(delete("/secured/user/" + noneSessionUserId))
+                .andExpect(status().isOk());
 
         //then
         assertThat(articlePostRepository.findAll()).isEmpty();
@@ -235,7 +235,9 @@ public class ArticlePostTest extends BaseTest {
     @Test
     public void failLoadNonExistArticleInfo() throws Exception {
         //when
-        MvcResult result = mockMvc.perform(get("/public/article/999999999")).andReturn();
+        MvcResult result = mockMvc.perform(get("/public/article/999999999"))
+                .andExpect(status().isNotFound())
+                .andReturn();
 
         //then
         assertThat(result.getResponse().getContentAsString()).contains(ArticleNotFoundException.message);
@@ -274,10 +276,7 @@ public class ArticlePostTest extends BaseTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        String responseBody = result.getResponse().getContentAsString();
-
-        List<ResponseArticleSimpleDto> responseList = mapper.readValue(responseBody, new TypeReference<>() {
-        });
+        List<ResponseArticleSimpleDto> responseList = mappingResponse(ResponseArticleSimpleDto.class, result);
 
         // then
         assertThat(responseList.size()).isEqualTo(6);
@@ -313,7 +312,7 @@ public class ArticlePostTest extends BaseTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        List<ResponseArticleSimpleDto> responseList = toSimpleArticleList(result);
+        List<ResponseArticleSimpleDto> responseList = mappingResponse(ResponseArticleSimpleDto.class, result);
 
         // then
         assertThat(responseList.size()).isEqualTo(3);
@@ -350,7 +349,7 @@ public class ArticlePostTest extends BaseTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        List<ResponseArticleSimpleDto> responseList = toSimpleArticleList(result);
+        List<ResponseArticleSimpleDto> responseList = mappingResponse(ResponseArticleSimpleDto.class, result);
 
         // then
         assertThat(responseList.size()).isEqualTo(3);
@@ -387,7 +386,7 @@ public class ArticlePostTest extends BaseTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        List<ResponseArticleSimpleDto> responseList = toSimpleArticleList(result);
+        List<ResponseArticleSimpleDto> responseList = mappingResponse(ResponseArticleSimpleDto.class, result);
 
         // then
         assertThat(responseList.size()).isEqualTo(1);
@@ -423,7 +422,7 @@ public class ArticlePostTest extends BaseTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        List<ResponseArticleSimpleDto> responseList = toSimpleArticleList(result);
+        List<ResponseArticleSimpleDto> responseList = mappingResponse(ResponseArticleSimpleDto.class, result);
 
         // then
         assertThat(responseList).isEmpty();
@@ -503,7 +502,7 @@ public class ArticlePostTest extends BaseTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        List<ResponseArticleSimpleDto> responseList = toSimpleArticleList(result);
+        List<ResponseArticleSimpleDto> responseList = mappingResponse(ResponseArticleSimpleDto.class, result);
 
         //then
         assertThat(responseList.size()).isEqualTo(6); // 페이지 사이즈만큼 출력
@@ -533,7 +532,7 @@ public class ArticlePostTest extends BaseTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        List<ResponseArticleSimpleDto> responseList = toSimpleArticleList(result);
+        List<ResponseArticleSimpleDto> responseList = mappingResponse(ResponseArticleSimpleDto.class, result);
 
         //then
         assertThat(responseList.size()).isEqualTo(5);
@@ -563,7 +562,7 @@ public class ArticlePostTest extends BaseTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        List<ResponseArticleSimpleDto> responseList = toSimpleArticleList(result);
+        List<ResponseArticleSimpleDto> responseList = mappingResponse(ResponseArticleSimpleDto.class, result);
 
         //then
         assertThat(responseList.size()).isEqualTo(6);
@@ -572,38 +571,31 @@ public class ArticlePostTest extends BaseTest {
         }
     }
 
-    @DisplayName("관심 유저의 중고물품 리스트 출력")
-    @WithMockUser
+    @Transactional(readOnly = true)
+    @DisplayName("중고물품에 관심주기")
+    @WithAnonymousUser
     @Test
-    public void successLoadInterestUsersArticleList() throws Exception {
+    public void successGiveInterestInArticle() throws Exception {
         //given
-        List<User> interestUserList = new ArrayList<>();
-
-        for (int i = 0; i < 3; i++) {
-            User newUser = makeUser("노관심" + i, "nonInterest" + i + "@email.com");
-            makeArticle(i, newUser.getId());
-        }
-        for (int i = 0; i < 3; i++) {
-            User newUser = makeUser("김관심" + i, "interest" + i + "@email.com");
-            makeArticle(i, newUser.getId());
-
-            interestUserList.add(newUser);
-        }
-        setInterestUsers(interestUserList);
+        Long articleId = makeArticle(0, sessionUserId);
 
         //when
-        MvcResult result = mockMvc.perform(get("/public/interest"))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        List<ResponseArticleSimpleDto> responseList = toSimpleArticleList(result);
+        mockMvc.perform(post("/article/" + articleId + "/interest"))
+                .andExpect(status().isOk());
 
         //then
-        assertThat(responseList.size()).isEqualTo(3);
-        for (var res : responseList) {
-            assertThat(res.getSeller()).contains("김관심");
-        }
+        ArticlePost articlePost = articleService.getArticleById(articleId);
+
+        assertThat(articlePost.getInterestingUsers().size()).isEqualTo(1);
+        assertThat(articlePost.getInterestingUsers().get(0).getId()).isEqualTo(sessionUserId);
+
+        User user = userService.getUserById(sessionUserId);
+
+        assertThat(user.getInterestArticles().size()).isEqualTo(1);
+        assertThat(user.getInterestArticles().get(0).getId()).isEqualTo(articleId);
     }
+
+
     //todo like, chat
 
     public void watchArticle(int idx, int count) throws Exception { // 조회수 증가
@@ -614,17 +606,11 @@ public class ArticlePostTest extends BaseTest {
         }
     }
 
-    public ResponseArticleDto toArticleDto(MvcResult result) throws UnsupportedEncodingException, JsonProcessingException {
+    public static <T> List<T> mappingResponse(Class<T> clazz, MvcResult result) throws UnsupportedEncodingException, JsonProcessingException {
         String responseBody = result.getResponse().getContentAsString();
-
-        return mapper.readValue(responseBody, new TypeReference<>() {
-        });
-    }
-
-    public List<ResponseArticleSimpleDto> toSimpleArticleList(MvcResult result) throws UnsupportedEncodingException, JsonProcessingException {
-        String responseBody = result.getResponse().getContentAsString();
-
-        return mapper.readValue(responseBody, new TypeReference<>() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        return objectMapper.readValue(responseBody, new TypeReference<>() {
         });
     }
 }

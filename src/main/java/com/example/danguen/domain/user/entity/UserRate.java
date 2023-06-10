@@ -9,6 +9,7 @@ import javax.persistence.Embeddable;
 @Getter
 @Embeddable
 public class UserRate {
+    //todo 밖으로 뺴서 새로운 테이블로 빼
     private float dealTemperature;
     private int totalReviewScore;
     private int totalDealCount;

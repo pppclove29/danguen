@@ -1,15 +1,20 @@
-package com.example.danguen;
+package com.example.danguen.user;
 
+import com.example.danguen.BaseTest;
 import com.example.danguen.domain.base.Address;
+import com.example.danguen.domain.post.dto.response.ResponseArticleSimpleDto;
 import com.example.danguen.domain.review.RequestReviewDto;
 import com.example.danguen.domain.user.dto.request.RequestUserUpdateDto;
 import com.example.danguen.domain.user.dto.response.ResponseUserSimpleDto;
 import com.example.danguen.domain.user.entity.Role;
 import com.example.danguen.domain.user.entity.User;
 import com.example.danguen.domain.user.exception.UserNotFoundException;
+import com.example.danguen.domain.user.repository.UserRepository;
+import com.example.danguen.post.article.ArticlePostTest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MvcResult;
@@ -24,7 +29,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-public class UserTest extends BaseTest {
+public class SecuredUserApiTest extends BaseTest {
+
+    @Autowired
+    private UserRepository userRepository;
 
     @DisplayName("특정 유저 정보 요청")
     @WithMockUser
@@ -61,14 +69,14 @@ public class UserTest extends BaseTest {
 
         //when
         MvcResult result = mockMvc.perform(get("/secured/user/" + userId))
-                .andExpect(status().is4xxClientError())
+                .andExpect(status().isNotFound())
                 .andReturn();
 
         //then
         assertThat(result.getResponse().getContentAsString()).contains(UserNotFoundException.message);
     }
 
-    @DisplayName("특정 유저 정보 갱신")
+    @DisplayName("유저 자신의 정보 갱신")
     @WithMockUser
     @Test
     public void successUpdateUserInfo() throws Exception {
@@ -81,9 +89,10 @@ public class UserTest extends BaseTest {
         dto.setAddress(newAddress);
 
         //where
-        mockMvc.perform(put("/secured/user/" + userId)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(new ObjectMapper().writeValueAsString(dto)));
+        mockMvc.perform(put("/secured/user/")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(dto)))
+                .andExpect(status().isOk());
 
         //then
         User user = userService.getUserById(userId);
@@ -94,17 +103,17 @@ public class UserTest extends BaseTest {
         assertThat(user.getRole()).isEqualTo(Role.USER);
     }
 
-    @DisplayName("유저 삭제")
+    @DisplayName("회원탈퇴")
     @WithMockUser
     @Test
     public void successDeleteUser() throws Exception {
         //given
-        Long userId = sessionUserId;
-
         //when
-        mockMvc.perform(delete("/secured/user/" + userId));
+        mockMvc.perform(delete("/secured/user"))
+                .andExpect(status().isOk());
 
         //then
+        assertThat(userRepository.findAll()).isEmpty();
         assertThat(userService.getUserByEmail(sessionEmail)).isEqualTo(Optional.empty());
     }
 
@@ -114,8 +123,6 @@ public class UserTest extends BaseTest {
     @Test
     public void successReviewOtherUser() throws Exception {
         //given
-
-        // 세션 유저에 대한 상대방의 좋은 리뷰
         RequestReviewDto review = new RequestReviewDto();
         review.setDealScore(8);
         review.setPositiveAnswer(new boolean[]{true, true, true, true, true, true, true, true, true, true});
@@ -123,8 +130,9 @@ public class UserTest extends BaseTest {
 
         //when
         mockMvc.perform(post("/secured/user/" + sessionUserId + "/review")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(new ObjectMapper().writeValueAsString(review)));
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(review)))
+                .andExpect(status().isOk());
 
         //then
         User user = userService.getUserById(sessionUserId);
@@ -221,7 +229,7 @@ public class UserTest extends BaseTest {
     @Test
     public void failAddNonExistInterestUser() throws Exception {
         MvcResult result = mockMvc.perform(put("/secured/user/iuser/" + 99999999))
-                .andExpect(status().is4xxClientError())
+                .andExpect(status().isNotFound())
                 .andReturn();
 
         String body = result.getResponse().getContentAsString();
@@ -233,7 +241,7 @@ public class UserTest extends BaseTest {
     @Test
     public void failDeleteNonExistInterestUser() throws Exception {
         MvcResult result = mockMvc.perform(delete("/secured/user/iuser/" + 99999999))
-                .andExpect(status().is4xxClientError())
+                .andExpect(status().isNotFound())
                 .andReturn();
 
         String body = result.getResponse().getContentAsString();
@@ -267,5 +275,68 @@ public class UserTest extends BaseTest {
         }
 
         resultActions.andExpect(jsonPath(String.format("$[%d]", iUserCnt)).doesNotExist());
+    }
+
+    @DisplayName("관심 유저의 중고물품 리스트 출력")
+    @WithMockUser
+    @Test
+    public void successLoadInterestUsersArticleList() throws Exception {
+        //given
+        List<User> interestUserList = new ArrayList<>();
+
+        for (int i = 0; i < 3; i++) {
+            User newUser = makeUser("노관심" + i, "nonInterest" + i + "@email.com");
+            makeArticle(i, newUser.getId());
+        }
+        for (int i = 0; i < 3; i++) {
+            User newUser = makeUser("김관심" + i, "interest" + i + "@email.com");
+            makeArticle(i, newUser.getId());
+
+            interestUserList.add(newUser);
+        }
+        setInterestUsers(interestUserList);
+
+        //when
+        MvcResult result = mockMvc.perform(get("/secured/user/iusers/articles"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        List<ResponseArticleSimpleDto> responseList
+                = ArticlePostTest.mappingResponse(ResponseArticleSimpleDto.class, result);
+
+        //then
+        assertThat(responseList.size()).isEqualTo(3);
+        for (var res : responseList) {
+            assertThat(res.getSeller()).contains("김관심");
+        }
+    }
+
+    @DisplayName("관심 중고물품 리스트 출력")
+    @WithMockUser
+    @Test
+    public void successLoadInterestArticleList() throws Exception {
+        //given
+        for (int i = 0; i < 10; i++) {
+            Long articleId = makeArticle(i, sessionUserId);
+
+            if (i % 2 == 0) {
+                articleService.giveInterest(articleId, sessionUserId);
+            }
+        }
+
+        //when
+        MvcResult result = mockMvc.perform(get("/secured/user/iarticle"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        //then
+        List<ResponseArticleSimpleDto> responseList
+                = ArticlePostTest.mappingResponse(ResponseArticleSimpleDto.class, result);
+
+        //then
+        assertThat(responseList.size()).isEqualTo(5);
+        for (int i = 0; i < responseList.size(); i++) {
+            assertThat(responseList.get(i).getTitle()).isEqualTo(articleTitle + (8 - i * 2));
+        }
     }
 }

@@ -73,10 +73,21 @@ public class ArticleServiceImpl implements ArticleService {
         return page.stream().map(ResponseArticleSimpleDto::toResponse).collect(Collectors.toList());
     }
 
+    @Override
+    @Transactional
+    public void giveInterest(Long articleId, Long userId) {
+        ArticlePost articlePost = getArticleById(articleId);
+        User user = userService.getUserById(userId);
+
+        articlePost.addInterest(user);
+    }
+
     @Transactional(readOnly = true)
     @Override
     public List<ResponseArticleSimpleDto> getInterestArticlePage(Pageable pageable, Long userId) {
-        //todo 관심한 게시글 모아보기 기능
+        List<ArticlePost> interestArticles = userService.getUserById(userId).getInterestArticles();
+
+
         return null;
     }
 

@@ -10,7 +10,6 @@ import com.example.danguen.domain.user.dto.request.RequestUserUpdateDto;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -37,14 +36,6 @@ public class User extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    @ManyToMany
-    @JoinTable(
-            name = "USER_INTEREST",
-            joinColumns = @JoinColumn(name = "USER_ID"),
-            inverseJoinColumns = @JoinColumn(name = "INTEREST_USER_ID")
-    )
-    private final List<User> interestUsers = new ArrayList<>();
-
     @OneToMany(mappedBy = "seller", cascade = CascadeType.ALL)
     private final List<ArticlePost> sellArticlePosts = new ArrayList<>(); // 판매상품
 
@@ -54,8 +45,16 @@ public class User extends BaseTimeEntity {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private UserImage image;
 
-    @ManyToMany(mappedBy = "interests", cascade = CascadeType.ALL)
-    private final List<ArticlePost> interests = new ArrayList<>();
+    @ManyToMany
+    @JoinTable(
+            name = "USER_INTEREST",
+            joinColumns = @JoinColumn(name = "USER_ID"),
+            inverseJoinColumns = @JoinColumn(name = "INTEREST_USER_ID")
+    )
+    private final List<User> interestUsers = new ArrayList<>();
+
+    @ManyToMany(mappedBy = "interestingUsers", cascade = CascadeType.ALL)
+    private final List<ArticlePost> interestArticles = new ArrayList<>();
 
     @Builder
     private User(String name, String email, Address address) {
@@ -95,8 +94,16 @@ public class User extends BaseTimeEntity {
         interestUsers.add(iUser);
     }
 
-    public void deleteInterestUser(User iUser) {
+    public void removeInterestUser(User iUser) {
         interestUsers.remove(iUser);
+    }
+
+    public void addInterestArticle(ArticlePost articlePost) {
+        interestArticles.add(articlePost);
+    }
+
+    public void removeInterestArticle(ArticlePost articlePost) {
+        interestArticles.remove(articlePost);
     }
 
     public void addComment(Comment comment) {

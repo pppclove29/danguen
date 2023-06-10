@@ -8,15 +8,26 @@ import lombok.Data;
 @Data
 public class ResponseUserPageDto {
 
-    //Image profileImage;
+    private Long id;
     private String name;
-    private Address address;
     private UserRate rate;
+
+    /*
+    todo
+     활동 배지
+     판매상품
+     받은 매너평가
+     대표 매너평가
+     거래 후기
+     재거래 희망률
+     응답률
+     */
 
     public static ResponseUserPageDto toResponse(User user) {
         ResponseUserPageDto dto = new ResponseUserPageDto();
+
+        dto.id = user.getId();
         dto.name = user.getName();
-        dto.address = user.getAddress();
         dto.rate = user.getRate();
 
         return dto;

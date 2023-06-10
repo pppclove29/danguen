@@ -40,8 +40,6 @@ public class Comment extends BaseTimeEntity {
     @JoinColumn(name = "COMMENT_ID")
     private final List<User> likedUser = new ArrayList<>(); // 좋아요을 누른 유저를 저장한다.
 
-
-    //todo 대댓글 기능 구현
     @ManyToOne
     private Comment parentComment;
 
@@ -54,6 +52,9 @@ public class Comment extends BaseTimeEntity {
         this.post = post;
         this.content = content;
 
+        //todo 불안
+        parentComment = null;
+
         writer.addComment(this);
         post.addComment(this);
     }
@@ -65,6 +66,19 @@ public class Comment extends BaseTimeEntity {
 
     public void delete() {
         this.isDeleted = true;
+    }
+
+    private void setParentComment(Comment parent) {
+        this.parentComment = parent;
+    }
+
+    public void setChildComment(Comment child) {
+        this.childrenComment.add(child);
+        child.setParentComment(this);
+    }
+
+    public void deleteChildComment(Comment child) {
+        this.childrenComment.remove(child);
     }
 
     public Optional<User> getWriter() {

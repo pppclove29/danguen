@@ -47,16 +47,11 @@ public class SecuredArticleController {
         articleImageService.deleteFolder(savePath + articleId);
     }
 
-    //todo
-    @GetMapping("/interest1")
-    public List<ResponseArticleSimpleDto> getInterestArticlePage(@PageableDefault(size = 6) Pageable pageable,
-                                                                 @SessionUserId Long userId) {
-        return articleService.getInterestArticlePage(pageable, userId);
+    @PostMapping("/article/{articleId}/interest")
+    public void giveInterestToArticle(@PathVariable Long articleId,
+                                      @SessionUserId Long userId) {
+        articleService.giveInterest(articleId, userId);
     }
 
-    @GetMapping("/interest2")
-    public List<ResponseArticleSimpleDto> getInterestUsersArticlePage(@PageableDefault(size = 6) Pageable pageable,
-                                                                      @SessionUserId Long userId) {
-        return articleService.getInterestUsersArticlePage(pageable, userId);
-    }
+
 }

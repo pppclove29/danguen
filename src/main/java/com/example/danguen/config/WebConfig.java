@@ -41,8 +41,8 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("*")
-                //.allowCredentials(true) todo postman 요청 주소 허락
+                .allowedOrigins("/postman/**")
+                .allowCredentials(true)
                 .maxAge(3600);
     }
 }

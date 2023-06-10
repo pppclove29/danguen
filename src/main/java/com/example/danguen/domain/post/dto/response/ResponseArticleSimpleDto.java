@@ -27,7 +27,7 @@ public class ResponseArticleSimpleDto {
         dto.setTitle(articlePost.getTitle());
         dto.setPrice(articlePost.getPrice());
         dto.setSeller(articlePost.getSeller().getName());
-        dto.setLikeCount(articlePost.getInterests().size());
+        dto.setLikeCount(articlePost.getInterestingUsers().size());
         //todo chat 횟수 적용
         dto.setChatCount(0);
         dto.setCommentCount(articlePost.getComments().size());

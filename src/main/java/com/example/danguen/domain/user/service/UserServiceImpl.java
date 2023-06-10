@@ -94,7 +94,7 @@ public class UserServiceImpl implements UserService {
         User iUser = getUserById(iUserId);
 
         if (user.isInterestUser(iUser)) {
-            user.deleteInterestUser(iUser);
+            user.removeInterestUser(iUser);
         }
     }
 
