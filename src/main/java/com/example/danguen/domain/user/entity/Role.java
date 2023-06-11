@@ -2,15 +2,19 @@ package com.example.danguen.domain.user.entity;
 
 import lombok.Getter;
 
-@Getter
 public enum Role {
-    USER("USER"),
-    ADMIN("ADMIN");
+    USER("ROLE_USER"),
+    ADMIN("ROLE_ADMIN"),
+    ANONYMOUS("ROLE_ANONYMOUS");
 
     private final String role;
 
     Role(String role) {
         this.role = role;
+    }
+
+    public String toString(){
+        return this.role;
     }
 
     /*

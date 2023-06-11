@@ -21,6 +21,10 @@ public class PublicArticleController {
     private final ArticleServiceImpl articleService;
     private final CommentService commentService;
 
+    @GetMapping("/test")
+    public String publicTest(){
+        return "publicTest";
+    }
     @GetMapping("/article/{articleId}")
     public ResponseArticleDto getArticle(@PathVariable Long articleId) {
         ResponseArticleDto post = articleService.getArticleDto(articleId);
@@ -45,7 +49,7 @@ public class PublicArticleController {
         );
     }
 
-    //todo 조회수, 좋아요, 댓글 수, 채팅 수에 점수 메기고 그에 따라 정렬
+    //todo WithMockCustomUser수, 좋아요, 댓글 수, 채팅 수에 점수 메기고 그에 따라 정렬
     @GetMapping("/hot-articles")
     public List<ResponseArticleSimpleDto> getHotArticlePage(@PageableDefault(size = 6) Pageable pageable) {
         return articleService.getHotArticlePage(pageable);

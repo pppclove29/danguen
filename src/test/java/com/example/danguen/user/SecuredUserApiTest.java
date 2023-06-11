@@ -1,6 +1,7 @@
 package com.example.danguen.user;
 
 import com.example.danguen.BaseTest;
+import com.example.danguen.config.jwt.JwtProperties;
 import com.example.danguen.domain.base.Address;
 import com.example.danguen.domain.post.dto.response.ResponseArticleSimpleDto;
 import com.example.danguen.domain.review.RequestReviewDto;
@@ -9,13 +10,10 @@ import com.example.danguen.domain.user.dto.response.ResponseUserSimpleDto;
 import com.example.danguen.domain.user.entity.Role;
 import com.example.danguen.domain.user.entity.User;
 import com.example.danguen.domain.user.exception.UserNotFoundException;
-import com.example.danguen.domain.user.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 
@@ -30,23 +28,20 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 public class SecuredUserApiTest extends BaseTest {
 
-    @Autowired
-    private UserRepository userRepository;
-
     @DisplayName("특정 유저 정보 요청")
-    @WithMockUser
     @Test
     public void successLoadUserInfo() throws Exception {
         //given
-        Long userId = sessionUserId;
+        Long userId = loginUserId;
         RequestUserUpdateDto updateDto = new RequestUserUpdateDto();
-        updateDto.setName(sessionName);
+        updateDto.setName(loginUserName);
         updateDto.setAddress(userAddress);
 
-        userService.update(updateDto, sessionUserId);
+        userService.update(updateDto, loginUserId);
 
         //when
-        mockMvc.perform(get("/secured/user/" + userId))
+        mockMvc.perform(get("/secured/user/" + userId)
+                        .header(JwtProperties.HEADER, makeJwtValue(Role.USER)))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -54,20 +49,20 @@ public class SecuredUserApiTest extends BaseTest {
         User user = userService.getUserById(userId);
 
         assertThat(user.getId()).isEqualTo(userId);
-        assertThat(user.getName()).isEqualTo(sessionName);
+        assertThat(user.getName()).isEqualTo(loginUserName);
         assertThat(user.getAddress()).isEqualTo(userAddress);
         assertThat(user.getRole()).isEqualTo(Role.USER);
     }
 
     @DisplayName("존재하지 않는 유저 정보 검색")
-    @WithMockUser
     @Test
     public void failLoadNonExistUserInfo() throws Exception {
         //given
         long userId = -1L;
 
         //when
-        MvcResult result = mockMvc.perform(get("/secured/user/" + userId))
+        MvcResult result = mockMvc.perform(get("/secured/user/" + userId)
+                        .header(JwtProperties.HEADER, makeJwtValue(Role.USER)))
                 .andExpect(status().isNotFound())
                 .andReturn();
 
@@ -76,11 +71,10 @@ public class SecuredUserApiTest extends BaseTest {
     }
 
     @DisplayName("유저 자신의 정보 갱신")
-    @WithMockUser
     @Test
     public void successUpdateUserInfo() throws Exception {
         //given
-        Long userId = sessionUserId;
+        Long userId = loginUserId;
 
         RequestUserUpdateDto dto = new RequestUserUpdateDto();
         dto.setName("김개똥");
@@ -90,7 +84,8 @@ public class SecuredUserApiTest extends BaseTest {
         //where
         mockMvc.perform(put("/secured/user/")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(new ObjectMapper().writeValueAsString(dto)))
+                        .content(new ObjectMapper().writeValueAsString(dto))
+                        .header(JwtProperties.HEADER, makeJwtValue(Role.USER)))
                 .andExpect(status().isOk());
 
         //then
@@ -103,21 +98,20 @@ public class SecuredUserApiTest extends BaseTest {
     }
 
     @DisplayName("회원탈퇴")
-    @WithMockUser
     @Test
     public void successDeleteUser() throws Exception {
         //given
         //when
-        mockMvc.perform(delete("/secured/user"))
+        mockMvc.perform(delete("/secured/user")
+                        .header(JwtProperties.HEADER, makeJwtValue(Role.USER)))
                 .andExpect(status().isOk());
 
         //then
-        assertThat(userService.getUserByEmail(sessionEmail)).isEqualTo(Optional.empty());
+        assertThat(userService.getUserByEmail(loginUserEmail)).isEqualTo(Optional.empty());
     }
 
 
     @DisplayName("거래 상대에 대한 좋은리뷰 후 거래 점수 상승")
-    @WithMockUser
     @Test
     public void successReviewOtherUser() throws Exception {
         //given
@@ -127,13 +121,14 @@ public class SecuredUserApiTest extends BaseTest {
         review.setNegativeAnswer(new boolean[]{false, false, false, false, false, false, false, false, false, false});
 
         //when
-        mockMvc.perform(post("/secured/user/" + sessionUserId + "/review")
+        mockMvc.perform(post("/secured/user/" + loginUserId + "/review")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(new ObjectMapper().writeValueAsString(review)))
+                        .content(new ObjectMapper().writeValueAsString(review))
+                        .header(JwtProperties.HEADER, makeJwtValue(Role.USER)))
                 .andExpect(status().isOk());
 
         //then
-        User user = userService.getUserById(sessionUserId);
+        User user = userService.getUserById(loginUserId);
 
         assertThat(user.getRate().getDealTemperature()).isGreaterThan(36.5f);
         assertThat(user.getRate().getTotalReviewScore()).isEqualTo(8);
@@ -142,91 +137,91 @@ public class SecuredUserApiTest extends BaseTest {
     }
 
     @DisplayName("관심유저 추가")
-    @WithMockUser
     @Test
     public void successAddInterestUser() throws Exception {
         //given
-        User otherUser = userService.getUserById(noneSessionUserId);
+        User otherUser = userService.getUserById(otherUserId);
 
         //when
-        mockMvc.perform(put("/secured/user/iuser/" + otherUser.getId()))
+        mockMvc.perform(put("/secured/user/iuser/" + otherUser.getId())
+                        .header(JwtProperties.HEADER, makeJwtValue(Role.USER)))
                 .andExpect(status().isOk());
 
         //then
-        List<ResponseUserSimpleDto> interestUser = userService.getIUserDtos(sessionUserId);
+        List<ResponseUserSimpleDto> interestUser = userService.getIUserDtos(loginUserId);
 
         assertThat(interestUser.get(0).getName()).isEqualTo(otherUser.getName());
-        assertThat(interestUser.get(0).getId()).isEqualTo(noneSessionUserId);
+        assertThat(interestUser.get(0).getId()).isEqualTo(otherUserId);
     }
 
     @DisplayName("관심유저 제거")
-    @WithMockUser
     @Test
     public void successDeleteInterestUser() throws Exception {
         //given
-        User otherUser = userService.getUserById(noneSessionUserId);
+        User otherUser = userService.getUserById(otherUserId);
 
         setInterestUsers(List.of(otherUser));
 
         //when
-        mockMvc.perform(delete("/secured/user/iuser/" + otherUser.getId()))
+        mockMvc.perform(delete("/secured/user/iuser/" + otherUser.getId())
+                        .header(JwtProperties.HEADER, makeJwtValue(Role.USER)))
                 .andExpect(status().isOk());
 
         //then
-        List<ResponseUserSimpleDto> interestUser = userService.getIUserDtos(sessionUserId);
+        List<ResponseUserSimpleDto> interestUser = userService.getIUserDtos(loginUserId);
 
         assertThat(interestUser).isEmpty();
     }
 
     @DisplayName("관심유저 중복 등록")
-    @WithMockUser
     @Test
     public void successDuplicateAddInterestUser() throws Exception {
         //given
-        User otherUser = userService.getUserById(noneSessionUserId);
+        User otherUser = userService.getUserById(otherUserId);
 
         setInterestUsers(List.of(otherUser));
 
         //when
         for (int i = 0; i < 3; i++) {
-            mockMvc.perform(put("/secured/user/iuser/" + otherUser.getId()))
+            mockMvc.perform(put("/secured/user/iuser/" + otherUser.getId())
+                            .header(JwtProperties.HEADER, makeJwtValue(Role.USER)))
                     .andExpect(status().isOk());
         }
 
         //then
-        List<ResponseUserSimpleDto> interestUser = userService.getIUserDtos(sessionUserId);
+        List<ResponseUserSimpleDto> interestUser = userService.getIUserDtos(loginUserId);
 
         assertThat(interestUser.size()).isEqualTo(1);
         assertThat(interestUser.get(0).getName()).isEqualTo(otherUser.getName());
-        assertThat(interestUser.get(0).getId()).isEqualTo(noneSessionUserId);
+        assertThat(interestUser.get(0).getId()).isEqualTo(otherUserId);
     }
 
     @DisplayName("관심유저 중복 삭제")
-    @WithMockUser
     @Test
     public void successDuplicateDeleteInterestUser() throws Exception {
         //given
-        User otherUser = userService.getUserById(noneSessionUserId);
+        User otherUser = userService.getUserById(otherUserId);
 
         setInterestUsers(List.of(otherUser));
 
         //when
         for (int i = 0; i < 3; i++) {
-            mockMvc.perform(delete("/secured/user/iuser/" + otherUser.getId()))
+            mockMvc.perform(delete("/secured/user/iuser/" + otherUser.getId())
+                            .header(JwtProperties.HEADER, makeJwtValue(Role.USER)))
                     .andExpect(status().isOk());
         }
 
         //then
-        List<ResponseUserSimpleDto> interestUser = userService.getIUserDtos(sessionUserId);
+        List<ResponseUserSimpleDto> interestUser = userService.getIUserDtos(loginUserId);
 
         assertThat(interestUser).isEmpty();
     }
 
     @DisplayName("존재하지 않는 관심유저 등록")
-    @WithMockUser
     @Test
     public void failAddNonExistInterestUser() throws Exception {
-        MvcResult result = mockMvc.perform(put("/secured/user/iuser/" + 99999999))
+        MvcResult result = mockMvc.perform(put("/secured/user/iuser/" + 99999999)
+                        .header(JwtProperties.HEADER, makeJwtValue(Role.USER)))
                 .andExpect(status().isNotFound())
                 .andReturn();
 
@@ -235,10 +230,10 @@ public class SecuredUserApiTest extends BaseTest {
     }
 
     @DisplayName("존재하지 않는 관심유저 삭제")
-    @WithMockUser
     @Test
     public void failDeleteNonExistInterestUser() throws Exception {
-        MvcResult result = mockMvc.perform(delete("/secured/user/iuser/" + 99999999))
+        MvcResult result = mockMvc.perform(delete("/secured/user/iuser/" + 99999999)
+                        .header(JwtProperties.HEADER, makeJwtValue(Role.USER)))
                 .andExpect(status().isNotFound())
                 .andReturn();
 
@@ -247,7 +242,6 @@ public class SecuredUserApiTest extends BaseTest {
     }
 
     @DisplayName("관심 유저 리스트 요청")
-    @WithMockUser
     @Test
     public void successLoadInterestUserList() throws Exception {
         //given
@@ -261,7 +255,8 @@ public class SecuredUserApiTest extends BaseTest {
         setInterestUsers(iUsers);
 
         //when
-        ResultActions resultActions = mockMvc.perform(get("/secured/user/iuser"))
+        ResultActions resultActions = mockMvc.perform(get("/secured/user/iuser")
+                        .header(JwtProperties.HEADER,makeJwtValue(Role.USER)))
                 .andExpect(status().isOk());
 
 
@@ -276,7 +271,6 @@ public class SecuredUserApiTest extends BaseTest {
     }
 
     @DisplayName("관심 유저의 중고물품 리스트 출력")
-    @WithMockUser
     @Test
     public void successLoadInterestUsersArticleList() throws Exception {
         //given
@@ -295,11 +289,12 @@ public class SecuredUserApiTest extends BaseTest {
         setInterestUsers(interestUserList);
 
         //when
-        MvcResult result = mockMvc.perform(get("/secured/user/iusers/articles"))
+        MvcResult result = mockMvc.perform(get("/secured/user/iusers/articles")
+                        .header(JwtProperties.HEADER,makeJwtValue(Role.USER)))
                 .andExpect(status().isOk())
                 .andReturn();
 
-        List<ResponseArticleSimpleDto> responseList = mappingResponse(result,ResponseArticleSimpleDto.class);
+        List<ResponseArticleSimpleDto> responseList = mappingResponse(result, ResponseArticleSimpleDto.class);
 
         //then
         assertThat(responseList.size()).isEqualTo(3);
@@ -309,25 +304,25 @@ public class SecuredUserApiTest extends BaseTest {
     }
 
     @DisplayName("관심 중고물품 리스트 출력")
-    @WithMockUser
     @Test
     public void successLoadInterestArticleList() throws Exception {
         //given
         for (int i = 0; i < 10; i++) {
-            Long articleId = makeArticle(i, sessionUserId);
+            Long articleId = makeArticle(i, loginUserId);
 
             if (i % 2 == 0) {
-                articleService.giveInterest(articleId, sessionUserId);
+                articleService.giveInterest(articleId, loginUserId);
             }
         }
 
         //when
-        MvcResult result = mockMvc.perform(get("/secured/user/iarticle"))
+        MvcResult result = mockMvc.perform(get("/secured/user/iarticle")
+                        .header(JwtProperties.HEADER,makeJwtValue(Role.USER)))
                 .andExpect(status().isOk())
                 .andReturn();
 
         //then
-        List<ResponseArticleSimpleDto> responseList = mappingResponse(result,ResponseArticleSimpleDto.class);
+        List<ResponseArticleSimpleDto> responseList = mappingResponse(result, ResponseArticleSimpleDto.class);
 
         //then
         assertThat(responseList.size()).isEqualTo(5);

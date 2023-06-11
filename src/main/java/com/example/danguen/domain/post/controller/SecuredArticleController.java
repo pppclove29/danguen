@@ -25,6 +25,10 @@ public class SecuredArticleController {
     private final ArticleImageService articleImageService;
     private final ArticleServiceImpl articleService;
 
+    @GetMapping("/test")
+    public String secureTest(){
+        return "secureTest";
+    }
     @PostMapping(value = "/article")
     public void save(@ModelAttribute("request") RequestArticleSaveOrUpdateDto request,
                      @RequestParam(value = "images") List<MultipartFile> images,

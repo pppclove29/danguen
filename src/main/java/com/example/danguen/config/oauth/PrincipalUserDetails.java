@@ -38,6 +38,4 @@ public class PrincipalUserDetails implements OAuth2User {
     public User getUser() {
         return user;
     }
-
-    ;
 }

@@ -2,13 +2,18 @@ package com.example.danguen.domain.user.entity;
 
 import com.example.danguen.domain.review.RequestReviewDto;
 import lombok.Getter;
+import org.hibernate.annotations.GeneratorType;
 
-import javax.persistence.Embeddable;
+import javax.persistence.*;
 
 
 @Getter
-@Embeddable
+@Entity
 public class UserRate {
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "RATE_ID")
+    private Long id;
     //todo 밖으로 뺴서 새로운 테이블로 빼
     private float dealTemperature;
     private int totalReviewScore;

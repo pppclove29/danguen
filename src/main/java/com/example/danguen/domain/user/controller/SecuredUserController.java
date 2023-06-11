@@ -77,9 +77,5 @@ public class SecuredUserController {
         return articleService.getInterestUsersArticlePage(pageable, userId);
     }
 
-    @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<?> handleUserNotFound() {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(UserNotFoundException.message);
-    }
+
 }

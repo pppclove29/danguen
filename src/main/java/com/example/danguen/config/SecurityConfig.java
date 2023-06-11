@@ -13,6 +13,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @RequiredArgsConstructor
 @Configuration
@@ -39,8 +40,8 @@ public class SecurityConfig {
 
         http
                 .authorizeHttpRequests()
+                .antMatchers("/admin/**").hasRole("ADMIN")
                 .antMatchers(permitUri).permitAll()
-                .antMatchers("/admin").hasRole("ADMIN")
                 .anyRequest().authenticated();
 
         http

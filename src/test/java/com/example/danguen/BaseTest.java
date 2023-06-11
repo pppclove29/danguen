@@ -1,10 +1,9 @@
 package com.example.danguen;
 
-import com.example.danguen.config.jwt.JwtAuthenticationToken;
-import com.example.danguen.config.oauth.PrincipalUserDetails;
+import com.auth0.jwt.JWT;
+import com.example.danguen.config.jwt.JwtProperties;
 import com.example.danguen.domain.base.Address;
 import com.example.danguen.domain.comment.dto.request.RequestCommentSaveDto;
-import com.example.danguen.domain.comment.entity.Comment;
 import com.example.danguen.domain.comment.repository.CommentRepository;
 import com.example.danguen.domain.comment.service.CommentServiceImpl;
 import com.example.danguen.domain.image.entity.ArticleImage;
@@ -16,6 +15,7 @@ import com.example.danguen.domain.post.entity.ArticlePost;
 import com.example.danguen.domain.post.repository.PostRepository;
 import com.example.danguen.domain.post.service.ArticleServiceImpl;
 import com.example.danguen.domain.post.service.PostService;
+import com.example.danguen.domain.user.entity.Role;
 import com.example.danguen.domain.user.entity.User;
 import com.example.danguen.domain.user.repository.UserRepository;
 import com.example.danguen.domain.user.service.UserServiceImpl;
@@ -29,8 +29,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.mock.web.MockFilterConfig;
+import org.springframework.security.config.BeanIds;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -39,11 +39,13 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
+import org.springframework.web.filter.DelegatingFilterProxy;
 
-import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.servlet.ServletException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -81,27 +83,29 @@ public class BaseTest {
     @Autowired
     protected ObjectMapper mapper;
 
-    protected Long sessionUserId;
-    protected String sessionName = "박이름";
-    protected String sessionEmail = "email@temp.com";
+    protected Long loginUserId;
+    protected String loginUserName = "박이름";
+    protected String loginUserEmail = "email@temp.com";
 
-    protected Long noneSessionUserId;
-    protected String noneSessionName = "김기타";
-    protected String noneSessionEmail = "other@temp.com";
+    protected Long otherUserId;
+    protected String otherUserName = "김기타";
+    protected String otherUserEmail = "other@temp.com";
 
     @Order(0)
     @BeforeEach
-    public void baseInit() {
+    public void baseInit() throws ServletException {
+        DelegatingFilterProxy delegateProxyFilter = new DelegatingFilterProxy();
+        delegateProxyFilter.init(
+                new MockFilterConfig(ctx.getServletContext(), BeanIds.SPRING_SECURITY_FILTER_CHAIN));
+
         mockMvc = MockMvcBuilders
                 .webAppContextSetup(ctx)
-                .addFilters(new CharacterEncodingFilter("UTF-8", true))  // 필터 추가
+                .addFilter(delegateProxyFilter)
+                .addFilter(new CharacterEncodingFilter("UTF-8", true))
                 .build();
 
-        User user = makeUser(sessionName, sessionEmail);
-        sessionUserId = user.getId();
-        registerUserToSession(user);
-
-        noneSessionUserId = makeUser(noneSessionName, noneSessionEmail).getId();
+        loginUserId = makeUser(loginUserName, loginUserEmail).getId();
+        otherUserId = makeUser(otherUserName, otherUserEmail).getId();
     }
 
     @Transactional
@@ -112,16 +116,6 @@ public class BaseTest {
         imageRepository.deleteAll();
         postRepository.deleteAll();
         userRepository.deleteAll();
-    }
-
-
-    public void registerUserToSession(User user) {
-        PrincipalUserDetails principalUserDetails = new PrincipalUserDetails(user);
-
-        Authentication authentication
-                = new JwtAuthenticationToken(null, principalUserDetails, principalUserDetails.getAuthorities());
-
-        SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
     protected Address userAddress = new Address("서울시", "길로", "1234");
@@ -141,7 +135,7 @@ public class BaseTest {
 
     public void setInterestUsers(List<User> interestUsers) {
         for (var iUser : interestUsers)
-            userService.addInterestUser(sessionUserId, iUser.getId());
+            userService.addInterestUser(loginUserId, iUser.getId());
     }
 
     protected String articleTitle = "제목 ";
@@ -187,7 +181,8 @@ public class BaseTest {
 
     public <T> List<T> mappingResponse(MvcResult result, Class<T> responseType) throws UnsupportedEncodingException, JsonProcessingException {
         String responseBody = result.getResponse().getContentAsString();
-        List<LinkedHashMap<String, Object>> resultList = mapper.readValue(responseBody, new TypeReference<List<LinkedHashMap<String, Object>>>() {});
+        List<LinkedHashMap<String, Object>> resultList = mapper.readValue(responseBody, new TypeReference<List<LinkedHashMap<String, Object>>>() {
+        });
 
         List<T> mappedList = new ArrayList<>();
         for (LinkedHashMap<String, Object> resultMap : resultList) {
@@ -205,20 +200,28 @@ public class BaseTest {
         RequestCommentSaveDto dto = new RequestCommentSaveDto();
 
         dto.setContent(commentContent);
-        dto.setKind(postRepository.findById(postId).get().getKind());
+        dto.setKind(postService.getPostById(postId).getKind());
 
         return commentService.saveInPost(dto, postId, userId).getId();
     }
-    @PersistenceContext
-    EntityManager entityManager;
 
-    @Transactional(propagation =Propagation.REQUIRES_NEW)
-    public void saveEntity(){
-        System.out.println("parent before "+commentRepository.findAll().size());
-        commentRepository.save(new Comment());
-        entityManager.flush();
-
-        System.out.println("parent after "+commentRepository.findAll().size());
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public String makeJwtValue(Role role) {
+        switch (role) {
+            case ADMIN:
+                User user = userService.getUserById(loginUserId);
+                user.changeRole(Role.ADMIN);
+            case USER:
+                return JwtProperties.PREFIX + JWT.create()
+                        .withExpiresAt(new Date(System.currentTimeMillis() + JwtProperties.EXPIRATION_TIME))
+                        .withClaim("userName", loginUserName)
+                        .withClaim("userId", loginUserId)
+                        .sign(JwtProperties.ALGORITHM);
+            case ANONYMOUS:
+                return "";
+            default:
+                throw new RuntimeException("도달하면 안됩니다");
+        }
     }
 }
 

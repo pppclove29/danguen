@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class PostService {
     //TODO 인터페이스 구현
-
     private final PostRepository postRepository;
 
     public Post getPostById(Long postId) {

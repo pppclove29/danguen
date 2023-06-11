@@ -1,7 +1,9 @@
 package com.example.danguen.domain.user.controller;
 
+import com.example.danguen.config.oauth.PrincipalUserDetails;
 import com.example.danguen.domain.user.service.UserServiceImpl;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,5 +19,4 @@ public class AdminUserController {
     public void delete(@PathVariable Long userId) {
         userService.delete(userId);
     }
-
 }

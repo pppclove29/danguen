@@ -5,6 +5,8 @@ import com.example.danguen.config.exception.MissingSessionPrincipalDetailsExcept
 import com.example.danguen.config.oauth.PrincipalUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.MethodParameter;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.support.WebDataBinderFactory;
@@ -23,14 +25,13 @@ public class SessionUserIdArgumentResolver implements HandlerMethodArgumentResol
 
     @Override
     public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer, NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws MissingSessionPrincipalDetailsException {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        if (principal.equals("anonymousUser")) {
+        if (authentication instanceof AnonymousAuthenticationToken) {
             throw new MissingSessionPrincipalDetailsException();
         }
+        PrincipalUserDetails principalUserDetails = (PrincipalUserDetails) authentication.getPrincipal();
 
-        PrincipalUserDetails user = (PrincipalUserDetails) principal;
-
-        return user.getUserId();
+        return principalUserDetails.getUserId();
     }
 }

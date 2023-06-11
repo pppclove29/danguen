@@ -30,8 +30,7 @@ public class User extends BaseTimeEntity {
 
     @Embedded
     private Address address;
-    @Embedded
-    private UserRate rate;
+
 
     @Enumerated(EnumType.STRING)
     private Role role;
@@ -44,6 +43,10 @@ public class User extends BaseTimeEntity {
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private UserImage image;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "RATE_ID")
+    private UserRate rate;
 
     @ManyToMany
     @JoinTable(
@@ -70,6 +73,9 @@ public class User extends BaseTimeEntity {
     public void updateUser(RequestUserUpdateDto request) {
         this.address = request.getAddress();
         this.name = request.getName();
+    }
+    public void changeRole(Role role){
+        this.role = role;
     }
 
     public void review(RequestReviewDto request) {

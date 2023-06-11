@@ -30,7 +30,6 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
             chain.doFilter(request, response);
             return;
         }
-
         String jwtToken = jwtHeader.replace(JwtProperties.PREFIX, "");
 
         Long userId = Long.valueOf((JWT.require(JwtProperties.ALGORITHM).build()).verify(jwtToken).getClaim("userId").toString());
