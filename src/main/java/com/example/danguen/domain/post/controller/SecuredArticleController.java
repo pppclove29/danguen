@@ -1,9 +1,11 @@
 package com.example.danguen.domain.post.controller;
 
 import com.example.danguen.annotation.SessionUserId;
+import com.example.danguen.domain.image.repository.ArticleImageRepository;
 import com.example.danguen.domain.image.service.ArticleImageService;
 import com.example.danguen.domain.post.dto.request.RequestArticleSaveOrUpdateDto;
 import com.example.danguen.domain.post.dto.response.ResponseArticleSimpleDto;
+import com.example.danguen.domain.post.repository.ArticlePostRepository;
 import com.example.danguen.domain.post.service.ArticleServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,6 +26,8 @@ public class SecuredArticleController {
     private String savePath;
     private final ArticleImageService articleImageService;
     private final ArticleServiceImpl articleService;
+    private final ArticlePostRepository articlePostRepository;
+    private final ArticleImageRepository articleImageRepository;
 
     @GetMapping("/test")
     public String secureTest(){
@@ -35,6 +39,9 @@ public class SecuredArticleController {
                      @SessionUserId Long userId) throws IOException {
         Long articleId = articleService.save(request, userId);
         articleImageService.save(articleId, images);
+
+        System.out.println(articlePostRepository.findAll().size());
+        System.out.println(articleImageRepository.findAll().size());
     }
 
     @PutMapping("/article/{articleId}")

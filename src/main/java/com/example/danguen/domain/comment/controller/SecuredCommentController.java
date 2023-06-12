@@ -1,12 +1,9 @@
 package com.example.danguen.domain.comment.controller;
 
 import com.example.danguen.annotation.SessionUserId;
-import com.example.danguen.domain.comment.entity.Comment;
+import com.example.danguen.domain.comment.dto.request.RequestCommentSaveDto;
 import com.example.danguen.domain.comment.exception.AlreadyDeletedCommentException;
 import com.example.danguen.domain.comment.exception.CommentNotFoundException;
-import com.example.danguen.domain.comment.dto.request.RequestCommentSaveDto;
-import com.example.danguen.domain.comment.repository.CommentRepository;
-import com.example.danguen.domain.comment.service.CommentService;
 import com.example.danguen.domain.comment.service.CommentServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 public class SecuredCommentController {
 
     private final CommentServiceImpl commentService;
-    private final CommentRepository commentRepository;
 
     @PostMapping("/post/{postId}/comment") // 댓글이 달릴 객체 필요
     public void saveInPost(@RequestBody RequestCommentSaveDto requestCommentSaveDto,

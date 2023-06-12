@@ -53,7 +53,7 @@ import java.util.List;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ExtendWith(SpringExtension.class)
 @AutoConfigureMockMvc
-public class BaseTest {
+public abstract class BaseTest {
     //todo json 객체 검증 말고 json을 dto로 변환해서 검증하도록
 
     @Autowired

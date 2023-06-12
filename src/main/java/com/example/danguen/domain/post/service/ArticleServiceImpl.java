@@ -109,7 +109,11 @@ public class ArticleServiceImpl implements ArticleService {
         User user = userService.getUserById(userId);
         user.addSellArticle(articlePost);
 
-        return articlePostRepository.save(articlePost).getId();
+        ArticlePost savedArticle = articlePostRepository.save(articlePost);
+
+        System.out.println("saved article");
+
+        return savedArticle.getId();
     }
 
     @Override

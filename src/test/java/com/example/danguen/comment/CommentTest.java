@@ -20,6 +20,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultHandler;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -41,7 +42,7 @@ public class CommentTest extends BaseTest {
         postId = makeArticle(0, loginUserId);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional(readOnly = true, propagation = Propagation.MANDATORY)
     @DisplayName("중고물품에 댓글 등록 후 Entity 검증")
     @Test
     public void successSaveCommentOnArticleVerifyEntity() throws Exception {

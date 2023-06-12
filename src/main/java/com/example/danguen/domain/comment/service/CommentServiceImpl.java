@@ -11,8 +11,14 @@ import com.example.danguen.domain.post.service.PostService;
 import com.example.danguen.domain.user.entity.User;
 import com.example.danguen.domain.user.service.UserServiceImpl;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -31,6 +37,9 @@ public class CommentServiceImpl implements CommentService {
     @PersistenceContext
     EntityManager entityManager;
 
+    @Autowired
+    private PlatformTransactionManager transactionManager;
+
 
     @Override
     @Transactional
@@ -39,13 +48,7 @@ public class CommentServiceImpl implements CommentService {
         Post post = postService.getPostById(postId);
 
         Comment comment = request.toEntity(user, post);
-        Comment savedComment = commentRepository.save(comment);
-
-        System.out.println(commentRepository.findAll().size());
-        entityManager.flush();
-
-        System.out.println(commentRepository.findAll().size());
-        return savedComment;
+        return commentRepository.save(comment);
     }
 
     @Override
@@ -105,6 +108,4 @@ public class CommentServiceImpl implements CommentService {
     public Comment getCommentById(Long commentId) {
         return commentRepository.findById(commentId).orElseThrow(CommentNotFoundException::new);
     }
-
-
 }

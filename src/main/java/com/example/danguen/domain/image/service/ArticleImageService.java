@@ -44,6 +44,8 @@ public class ArticleImageService implements ImageService{
                                     .build())
                     .forEach(articleImageRepository::save);
         }
+
+        System.out.println("saved image");
     }
 
     private Optional<String> saveToLocal(MultipartFile multipartFile, String articleImagePath) {
