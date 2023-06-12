@@ -33,8 +33,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class CommentTest extends BaseTest {
     //todo 여러 post에 대한 테스트 진행
 
-    @Autowired
-    CommentRepository commentRepository;
     private Long postId;
 
     @BeforeEach

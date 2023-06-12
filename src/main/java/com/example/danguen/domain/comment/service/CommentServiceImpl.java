@@ -1,19 +1,21 @@
 package com.example.danguen.domain.comment.service;
 
-import com.example.danguen.domain.comment.exception.AlreadyDeletedCommentException;
-import com.example.danguen.domain.comment.exception.CommentNotFoundException;
-import com.example.danguen.domain.comment.entity.Comment;
 import com.example.danguen.domain.comment.dto.request.RequestCommentSaveDto;
 import com.example.danguen.domain.comment.dto.response.ResponseCommentDto;
+import com.example.danguen.domain.comment.entity.Comment;
+import com.example.danguen.domain.comment.exception.AlreadyDeletedCommentException;
+import com.example.danguen.domain.comment.exception.CommentNotFoundException;
+import com.example.danguen.domain.comment.repository.CommentRepository;
 import com.example.danguen.domain.post.entity.Post;
 import com.example.danguen.domain.post.service.PostService;
 import com.example.danguen.domain.user.entity.User;
-import com.example.danguen.domain.comment.repository.CommentRepository;
 import com.example.danguen.domain.user.service.UserServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,6 +28,9 @@ public class CommentServiceImpl implements CommentService {
 
     private final CommentRepository commentRepository;
 
+    @PersistenceContext
+    EntityManager entityManager;
+
 
     @Override
     @Transactional
@@ -34,7 +39,13 @@ public class CommentServiceImpl implements CommentService {
         Post post = postService.getPostById(postId);
 
         Comment comment = request.toEntity(user, post);
-        return commentRepository.save(comment);
+        Comment savedComment = commentRepository.save(comment);
+
+        System.out.println(commentRepository.findAll().size());
+        entityManager.flush();
+
+        System.out.println(commentRepository.findAll().size());
+        return savedComment;
     }
 
     @Override

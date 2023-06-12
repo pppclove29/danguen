@@ -31,12 +31,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 //@WebMvcTest(SecuredArticleController.class)
 public class SecuredArticlePostTest extends BaseTest {
 
-    @MockBean
-    ArticleImageService articleImageService;
-
-    @Autowired
-    ArticlePostRepository articlePostRepository;
-
     @Transactional(readOnly = true)
     @DisplayName("이미지가 포함된 중고물품 등록")
     @Test

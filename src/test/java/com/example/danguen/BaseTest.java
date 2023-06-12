@@ -12,6 +12,7 @@ import com.example.danguen.domain.image.repository.ImageRepository;
 import com.example.danguen.domain.image.service.ArticleImageService;
 import com.example.danguen.domain.post.dto.request.RequestArticleSaveOrUpdateDto;
 import com.example.danguen.domain.post.entity.ArticlePost;
+import com.example.danguen.domain.post.repository.ArticlePostRepository;
 import com.example.danguen.domain.post.repository.PostRepository;
 import com.example.danguen.domain.post.service.ArticleServiceImpl;
 import com.example.danguen.domain.post.service.PostService;
@@ -75,6 +76,8 @@ public class BaseTest {
     protected UserRepository userRepository;
     @Autowired
     protected PostRepository postRepository;
+    @Autowired
+    protected ArticlePostRepository articlePostRepository;
     @Autowired
     protected CommentRepository commentRepository;
     @Autowired
