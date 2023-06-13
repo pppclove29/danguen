@@ -11,17 +11,9 @@ import com.example.danguen.domain.post.service.PostService;
 import com.example.danguen.domain.user.entity.User;
 import com.example.danguen.domain.user.service.UserServiceImpl;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,15 +23,7 @@ public class CommentServiceImpl implements CommentService {
 
     private final UserServiceImpl userService;
     private final PostService postService;
-
     private final CommentRepository commentRepository;
-
-    @PersistenceContext
-    EntityManager entityManager;
-
-    @Autowired
-    private PlatformTransactionManager transactionManager;
-
 
     @Override
     @Transactional

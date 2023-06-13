@@ -1,7 +1,8 @@
 package com.example.danguen.config;
 
 import com.example.danguen.argumentResolver.SessionUserIdArgumentResolver;
-import com.example.danguen.interceptor.ArticlePostAuthInterceptor;
+import com.example.danguen.interceptor.PostAuthInterceptor;
+import com.example.danguen.interceptor.CommentAuthInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -17,7 +18,8 @@ import java.util.List;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
     private final SessionUserIdArgumentResolver sessionUserIdArgumentResolver;
-    private final ArticlePostAuthInterceptor articlePostAuthInterceptor;
+    private final PostAuthInterceptor postAuthInterceptor;
+    private final CommentAuthInterceptor commentAuthInterceptor;
     @Value("${file.article.image.local}")
     private String articlePath;
 
@@ -28,8 +30,11 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(articlePostAuthInterceptor)
+        registry.addInterceptor(postAuthInterceptor)
                 .addPathPatterns("/secured/article/*");
+
+        registry.addInterceptor(commentAuthInterceptor)
+                .addPathPatterns("/secured/comment/*");
     }
 
     @Override

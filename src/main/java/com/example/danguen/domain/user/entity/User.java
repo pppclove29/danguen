@@ -31,11 +31,10 @@ public class User extends BaseTimeEntity {
     @Embedded
     private Address address;
 
-
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    @OneToMany(mappedBy = "seller", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "writer", cascade = CascadeType.ALL)
     private final List<ArticlePost> sellArticlePosts = new ArrayList<>(); // 판매상품
 
     @OneToMany(mappedBy = "writer")
@@ -85,7 +84,7 @@ public class User extends BaseTimeEntity {
     public void addSellArticle(ArticlePost articlePost) {
         sellArticlePosts.add(articlePost);
 
-        articlePost.setSeller(this);
+        articlePost.setWriter(this);
     }
 
     public void removeSellArticle(ArticlePost articlePost) {

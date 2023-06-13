@@ -25,7 +25,7 @@ public interface ArticleService {
 
     List<ResponseArticleSimpleDto> getInterestUsersArticlePage(Pageable pageable, Long userId);
 
-    Long save(RequestArticleSaveOrUpdateDto request, Long userId) throws IOException;
+    Long save(RequestArticleSaveOrUpdateDto request, Long userId);
 
     void update(RequestArticleSaveOrUpdateDto request, Long articleId);
 

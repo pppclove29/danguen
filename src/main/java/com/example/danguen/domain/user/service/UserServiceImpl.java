@@ -1,27 +1,33 @@
 package com.example.danguen.domain.user.service;
 
+import com.example.danguen.config.exception.MissingSessionPrincipalDetailsException;
+import com.example.danguen.config.oauth.PrincipalUserDetails;
+import com.example.danguen.domain.comment.entity.Comment;
+import com.example.danguen.domain.post.entity.Post;
 import com.example.danguen.domain.review.RequestReviewDto;
 import com.example.danguen.domain.user.dto.request.RequestUserUpdateDto;
 import com.example.danguen.domain.user.dto.response.ResponseUserPageDto;
 import com.example.danguen.domain.user.dto.response.ResponseUserSimpleDto;
+import com.example.danguen.domain.user.entity.Role;
 import com.example.danguen.domain.user.entity.User;
 import com.example.danguen.domain.user.exception.UserNotFoundException;
 import com.example.danguen.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
 public class UserServiceImpl implements UserService {
-    @PersistenceContext
-    private EntityManager entityManager;
     private final UserRepository userRepository;
 
     @Override
@@ -58,7 +64,6 @@ public class UserServiceImpl implements UserService {
         User user = getUserById(userId);
 
         user.giveUpComments();
-        entityManager.flush();
 
         userRepository.deleteById(userId);
     }
@@ -100,12 +105,50 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
+    public void changeRole(Long userId, Role role) {
+        User user = getUserById(userId);
+        user.changeRole(role);
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.SUPPORTS)
     public User getUserById(Long userId) {
         return userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
     }
 
     @Override
+    @Transactional(propagation = Propagation.SUPPORTS)
     public Optional<User> getUserByEmail(String email) {
         return userRepository.findByEmail(email);
+    }
+
+    @Transactional(readOnly = true)
+    public boolean isUsersCreation(Supplier<?> supplier) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication instanceof AnonymousAuthenticationToken) {
+            throw new MissingSessionPrincipalDetailsException();
+        }
+        PrincipalUserDetails principalUserDetails = (PrincipalUserDetails) authentication.getPrincipal();
+
+        Object creation = supplier.get();
+
+        User owner;
+        if (creation instanceof Post) {
+            Post post = (Post) creation;
+            owner = post.getWriter();
+        } else if (creation instanceof Comment) {
+            Comment comment = (Comment) creation;
+
+            if (comment.getWriter().isEmpty()) {
+                return false;
+            }
+            owner = comment.getWriter().get();
+        } else {
+            return false;
+        }
+
+        return owner.getId().equals(principalUserDetails.getUserId());
     }
 }

@@ -4,26 +4,22 @@ package com.example.danguen.post.article;
 import com.example.danguen.BaseTest;
 import com.example.danguen.config.jwt.JwtProperties;
 import com.example.danguen.domain.base.Address;
-import com.example.danguen.domain.image.service.ArticleImageService;
 import com.example.danguen.domain.post.dto.request.RequestArticleSaveOrUpdateDto;
 import com.example.danguen.domain.post.entity.ArticlePost;
-import com.example.danguen.domain.post.repository.ArticlePostRepository;
 import com.example.danguen.domain.user.entity.Role;
 import com.example.danguen.domain.user.entity.User;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.File;
 import java.io.FileInputStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 //todo anonymousUser의 secured 접근에 대한 테스트 진행
@@ -31,7 +27,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 //@WebMvcTest(SecuredArticleController.class)
 public class SecuredArticlePostTest extends BaseTest {
 
-    @Transactional(readOnly = true)
     @DisplayName("이미지가 포함된 중고물품 등록")
     @Test
     public void successSaveArticleWithImages() throws Exception {
@@ -70,13 +65,36 @@ public class SecuredArticlePostTest extends BaseTest {
                         .file(image3)
                         .flashAttr("request", dto)
                         .contentType(MediaType.MULTIPART_FORM_DATA)
-                        .header(JwtProperties.HEADER,makeJwtValue(Role.USER)))
+                        .header(JwtProperties.HEADER, makeJwtValue(Role.USER)))
                 .andExpect(status().isOk());
 
         //then
         ArticlePost articlePost = articlePostRepository.findAll().get(0);
 
         assertThat(articlePost.getImages().size()).isEqualTo(3);
+
+        deleteFolder(new File("src/test/resources/articleImage/"));
+    }
+
+    public static void deleteFolder(File folder) {
+        if (folder.exists()) {
+            File[] files = folder.listFiles();
+
+            if (files != null) {
+                for (File file : files) {
+                    if (file.isDirectory()) {
+                        deleteFolder(file);
+                    } else {
+                        file.delete();
+                    }
+                }
+            }
+
+            folder.delete();
+            System.out.println("폴더가 삭제되었습니다: " + folder.getAbsolutePath());
+        } else {
+            System.out.println("폴더가 존재하지 않습니다: " + folder.getAbsolutePath());
+        }
     }
 
     @DisplayName("이미지 없이 중고물품 등록")
@@ -97,7 +115,7 @@ public class SecuredArticlePostTest extends BaseTest {
         mockMvc.perform(multipart("/secured/article")
                         .flashAttr("request", dto)
                         .contentType(MediaType.MULTIPART_FORM_DATA)
-                        .header(JwtProperties.HEADER,makeJwtValue(Role.USER)))
+                        .header(JwtProperties.HEADER, makeJwtValue(Role.USER)))
                 .andExpect(status().isBadRequest());
 
         //then
@@ -133,7 +151,7 @@ public class SecuredArticlePostTest extends BaseTest {
                         .file(image)
                         .flashAttr("request", dto)
                         .contentType(MediaType.MULTIPART_FORM_DATA)
-                        .header(JwtProperties.HEADER,makeJwtValue(Role.USER)))
+                        .header(JwtProperties.HEADER, makeJwtValue(Role.USER)))
                 .andExpect(status().isOk());
 
         //then
@@ -147,7 +165,6 @@ public class SecuredArticlePostTest extends BaseTest {
         assertThat(articlePost.getPrice()).isEqualTo(30000);
     }
 
-    @Transactional(readOnly = true)
     @DisplayName("중고물품 삭제")
     @Test
     public void successDeleteArticle() throws Exception {
@@ -156,7 +173,7 @@ public class SecuredArticlePostTest extends BaseTest {
 
         //when
         mockMvc.perform(delete("/secured/article/" + articleId)
-                        .header(JwtProperties.HEADER,makeJwtValue(Role.USER)))
+                        .header(JwtProperties.HEADER, makeJwtValue(Role.USER)))
                 .andExpect(status().isOk());
 
         //then
@@ -167,7 +184,6 @@ public class SecuredArticlePostTest extends BaseTest {
     }
 
 
-
     @DisplayName("중고물품 등록자 회원탈퇴시 게시글 자동삭제")
     @Test
     public void successAutoDeleteArticleWhenSellerWithdrawal() throws Exception {
@@ -176,16 +192,13 @@ public class SecuredArticlePostTest extends BaseTest {
 
         //when
         mockMvc.perform(delete("/secured/user")
-                        .header(JwtProperties.HEADER,makeJwtValue(Role.USER)))
+                        .header(JwtProperties.HEADER, makeJwtValue(Role.USER)))
                 .andExpect(status().isOk());
 
         //then
         assertThat(articlePostRepository.findAll()).isEmpty();
     }
 
-
-
-    @Transactional(readOnly = true)
     @DisplayName("중고물품에 관심주기")
     @Test
     public void successGiveInterestInArticle() throws Exception {
@@ -195,7 +208,7 @@ public class SecuredArticlePostTest extends BaseTest {
 
         //when
         mockMvc.perform(post("/secured/article/" + articleId + "/interest")
-                        .header(JwtProperties.HEADER,makeJwtValue(Role.USER)))
+                        .header(JwtProperties.HEADER, makeJwtValue(Role.USER)))
                 .andExpect(status().isOk());
 
         //then
@@ -210,5 +223,5 @@ public class SecuredArticlePostTest extends BaseTest {
         assertThat(user.getInterestArticles().get(0).getId()).isEqualTo(articleId);
     }
 
-    //todo like, chat
+    //todo chat
 }

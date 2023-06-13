@@ -41,7 +41,7 @@ public class ResponseArticleDto {
         dto.setViews(articlePost.getViews());
         dto.setSold(articlePost.isSold());
         dto.setDealHopeAddress(articlePost.getDealHopeAddress());
-        dto.setSeller(articlePost.getSeller().getName());
+        dto.setSeller(articlePost.getWriter().getName());
         dto.setWrittenTime(articlePost.getCreatedTime());
 
         articlePost.getImages().stream()

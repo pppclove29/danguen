@@ -27,7 +27,7 @@ public interface ArticlePostRepository extends JpaRepository<ArticlePost, Long> 
     @Query("select a from ArticlePost a where a in :interestArticles")
     Page<ArticlePost> findByInterestArticles(Pageable pageable, @Param("interestArticles")  List<ArticlePost> interestArticles);
 
-    @Query("select a from ArticlePost a where a.seller in :interestUsers")
+    @Query("select a from ArticlePost a where a.writer in :interestUsers")
     Page<ArticlePost> findByInterestUsersArticle(Pageable pageable, @Param("interestUsers") List<User> interestUsers);
 
     // 일단은 조회수로만 하자, 관심등록 및 댓글 수는 후에 추가한다, 계산은 통계영역이므로 일단 보류한다

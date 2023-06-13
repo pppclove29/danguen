@@ -6,7 +6,6 @@ import com.example.danguen.domain.comment.dto.request.RequestCommentSaveDto;
 import com.example.danguen.domain.comment.dto.response.ResponseCommentDto;
 import com.example.danguen.domain.comment.entity.Comment;
 import com.example.danguen.domain.comment.exception.AlreadyDeletedCommentException;
-import com.example.danguen.domain.comment.repository.CommentRepository;
 import com.example.danguen.domain.post.entity.ArticlePost;
 import com.example.danguen.domain.post.entity.Post;
 import com.example.danguen.domain.post.entity.PostKind;
@@ -15,14 +14,10 @@ import com.example.danguen.domain.user.entity.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.ResultHandler;
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -31,7 +26,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
-public class CommentTest extends BaseTest {
+public class SecuredCommentTest extends BaseTest {
     //todo 여러 post에 대한 테스트 진행
 
     private Long postId;
@@ -42,7 +37,6 @@ public class CommentTest extends BaseTest {
         postId = makeArticle(0, loginUserId);
     }
 
-    @Transactional(readOnly = true, propagation = Propagation.MANDATORY)
     @DisplayName("중고물품에 댓글 등록 후 Entity 검증")
     @Test
     public void successSaveCommentOnArticleVerifyEntity() throws Exception {
@@ -57,7 +51,7 @@ public class CommentTest extends BaseTest {
         mockMvc.perform(post("/secured/post/" + postId + "/comment")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(dto))
-                        .header(JwtProperties.HEADER,makeJwtValue(Role.USER)))
+                        .header(JwtProperties.HEADER, makeJwtValue(Role.USER)))
                 .andExpect(status().isOk());
 
         //then
@@ -88,7 +82,7 @@ public class CommentTest extends BaseTest {
         mockMvc.perform(post("/secured/post/" + postId + "/comment")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(dto))
-                        .header(JwtProperties.HEADER,makeJwtValue(Role.USER)))
+                        .header(JwtProperties.HEADER, makeJwtValue(Role.USER)))
                 .andExpect(status().isOk());
 
         //then
@@ -104,7 +98,6 @@ public class CommentTest extends BaseTest {
         assertThat(commentDto.getWrittenTime()).isAfter(testTime);
     }
 
-    @Transactional(readOnly = true)
     @DisplayName("대댓글 등록")
     @Test
     public void successSaveCommentOnComment() throws Exception {
@@ -121,7 +114,7 @@ public class CommentTest extends BaseTest {
         mockMvc.perform(post("/secured/comment/" + parentCommentId + "/comment")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(dto))
-                        .header(JwtProperties.HEADER,makeJwtValue(Role.USER)))
+                        .header(JwtProperties.HEADER, makeJwtValue(Role.USER)))
                 .andExpect(status().isOk());
 
         //then
@@ -157,7 +150,7 @@ public class CommentTest extends BaseTest {
         mockMvc.perform(put("/secured/comment/{commentId}", commentId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(dto))
-                        .header(JwtProperties.HEADER,makeJwtValue(Role.USER)))
+                        .header(JwtProperties.HEADER, makeJwtValue(Role.USER)))
                 .andExpect(status().isOk());
 
         //then
@@ -166,7 +159,6 @@ public class CommentTest extends BaseTest {
         assertThat(comment.getContent()).isEqualTo(newContent);
     }
 
-    @Transactional(readOnly = true)
     @DisplayName("댓글 삭제")
     @Test
     public void successDeleteComment() throws Exception {
@@ -175,7 +167,7 @@ public class CommentTest extends BaseTest {
 
         //when
         mockMvc.perform(delete("/secured/comment/" + commentId)
-                        .header(JwtProperties.HEADER,makeJwtValue(Role.USER)))
+                        .header(JwtProperties.HEADER, makeJwtValue(Role.USER)))
                 .andExpect(status().isOk());
 
         //then
@@ -190,8 +182,7 @@ public class CommentTest extends BaseTest {
 
         Post post = postService.getPostById(postId);
 
-        assertThat(post.getComments()).isEmpty();
-        assertThat(post).isInstanceOf(ArticlePost.class);
+        assertThat(post.getComments()).isNotEmpty();
     }
 
     @DisplayName("삭제된 댓글 수정시도")
@@ -209,7 +200,7 @@ public class CommentTest extends BaseTest {
         MvcResult result = mockMvc.perform(put("/secured/comment/" + commentId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(dto))
-                        .header(JwtProperties.HEADER,makeJwtValue(Role.USER)))
+                        .header(JwtProperties.HEADER, makeJwtValue(Role.USER)))
                 .andExpect(status().isBadRequest())
                 .andReturn();
 
@@ -217,16 +208,15 @@ public class CommentTest extends BaseTest {
         assertThat(result.getResponse().getContentAsString()).contains(AlreadyDeletedCommentException.message);
     }
 
-    @Transactional(readOnly = true)
     @DisplayName("유저 삭제시 댓글 유지 검증")
     @Test
     public void successMaintainCommentWhenWriterDeleted() throws Exception {
         //given
-        Long commentId = makeComment(postId, loginUserId);
+        Long commentId = makeComment(postId, otherUserId);
 
         //when
-        mockMvc.perform(delete("/secured/user")
-                        .header(JwtProperties.HEADER,makeJwtValue(Role.USER)))
+        mockMvc.perform(delete("/admin/user/" + otherUserId)
+                        .header(JwtProperties.HEADER, makeJwtValue(Role.ADMIN)))
                 .andExpect(status().isOk());
 
         //then
@@ -245,7 +235,6 @@ public class CommentTest extends BaseTest {
         assertThat(commentDto.getContent()).isEqualTo(commentContent);
     }
 
-    @Transactional(readOnly = true)
     @DisplayName("글 삭제시 댓글 삭제 검증")
     @Test
     public void successDeleteCommentWhenPostDeleted() throws Exception {
@@ -254,7 +243,7 @@ public class CommentTest extends BaseTest {
 
         //when
         mockMvc.perform(delete("/secured/article/" + postId)
-                        .header(JwtProperties.HEADER,makeJwtValue(Role.USER)))
+                        .header(JwtProperties.HEADER, makeJwtValue(Role.USER)))
                 .andExpect(status().isOk());
 
         //then

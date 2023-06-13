@@ -21,27 +21,22 @@ import java.util.List;
 @RequiredArgsConstructor
 @RestController
 public class SecuredArticleController {
-    //todo 실제 s3에 저장하는거 마냥 할거면 이거 필요없음
     @Value("${file.article.image.path}")
     private String savePath;
     private final ArticleImageService articleImageService;
     private final ArticleServiceImpl articleService;
-    private final ArticlePostRepository articlePostRepository;
-    private final ArticleImageRepository articleImageRepository;
 
     @GetMapping("/test")
-    public String secureTest(){
+    public String secureTest() {
         return "secureTest";
     }
+
     @PostMapping(value = "/article")
     public void save(@ModelAttribute("request") RequestArticleSaveOrUpdateDto request,
                      @RequestParam(value = "images") List<MultipartFile> images,
                      @SessionUserId Long userId) throws IOException {
         Long articleId = articleService.save(request, userId);
         articleImageService.save(articleId, images);
-
-        System.out.println(articlePostRepository.findAll().size());
-        System.out.println(articleImageRepository.findAll().size());
     }
 
     @PutMapping("/article/{articleId}")

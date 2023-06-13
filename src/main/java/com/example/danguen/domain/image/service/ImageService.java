@@ -16,7 +16,6 @@ public interface ImageService {
                         .forEach(File::delete);
             }
         } catch (Exception e) {
-            //todo throw error message to client
             System.out.println("폴더 삭제 중 오류가 발생했습니다: " + e.getMessage());
         }
     }

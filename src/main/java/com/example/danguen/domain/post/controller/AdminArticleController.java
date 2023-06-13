@@ -25,5 +25,4 @@ public class AdminArticleController {
         articleService.delete(articleId);
         articleImageService.deleteFolder(savePath + articleId);
     }
-
 }

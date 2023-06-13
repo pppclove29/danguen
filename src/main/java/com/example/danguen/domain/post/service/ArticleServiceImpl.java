@@ -80,6 +80,7 @@ public class ArticleServiceImpl implements ArticleService {
 
         articlePost.addInterest(user);
     }
+    //todo removeInterest
 
     @Transactional(readOnly = true)
     @Override
@@ -103,15 +104,13 @@ public class ArticleServiceImpl implements ArticleService {
 
     @Override
     @Transactional
-    public Long save(RequestArticleSaveOrUpdateDto request, Long userId) throws IOException {
+    public Long save(RequestArticleSaveOrUpdateDto request, Long userId) {
         ArticlePost articlePost = request.toEntity();
 
         User user = userService.getUserById(userId);
         user.addSellArticle(articlePost);
 
         ArticlePost savedArticle = articlePostRepository.save(articlePost);
-
-        System.out.println("saved article");
 
         return savedArticle.getId();
     }
@@ -128,7 +127,7 @@ public class ArticleServiceImpl implements ArticleService {
     @Transactional
     public void delete(Long articleId) {
         ArticlePost articlePost = getArticleById(articleId);
-        User user = articlePost.getSeller();
+        User user = articlePost.getWriter();
 
         user.removeSellArticle(articlePost);
 
@@ -139,23 +138,11 @@ public class ArticleServiceImpl implements ArticleService {
         articlePostRepository.deleteById(articleId);
     }
 
+    @Transactional
     @Override
     public ArticlePost getArticleById(Long articleId) {
         return articlePostRepository.findById(articleId).orElseThrow(ArticleNotFoundException::new);
     }
 
-    @Transactional(readOnly = true)
-    public boolean isUsersCreation(Long articleId) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        if (principal.equals("anonymousUser")) {
-            throw new MissingSessionPrincipalDetailsException();
-        }
-
-        PrincipalUserDetails userDetails = (PrincipalUserDetails) principal;
-
-        ArticlePost articlePost = getArticleById(articleId);
-
-        return articlePost.getSeller().getId().equals(userDetails.getUserId());
-    }
 }

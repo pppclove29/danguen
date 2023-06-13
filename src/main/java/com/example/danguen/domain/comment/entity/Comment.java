@@ -68,7 +68,6 @@ public class Comment extends BaseTimeEntity {
         if (getWriter().isPresent()) {
             this.writer.removeComment(this);
         }
-        this.post.removeComment(this);
     }
 
     private void setParentComment(Comment parent) {

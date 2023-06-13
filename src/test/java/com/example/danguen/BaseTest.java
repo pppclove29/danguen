@@ -9,7 +9,7 @@ import com.example.danguen.domain.comment.service.CommentServiceImpl;
 import com.example.danguen.domain.image.entity.ArticleImage;
 import com.example.danguen.domain.image.entity.UserImage;
 import com.example.danguen.domain.image.repository.ImageRepository;
-import com.example.danguen.domain.image.service.ArticleImageService;
+import com.example.danguen.domain.image.service.UserImageService;
 import com.example.danguen.domain.post.dto.request.RequestArticleSaveOrUpdateDto;
 import com.example.danguen.domain.post.entity.ArticlePost;
 import com.example.danguen.domain.post.repository.ArticlePostRepository;
@@ -36,26 +36,22 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
 import org.springframework.web.filter.DelegatingFilterProxy;
 
-import javax.persistence.PersistenceContext;
 import javax.servlet.ServletException;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.time.LocalDateTime;
+import java.util.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ExtendWith(SpringExtension.class)
 @AutoConfigureMockMvc
+@Transactional
 public abstract class BaseTest {
-    //todo json 객체 검증 말고 json을 dto로 변환해서 검증하도록
-
     @Autowired
     protected MockMvc mockMvc;
     @Autowired
@@ -64,11 +60,11 @@ public abstract class BaseTest {
     @Autowired
     protected UserServiceImpl userService;
     @Autowired
+    protected UserImageService userImageService;
+    @Autowired
     protected PostService postService;
     @Autowired
     protected ArticleServiceImpl articleService;
-    @Autowired
-    protected ArticleImageService articleImageService;
     @Autowired
     protected CommentServiceImpl commentService;
 
@@ -97,6 +93,7 @@ public abstract class BaseTest {
     @Order(0)
     @BeforeEach
     public void baseInit() throws ServletException {
+        System.out.println("Base Init");
         DelegatingFilterProxy delegateProxyFilter = new DelegatingFilterProxy();
         delegateProxyFilter.init(
                 new MockFilterConfig(ctx.getServletContext(), BeanIds.SPRING_SECURITY_FILTER_CHAIN));
@@ -111,10 +108,8 @@ public abstract class BaseTest {
         otherUserId = makeUser(otherUserName, otherUserEmail).getId();
     }
 
-    @Transactional
     @AfterEach
     public void clear() {
-        //todo delete articleImage
         commentRepository.deleteAll();
         imageRepository.deleteAll();
         postRepository.deleteAll();
@@ -123,7 +118,6 @@ public abstract class BaseTest {
 
     protected Address userAddress = new Address("서울시", "길로", "1234");
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public User makeUser(String name, String email) {
         User user = userService.save(name, email);
 
@@ -149,8 +143,8 @@ public abstract class BaseTest {
     protected String articleStreet = "희망주소";
     protected String articleZipcode = "희망주소";
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Long makeArticle(int idx, Long userId) { // 중고 물품 등록
+        System.out.println(LocalDateTime.now());
         RequestArticleSaveOrUpdateDto dto = RequestArticleSaveOrUpdateDto.builder()
                 .title(articleTitle + idx)
                 .content(articleContent)
@@ -163,28 +157,32 @@ public abstract class BaseTest {
                                 articleZipcode + idx)
                 )
                 .build();
-        ArticlePost post = dto.toEntity();
-        post.setSeller(userRepository.getReferenceById(userId));
 
-        ArticlePost articlePost = postRepository.save(post);
+        Long articleId = articleService.save(dto, userId);
 
-        makeArticleImage(articlePost);
+        try {
+            makeArticleImage(articleId);
+        } catch (IOException e) {
+            System.out.println("테스트 이미지 생성 에러");
+        }
 
-        return articlePost.getId();
+        return articleId;
     }
 
-    public void makeArticleImage(ArticlePost articlePost) {
-        imageRepository.save(
-                ArticleImage.builder()
-                        .uuid("uuid")
-                        .articlePost(articlePost)
-                        .build()
-        );
+    public void makeArticleImage(Long articleId) throws IOException {
+        ArticlePost articlePost = articleService.getArticleById(articleId);
+
+        ArticleImage articleImage = ArticleImage.builder()
+                .uuid("testUUID")
+                .articlePost(articlePost)
+                .build();
+
+        imageRepository.save(articleImage);
     }
 
     public <T> List<T> mappingResponse(MvcResult result, Class<T> responseType) throws UnsupportedEncodingException, JsonProcessingException {
         String responseBody = result.getResponse().getContentAsString();
-        List<LinkedHashMap<String, Object>> resultList = mapper.readValue(responseBody, new TypeReference<List<LinkedHashMap<String, Object>>>() {
+        List<LinkedHashMap<String, Object>> resultList = mapper.readValue(responseBody, new TypeReference<>() {
         });
 
         List<T> mappedList = new ArrayList<>();
@@ -198,7 +196,6 @@ public abstract class BaseTest {
 
     protected String commentContent = "댓글 내용";
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Long makeComment(Long postId, Long userId) { // 댓글 등록
         RequestCommentSaveDto dto = new RequestCommentSaveDto();
 
@@ -208,23 +205,26 @@ public abstract class BaseTest {
         return commentService.saveInPost(dto, postId, userId).getId();
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public String makeJwtValue(Role role) {
+        String value;
         switch (role) {
             case ADMIN:
-                User user = userService.getUserById(loginUserId);
-                user.changeRole(Role.ADMIN);
+                userService.changeRole(loginUserId, Role.ADMIN);
             case USER:
-                return JwtProperties.PREFIX + JWT.create()
+                value = JwtProperties.PREFIX + JWT.create()
                         .withExpiresAt(new Date(System.currentTimeMillis() + JwtProperties.EXPIRATION_TIME))
                         .withClaim("userName", loginUserName)
                         .withClaim("userId", loginUserId)
                         .sign(JwtProperties.ALGORITHM);
+                break;
             case ANONYMOUS:
-                return "";
+                value = "";
+                break;
             default:
                 throw new RuntimeException("도달하면 안됩니다");
         }
+
+        return value;
     }
 }
 

@@ -26,13 +26,15 @@ public class ResponseArticleSimpleDto {
         dto.setId(articlePost.getId());
         dto.setTitle(articlePost.getTitle());
         dto.setPrice(articlePost.getPrice());
-        dto.setSeller(articlePost.getSeller().getName());
+        dto.setSeller(articlePost.getWriter().getName());
         dto.setLikeCount(articlePost.getInterestingUsers().size());
         //todo chat 횟수 적용
         dto.setChatCount(0);
         dto.setCommentCount(articlePost.getComments().size());
         dto.setDealHopeAddress(articlePost.getDealHopeAddress());
-        dto.setImageUrl(articlePost.getImages().get(0).getUuid());
+        if (!articlePost.getImages().isEmpty()) {
+            dto.setImageUrl(articlePost.getImages().get(0).getUuid());
+        }
         dto.setWrittenTime(articlePost.getCreatedTime());
         return dto;
     }

@@ -44,6 +44,5 @@ public class AdminUserApiTest extends BaseTest {
                 .andExpect(status().isForbidden());
 
         //then
-        assertThat(userService.getUserByEmail(otherUserEmail)).isNotEmpty();
-    }
+        assertThat(userService.getUserByEmail(otherUserEmail)).isNotEmpty();}
 }

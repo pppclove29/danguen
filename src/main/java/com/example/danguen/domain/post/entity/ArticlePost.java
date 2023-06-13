@@ -17,15 +17,9 @@ public class ArticlePost extends Post {
 
     private int price;
     private String category;
-
-
     private boolean isSold;
 
     private Address dealHopeAddress; // 거래 희망 장소
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "USER_ID")
-    private User seller; // 판매자
 
     @ManyToMany
     @JoinTable(
@@ -49,10 +43,6 @@ public class ArticlePost extends Post {
         this.price = request.getPrice();
         this.category = request.getCategory();
         this.dealHopeAddress = request.getDealHopeAddress();
-    }
-
-    public void setSeller(User user) {
-        seller = user;
     }
 
     public void sold() {

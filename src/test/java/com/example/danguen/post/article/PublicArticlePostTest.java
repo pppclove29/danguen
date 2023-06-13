@@ -8,6 +8,8 @@ import com.example.danguen.domain.post.dto.response.ResponseArticleSimpleDto;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -126,6 +128,7 @@ public class PublicArticlePostTest extends BaseTest {
         //when
         MvcResult result = mockMvc.perform(get("/public/address/희망주소1"))
                 .andExpect(status().isOk())
+                .andDo(MockMvcResultHandlers.print())
                 .andReturn();
 
         List<ResponseArticleSimpleDto> responseList = mappingResponse(result, ResponseArticleSimpleDto.class);
