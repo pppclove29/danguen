@@ -1,7 +1,7 @@
 package com.example.danguen.domain.post.entity;
 
 import com.example.danguen.domain.base.Address;
-import com.example.danguen.domain.image.entity.ArticleImage;
+import com.example.danguen.domain.image.entity.PostImage;
 import com.example.danguen.domain.user.entity.User;
 import com.example.danguen.domain.post.dto.request.RequestArticleSaveOrUpdateDto;
 import lombok.Getter;
@@ -28,10 +28,6 @@ public class ArticlePost extends Post {
             inverseJoinColumns = @JoinColumn(name = "USER_ID")
     )
     private List<User> interestingUsers = new ArrayList<>();
-
-
-    @OneToMany(mappedBy = "articlePost", cascade = CascadeType.ALL)
-    private final List<ArticleImage> images = new ArrayList<>();
 
     public ArticlePost() {
         isSold = false;
@@ -61,9 +57,6 @@ public class ArticlePost extends Post {
     }
 
 
-    public void addImage(ArticleImage image) {
-        images.add(image);
-    }
 
     @Override
     public Kind getKind() {

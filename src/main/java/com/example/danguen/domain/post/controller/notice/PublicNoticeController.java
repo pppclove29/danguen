@@ -1,4 +1,4 @@
-package com.example.danguen.domain.post.controller;
+package com.example.danguen.domain.post.controller.notice;
 
 import com.example.danguen.domain.base.Address;
 import com.example.danguen.domain.comment.dto.response.ResponseCommentDto;
@@ -13,22 +13,18 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@RequestMapping("/public")
+@RequestMapping("/public347545435")
 @RequiredArgsConstructor
 @RestController
-public class PublicArticleController {
+public class PublicNoticeController {
 
     private final ArticleServiceImpl articleService;
     private final CommentService commentService;
 
-    @GetMapping("/test")
-    public String publicTest(){
-        return "publicTest";
-    }
-    @GetMapping("/article/{articleId}")
-    public ResponseArticleDto getArticle(@PathVariable Long articleId) {
-        ResponseArticleDto post = articleService.getArticleDto(articleId);
-        List<ResponseCommentDto> commentDtoStream = commentService.getComments(articleId);
+    @GetMapping("/notice/{noticeId}")
+    public ResponseArticleDto getNotice(@PathVariable Long noticeId) {
+        ResponseArticleDto post = articleService.getArticleDto(noticeId);
+        List<ResponseCommentDto> commentDtoStream = commentService.getComments(noticeId);
 
         post.addComments(commentDtoStream);
 

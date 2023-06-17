@@ -28,7 +28,7 @@ public class ResponseArticleDto {
 
     private Address dealHopeAddress; // 거래 희망 장소
 
-    private String seller; // 판매자
+    private String writer; // 판매자
 
     public static ResponseArticleDto toResponse(ArticlePost articlePost) {
         ResponseArticleDto dto = new ResponseArticleDto();
@@ -41,7 +41,7 @@ public class ResponseArticleDto {
         dto.setViews(articlePost.getViews());
         dto.setSold(articlePost.isSold());
         dto.setDealHopeAddress(articlePost.getDealHopeAddress());
-        dto.setSeller(articlePost.getWriter().getName());
+        dto.setWriter(articlePost.getWriter().getName());
         dto.setWrittenTime(articlePost.getCreatedTime());
 
         articlePost.getImages().stream()

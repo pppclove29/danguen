@@ -6,7 +6,7 @@ import com.example.danguen.domain.base.Address;
 import com.example.danguen.domain.comment.dto.request.RequestCommentSaveDto;
 import com.example.danguen.domain.comment.repository.CommentRepository;
 import com.example.danguen.domain.comment.service.CommentServiceImpl;
-import com.example.danguen.domain.image.entity.ArticleImage;
+import com.example.danguen.domain.image.entity.PostImage;
 import com.example.danguen.domain.image.entity.UserImage;
 import com.example.danguen.domain.image.repository.ImageRepository;
 import com.example.danguen.domain.image.service.UserImageService;
@@ -172,12 +172,12 @@ public abstract class BaseTest {
     public void makeArticleImage(Long articleId) throws IOException {
         ArticlePost articlePost = articleService.getArticleById(articleId);
 
-        ArticleImage articleImage = ArticleImage.builder()
+        PostImage postImage = PostImage.builder()
                 .uuid("testUUID")
-                .articlePost(articlePost)
+                .post(articlePost)
                 .build();
 
-        imageRepository.save(articleImage);
+        imageRepository.save(postImage);
     }
 
     public <T> List<T> mappingResponse(MvcResult result, Class<T> responseType) throws UnsupportedEncodingException, JsonProcessingException {

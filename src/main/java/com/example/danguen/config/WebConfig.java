@@ -31,7 +31,8 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(postAuthInterceptor)
-                .addPathPatterns("/secured/article/*");
+                .addPathPatterns(
+                        "/secured/post/*");
 
         registry.addInterceptor(commentAuthInterceptor)
                 .addPathPatterns("/secured/comment/*");

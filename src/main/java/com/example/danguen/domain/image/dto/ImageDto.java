@@ -1,8 +1,9 @@
 package com.example.danguen.domain.image.dto;
 
-import com.example.danguen.domain.image.entity.ArticleImage;
+import com.example.danguen.domain.image.entity.PostImage;
 import com.example.danguen.domain.image.entity.UserImage;
 import com.example.danguen.domain.post.entity.ArticlePost;
+import com.example.danguen.domain.post.entity.Post;
 import com.example.danguen.domain.user.entity.User;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,10 +18,10 @@ public class ImageDto {
         this.uuid = uuid;
     }
 
-    public ArticleImage toArticleImage(ArticlePost articlePost) {
-        return ArticleImage.builder()
+    public PostImage toPostImage(Post post) {
+        return PostImage.builder()
                 .uuid(this.uuid)
-                .articlePost(articlePost)
+                .post(post)
                 .build();
     }
 

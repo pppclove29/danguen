@@ -123,21 +123,6 @@ public class ArticleServiceImpl implements ArticleService {
         articlePost.updateArticle(request);
     }
 
-    @Override
-    @Transactional
-    public void delete(Long articleId) {
-        ArticlePost articlePost = getArticleById(articleId);
-        User user = articlePost.getWriter();
-
-        user.removeSellArticle(articlePost);
-
-        articlePost.getComments().stream()
-                .filter(comment -> comment.getWriter().isPresent())
-                .forEach(comment -> comment.getWriter().get().removeComment(comment));
-
-        articlePostRepository.deleteById(articleId);
-    }
-
     @Transactional
     @Override
     public ArticlePost getArticleById(Long articleId) {

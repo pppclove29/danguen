@@ -6,6 +6,7 @@ import com.example.danguen.domain.image.exception.ArticleNotFoundException;
 import com.example.danguen.domain.post.entity.ArticlePost;
 import com.example.danguen.domain.post.entity.Post;
 import com.example.danguen.domain.post.repository.PostRepository;
+import com.example.danguen.domain.user.entity.User;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -24,17 +25,19 @@ public class PostService {
         return postRepository.findById(postId).orElseThrow(ArticleNotFoundException::new);
     }
 
-    @Transactional(readOnly = true)
-    public boolean isUsersCreation(Long postId) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication instanceof AnonymousAuthenticationToken) {
-            throw new MissingSessionPrincipalDetailsException();
-        }
-        PrincipalUserDetails principalUserDetails = (PrincipalUserDetails) authentication.getPrincipal();
-
+    @Transactional
+    public void delete(Long postId) {
         Post post = getPostById(postId);
+        User user = post.getWriter();
 
-        return post.getWriter().getId().equals(principalUserDetails.getUserId());
+        if (post instanceof ArticlePost) {
+            user.removeSellArticle((ArticlePost) post);
+        }
+
+        post.getComments().stream()
+                .filter(comment -> comment.getWriter().isPresent())
+                .forEach(comment -> comment.getWriter().get().removeComment(comment));
+
+        postRepository.delete(post);
     }
 }

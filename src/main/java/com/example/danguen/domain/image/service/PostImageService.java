@@ -1,9 +1,9 @@
 package com.example.danguen.domain.image.service;
 
-import com.example.danguen.domain.image.entity.ArticleImage;
-import com.example.danguen.domain.image.repository.ArticleImageRepository;
-import com.example.danguen.domain.post.entity.ArticlePost;
-import com.example.danguen.domain.post.service.ArticleServiceImpl;
+import com.example.danguen.domain.image.entity.PostImage;
+import com.example.danguen.domain.image.repository.PostImageRepository;
+import com.example.danguen.domain.post.entity.Post;
+import com.example.danguen.domain.post.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -12,38 +12,33 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.LocalDateTime;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 @RequiredArgsConstructor
 @Service
-public class ArticleImageService implements ImageService {
+public class PostImageService implements ImageService {
     @Value("${file.article.image.path}")
     private String savePath;
 
-    private final ArticleServiceImpl articleService;
-    private final ArticleImageRepository articleImageRepository;
+    private final PostService postService;
+    private final PostImageRepository postImageRepository;
 
     @Transactional
-    public void save(Long articleId, List<MultipartFile> images) {
-        String folderPath = savePath + articleId;
-        ArticlePost articlePost = articleService.getArticleById(articleId);
+    public void save(Long postId, List<MultipartFile> images) {
+        String folderPath = savePath + postId;
+        Post post = postService.getPostById(postId);
 
         images.stream()
                 .map((image) -> saveToLocal(image, folderPath))
                 .filter(Optional::isPresent)
                 .map(uuid ->
-                        ArticleImage.builder()
+                        PostImage.builder()
                                 .uuid(uuid.get())
-                                .articlePost(articlePost)
+                                .post(post)
                                 .build())
-                .forEach(articleImageRepository::save);
+                .forEach(postImageRepository::save);
     }
 
     private Optional<String> saveToLocal(MultipartFile multipartFile, String folderPath) {
@@ -59,11 +54,11 @@ public class ArticleImageService implements ImageService {
     }
 
     @Transactional
-    public void update(Long articleId, List<MultipartFile> images) {
-        ArticlePost articlePost = articleService.getArticleById(articleId);
-        articleImageRepository.deleteArticleImageByArticlePost(articlePost);
-        deleteFolder(savePath + articleId);
+    public void update(Long postId, List<MultipartFile> images) {
+        Post post = postService.getPostById(postId);
+        postImageRepository.deleteArticleImageByPost(post);
+        deleteFolder(savePath + postId);
 
-        save(articleId, images);
+        save(postId, images);
     }
 }

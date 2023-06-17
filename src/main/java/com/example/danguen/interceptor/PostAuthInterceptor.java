@@ -29,8 +29,8 @@ public class PostAuthInterceptor implements HandlerInterceptor, CustomPathCheckI
                         (path) ->
                                 Long.parseLong(
                                         new AntPathMatcher().extractUriTemplateVariables(
-                                                "/secured/article/{id}", path).get("id")
-                                ) // todo 나중에 추가 post 하위 객체가 나오면 바꿔야할듯
+                                                "/secured/{post}/{id}", path).get("id")
+                                )
                 );
 
                 boolean hasAuth = userService.isUsersCreation(

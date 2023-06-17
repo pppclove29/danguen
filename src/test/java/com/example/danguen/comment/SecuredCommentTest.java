@@ -22,6 +22,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -133,6 +134,11 @@ public class SecuredCommentTest extends BaseTest {
         assertThat(childComment.getWriter().isPresent()).isTrue();
         assertThat(childComment.getWriter().get().getId()).isEqualTo(loginUserId);
         assertThat(childComment.getCreatedTime()).isAfter(testTime);
+    }
+    @DisplayName("대댓글 삭제")
+    @Test
+    public void successDeleteCommentOnComment() throws Exception {
+       fail("만들어"); 
     }
 
     @DisplayName("댓글 수정")

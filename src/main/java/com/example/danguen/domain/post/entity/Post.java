@@ -2,9 +2,10 @@ package com.example.danguen.domain.post.entity;
 
 import com.example.danguen.domain.base.BaseTimeEntity;
 import com.example.danguen.domain.comment.entity.Comment;
+import com.example.danguen.domain.image.entity.Image;
+import com.example.danguen.domain.image.entity.PostImage;
 import com.example.danguen.domain.user.entity.User;
 import lombok.Getter;
-import org.springframework.util.Assert;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -30,10 +31,21 @@ public abstract class Post extends BaseTimeEntity implements PostKind {
     private int views;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
+    private List<PostImage> images = new ArrayList<>();
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
     private List<Comment> comments = new ArrayList<>();
 
     public void setWriter(User user) {
         writer = user;
+    }
+
+    public void addViewCount() {
+        views++;
+    }
+
+    public void addImage(PostImage image) {
+        images.add(image);
     }
 
     public void addComment(Comment comment) {
@@ -42,14 +54,5 @@ public abstract class Post extends BaseTimeEntity implements PostKind {
 
     public void removeComment(Comment comment) {
         comments.remove(comment);
-    }
-
-    public void addViewCount() {
-        views++;
-    }
-
-    @Override
-    public Kind getKind() {
-        return null;
     }
 }

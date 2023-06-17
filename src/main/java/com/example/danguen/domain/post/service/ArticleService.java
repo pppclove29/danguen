@@ -29,7 +29,5 @@ public interface ArticleService {
 
     void update(RequestArticleSaveOrUpdateDto request, Long articleId);
 
-    void delete(Long articleId);
-
     ArticlePost getArticleById(Long articleId);
 }
