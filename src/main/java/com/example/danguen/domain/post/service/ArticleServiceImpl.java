@@ -1,9 +1,7 @@
 package com.example.danguen.domain.post.service;
 
-import com.example.danguen.config.exception.MissingSessionPrincipalDetailsException;
-import com.example.danguen.config.oauth.PrincipalUserDetails;
 import com.example.danguen.domain.base.Address;
-import com.example.danguen.domain.image.exception.ArticleNotFoundException;
+import com.example.danguen.domain.image.exception.PostNotFoundException;
 import com.example.danguen.domain.post.dto.request.RequestArticleSaveOrUpdateDto;
 import com.example.danguen.domain.post.dto.response.ResponseArticleDto;
 import com.example.danguen.domain.post.dto.response.ResponseArticleSimpleDto;
@@ -15,14 +13,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Transactional
 @Slf4j
 @RequiredArgsConstructor
 @Service
@@ -34,7 +31,6 @@ public class ArticleServiceImpl implements ArticleService {
 
 
     @Override
-    @Transactional
     public ResponseArticleDto getArticleDto(Long articleId) {
         ArticlePost articlePost = getArticleById(articleId);
         articlePost.addViewCount();
@@ -73,7 +69,6 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     @Override
-    @Transactional
     public void giveInterest(Long articleId, Long userId) {
         ArticlePost articlePost = getArticleById(articleId);
         User user = userService.getUserById(userId);
@@ -82,8 +77,8 @@ public class ArticleServiceImpl implements ArticleService {
     }
     //todo removeInterest
 
-    @Transactional(readOnly = true)
     @Override
+    @Transactional(readOnly = true)
     public List<ResponseArticleSimpleDto> getInterestArticlePage(Pageable pageable, Long userId) {
         List<ArticlePost> interestArticles = userService.getUserById(userId).getInterestArticles();
 
@@ -92,8 +87,8 @@ public class ArticleServiceImpl implements ArticleService {
         return page.stream().map(ResponseArticleSimpleDto::toResponse).collect(Collectors.toList());
     }
 
-    @Transactional(readOnly = true)
     @Override
+    @Transactional(readOnly = true)
     public List<ResponseArticleSimpleDto> getInterestUsersArticlePage(Pageable pageable, Long userId) {
         List<User> interestUser = userService.getUserById(userId).getInterestUsers();
 
@@ -103,7 +98,6 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     @Override
-    @Transactional
     public Long save(RequestArticleSaveOrUpdateDto request, Long userId) {
         ArticlePost articlePost = request.toEntity();
 
@@ -116,17 +110,15 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     @Override
-    @Transactional
     public void update(RequestArticleSaveOrUpdateDto request, Long articleId) {
         ArticlePost articlePost = getArticleById(articleId);
 
         articlePost.updateArticle(request);
     }
 
-    @Transactional
     @Override
     public ArticlePost getArticleById(Long articleId) {
-        return articlePostRepository.findById(articleId).orElseThrow(ArticleNotFoundException::new);
+        return articlePostRepository.findById(articleId).orElseThrow(PostNotFoundException::new);
     }
 
 

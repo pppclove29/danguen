@@ -3,7 +3,7 @@ package com.example.danguen.domain.image.service;
 import com.example.danguen.domain.image.entity.PostImage;
 import com.example.danguen.domain.image.repository.PostImageRepository;
 import com.example.danguen.domain.post.entity.Post;
-import com.example.danguen.domain.post.service.PostService;
+import com.example.danguen.domain.post.service.PostServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -22,13 +22,13 @@ public class PostImageService implements ImageService {
     @Value("${file.article.image.path}")
     private String savePath;
 
-    private final PostService postService;
+    private final PostServiceImpl postServiceImpl;
     private final PostImageRepository postImageRepository;
 
     @Transactional
     public void save(Long postId, List<MultipartFile> images) {
         String folderPath = savePath + postId;
-        Post post = postService.getPostById(postId);
+        Post post = postServiceImpl.getPostById(postId);
 
         images.stream()
                 .map((image) -> saveToLocal(image, folderPath))
@@ -55,7 +55,7 @@ public class PostImageService implements ImageService {
 
     @Transactional
     public void update(Long postId, List<MultipartFile> images) {
-        Post post = postService.getPostById(postId);
+        Post post = postServiceImpl.getPostById(postId);
         postImageRepository.deleteArticleImageByPost(post);
         deleteFolder(savePath + postId);
 

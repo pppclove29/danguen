@@ -11,7 +11,7 @@ public class ResponseArticleSimpleDto {
     private Long id;
     private String title;
     private String imageUrl;
-    private String seller;
+    private String writer;
 
     private int price;
     private int likeCount;
@@ -26,15 +26,13 @@ public class ResponseArticleSimpleDto {
         dto.setId(articlePost.getId());
         dto.setTitle(articlePost.getTitle());
         dto.setPrice(articlePost.getPrice());
-        dto.setSeller(articlePost.getWriter().getName());
+        dto.setWriter(articlePost.getWriter().getName());
         dto.setLikeCount(articlePost.getInterestingUsers().size());
         //todo chat 횟수 적용
         dto.setChatCount(0);
         dto.setCommentCount(articlePost.getComments().size());
         dto.setDealHopeAddress(articlePost.getDealHopeAddress());
-        if (!articlePost.getImages().isEmpty()) {
-            dto.setImageUrl(articlePost.getImages().get(0).getUuid());
-        }
+        articlePost.getFirstImageUuid().ifPresent(dto::setImageUrl);
         dto.setWrittenTime(articlePost.getCreatedTime());
         return dto;
     }

@@ -2,7 +2,7 @@ package com.example.danguen.post.article;
 
 import com.example.danguen.BaseTest;
 import com.example.danguen.domain.base.Address;
-import com.example.danguen.domain.image.exception.ArticleNotFoundException;
+import com.example.danguen.domain.image.exception.PostNotFoundException;
 import com.example.danguen.domain.post.dto.response.ResponseArticleDto;
 import com.example.danguen.domain.post.dto.response.ResponseArticleSimpleDto;
 import org.junit.jupiter.api.DisplayName;
@@ -19,6 +19,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 public class PublicArticlePostTest extends BaseTest {
+
+    private final String urlPrefix = "/public/post";
+
     @DisplayName("물품 정보 요청")
     @Test
     public void successLoadSimpleArticleInfo() throws Exception {
@@ -29,7 +32,7 @@ public class PublicArticlePostTest extends BaseTest {
         Long articleId = makeArticle(0, loginUserId);
 
         //when
-        MvcResult result = mockMvc.perform(get("/public/article/" + articleId))
+        MvcResult result = mockMvc.perform(get(urlPrefix + "/article/" + articleId))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -53,12 +56,12 @@ public class PublicArticlePostTest extends BaseTest {
     @Test
     public void failLoadNonExistArticleInfo() throws Exception {
         //when
-        MvcResult result = mockMvc.perform(get("/public/article/999999999"))
+        MvcResult result = mockMvc.perform(get(urlPrefix + "/article/999999999"))
                 .andExpect(status().isNotFound())
                 .andReturn();
 
         //then
-        assertThat(result.getResponse().getContentAsString()).contains(ArticleNotFoundException.message);
+        assertThat(result.getResponse().getContentAsString()).contains(PostNotFoundException.message);
     }
 
     /*
@@ -89,7 +92,7 @@ public class PublicArticlePostTest extends BaseTest {
         int[] expectPostIndex = new int[]{9, 8, 7, 6, 5, 4};
 
         //when
-        MvcResult result = mockMvc.perform(get("/public/address"))
+        MvcResult result = mockMvc.perform(get(urlPrefix + "/address"))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -125,7 +128,7 @@ public class PublicArticlePostTest extends BaseTest {
         int[] expectPostIndex = new int[]{5, 4, 3};
 
         //when
-        MvcResult result = mockMvc.perform(get("/public/address/희망주소1"))
+        MvcResult result = mockMvc.perform(get(urlPrefix + "/address/희망주소1"))
                 .andExpect(status().isOk())
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn();
@@ -162,7 +165,7 @@ public class PublicArticlePostTest extends BaseTest {
         int[] expectPostIndex = new int[]{2, 1, 0};
 
         //when
-        MvcResult result = mockMvc.perform(get("/public/address/희망주소0/희망주소0"))
+        MvcResult result = mockMvc.perform(get(urlPrefix + "/address/희망주소0/희망주소0"))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -198,7 +201,7 @@ public class PublicArticlePostTest extends BaseTest {
         int[] expectPostIndex = new int[]{2};
 
         //when
-        MvcResult result = mockMvc.perform(get("/public/address/희망주소0/희망주소0/희망주소2"))
+        MvcResult result = mockMvc.perform(get(urlPrefix + "/address/희망주소0/희망주소0/희망주소2"))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -233,7 +236,7 @@ public class PublicArticlePostTest extends BaseTest {
         }
 
         //when
-        MvcResult result = mockMvc.perform(get("/public/address/none/exist/address"))
+        MvcResult result = mockMvc.perform(get(urlPrefix + "/address/none/exist/address"))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -252,7 +255,7 @@ public class PublicArticlePostTest extends BaseTest {
         }
 
         // 첫번째 페이지
-        mockMvc.perform(get("/public/search?size=3&page=0&keyword="))
+        mockMvc.perform(get(urlPrefix + "/search?size=3&page=0&keyword="))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].title").value((articleTitle + 9)))
                 .andExpect(jsonPath("$[1].title").value((articleTitle + 8)))
@@ -260,7 +263,7 @@ public class PublicArticlePostTest extends BaseTest {
                 .andExpect(jsonPath("$[3]").doesNotExist());
 
         // 두번째 페이지
-        mockMvc.perform(get("/public/search?size=3&page=1&keyword="))
+        mockMvc.perform(get(urlPrefix + "/search?size=3&page=1&keyword="))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].title").value((articleTitle + 6)))
                 .andExpect(jsonPath("$[1].title").value((articleTitle + 5)))
@@ -268,7 +271,7 @@ public class PublicArticlePostTest extends BaseTest {
                 .andExpect(jsonPath("$[3]").doesNotExist());
 
         // 세번째 페이지
-        mockMvc.perform(get("/public/search?size=3&page=2&keyword="))
+        mockMvc.perform(get(urlPrefix + "/search?size=3&page=2&keyword="))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].title").value((articleTitle + 3)))
                 .andExpect(jsonPath("$[1].title").value((articleTitle + 2)))
@@ -276,7 +279,7 @@ public class PublicArticlePostTest extends BaseTest {
                 .andExpect(jsonPath("$[3]").doesNotExist());
 
         // 마지막 페이지
-        mockMvc.perform(get("/public/search?size=3&page=3&keyword="))
+        mockMvc.perform(get(urlPrefix + "/search?size=3&page=3&keyword="))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].title").value((articleTitle + 0)))
                 .andExpect(jsonPath("$[1]").doesNotExist());
@@ -287,7 +290,7 @@ public class PublicArticlePostTest extends BaseTest {
     public void successIncreaseArticleView() throws Exception {
         Long articleId = makeArticle(0, loginUserId);
 
-        mockMvc.perform(get("/public/article/" + articleId))
+        mockMvc.perform(get(urlPrefix + "/article/" + articleId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.views").value(1));
     }
@@ -310,7 +313,7 @@ public class PublicArticlePostTest extends BaseTest {
         }
 
         //when
-        MvcResult result = mockMvc.perform(get("/public/hot-articles"))
+        MvcResult result = mockMvc.perform(get(urlPrefix + "/hot-articles"))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -339,7 +342,7 @@ public class PublicArticlePostTest extends BaseTest {
         }
 
         //when
-        MvcResult result = mockMvc.perform(get("/public/search?keyword=" + keyword))
+        MvcResult result = mockMvc.perform(get(urlPrefix + "/search?keyword=" + keyword))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -368,7 +371,7 @@ public class PublicArticlePostTest extends BaseTest {
         }
 
         //when
-        MvcResult result = mockMvc.perform(get("/public/search?keyword=" + keyword))
+        MvcResult result = mockMvc.perform(get(urlPrefix + "/search?keyword=" + keyword))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -385,7 +388,7 @@ public class PublicArticlePostTest extends BaseTest {
         Long articleId = postRepository.findAll().get(idx).getId();
 
         for (int i = 0; i < count; i++) {
-            mockMvc.perform(get("/public/article/" + articleId));
+            mockMvc.perform(get(urlPrefix + "/article/" + articleId));
         }
     }
 }

@@ -11,11 +11,12 @@ import com.example.danguen.domain.image.entity.UserImage;
 import com.example.danguen.domain.image.repository.ImageRepository;
 import com.example.danguen.domain.image.service.UserImageService;
 import com.example.danguen.domain.post.dto.request.RequestArticleSaveOrUpdateDto;
+import com.example.danguen.domain.post.dto.request.RequestPostSaveOrUpdateDto;
 import com.example.danguen.domain.post.entity.ArticlePost;
 import com.example.danguen.domain.post.repository.ArticlePostRepository;
 import com.example.danguen.domain.post.repository.PostRepository;
 import com.example.danguen.domain.post.service.ArticleServiceImpl;
-import com.example.danguen.domain.post.service.PostService;
+import com.example.danguen.domain.post.service.PostServiceImpl;
 import com.example.danguen.domain.user.entity.Role;
 import com.example.danguen.domain.user.entity.User;
 import com.example.danguen.domain.user.repository.UserRepository;
@@ -62,7 +63,7 @@ public abstract class BaseTest {
     @Autowired
     protected UserImageService userImageService;
     @Autowired
-    protected PostService postService;
+    protected PostServiceImpl postServiceImpl;
     @Autowired
     protected ArticleServiceImpl articleService;
     @Autowired
@@ -144,21 +145,7 @@ public abstract class BaseTest {
     protected String articleZipcode = "희망주소";
 
     public Long makeArticle(int idx, Long userId) { // 중고 물품 등록
-        System.out.println(LocalDateTime.now());
-        RequestArticleSaveOrUpdateDto dto = RequestArticleSaveOrUpdateDto.builder()
-                .title(articleTitle + idx)
-                .content(articleContent)
-                .price(articlePrice)
-                .category(articleCategory)
-                .dealHopeAddress(
-                        new Address(
-                                articleCity + idx / 3,
-                                articleStreet + idx / 3,
-                                articleZipcode + idx)
-                )
-                .build();
-
-        Long articleId = articleService.save(dto, userId);
+        Long articleId = articleService.save(makeArticleDto(idx), userId);
 
         try {
             makeArticleImage(articleId);
@@ -167,6 +154,23 @@ public abstract class BaseTest {
         }
 
         return articleId;
+    }
+
+    public RequestArticleSaveOrUpdateDto makeArticleDto(int idx) {
+        RequestPostSaveOrUpdateDto postDto = new RequestPostSaveOrUpdateDto(
+                articleTitle + idx,
+                articleContent
+        );
+        return new RequestArticleSaveOrUpdateDto(
+                postDto,
+                articlePrice,
+                articleCategory,
+                new Address(
+                        articleCity + idx / 3,
+                        articleStreet + idx / 3,
+                        articleZipcode + idx
+                )
+        );
     }
 
     public void makeArticleImage(Long articleId) throws IOException {
@@ -200,7 +204,7 @@ public abstract class BaseTest {
         RequestCommentSaveDto dto = new RequestCommentSaveDto();
 
         dto.setContent(commentContent);
-        dto.setKind(postService.getPostById(postId).getKind());
+        dto.setKind(postServiceImpl.getPostById(postId).getKind());
 
         return commentService.saveInPost(dto, postId, userId).getId();
     }

@@ -4,12 +4,14 @@ import com.example.danguen.domain.base.BaseTimeEntity;
 import com.example.danguen.domain.comment.entity.Comment;
 import com.example.danguen.domain.image.entity.Image;
 import com.example.danguen.domain.image.entity.PostImage;
+import com.example.danguen.domain.post.dto.request.RequestPostSaveOrUpdateDto;
 import com.example.danguen.domain.user.entity.User;
 import lombok.Getter;
 
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Getter
 @Entity
@@ -48,11 +50,20 @@ public abstract class Post extends BaseTimeEntity implements PostKind {
         images.add(image);
     }
 
+    public Optional<String> getFirstImageUuid() {
+        return images.isEmpty() ? Optional.empty() : Optional.of(images.get(0).getUuid());
+    }
+
     public void addComment(Comment comment) {
         comments.add(comment);
     }
 
     public void removeComment(Comment comment) {
         comments.remove(comment);
+    }
+
+    public void update(RequestPostSaveOrUpdateDto request){
+        this.title = request.getTitle();
+        this.content = request.getContent();
     }
 }

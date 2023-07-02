@@ -5,6 +5,7 @@ import com.example.danguen.domain.base.BaseTimeEntity;
 import com.example.danguen.domain.comment.entity.Comment;
 import com.example.danguen.domain.image.entity.UserImage;
 import com.example.danguen.domain.post.entity.ArticlePost;
+import com.example.danguen.domain.post.entity.Post;
 import com.example.danguen.domain.review.RequestReviewDto;
 import com.example.danguen.domain.user.dto.request.RequestUserUpdateDto;
 import lombok.Builder;
@@ -37,6 +38,9 @@ public class User extends BaseTimeEntity {
     @OneToMany(mappedBy = "writer", cascade = CascadeType.ALL)
     private final List<ArticlePost> sellArticlePosts = new ArrayList<>(); // 판매상품
 
+    @OneToMany(mappedBy = "writer", cascade = CascadeType.ALL)
+    private final List<Post> writtenPosts = new ArrayList<>();
+
     @OneToMany(mappedBy = "writer")
     private final List<Comment> comments = new ArrayList<>();
 
@@ -64,8 +68,6 @@ public class User extends BaseTimeEntity {
         this.email = email;
         this.address = address;
 
-        rate = new UserRate();
-
         role = Role.USER;
     }
 
@@ -73,7 +75,8 @@ public class User extends BaseTimeEntity {
         this.address = request.getAddress();
         this.name = request.getName();
     }
-    public void changeRole(Role role){
+
+    public void changeRole(Role role) {
         this.role = role;
     }
 
@@ -89,6 +92,15 @@ public class User extends BaseTimeEntity {
 
     public void removeSellArticle(ArticlePost articlePost) {
         sellArticlePosts.remove(articlePost);
+    }
+
+    public void addPost(Post post) {
+        writtenPosts.add(post);
+        post.setWriter(this);
+    }
+
+    public void removePost(Post post) {
+        writtenPosts.remove(post);
     }
 
     public boolean isInterestUser(User iUser) {

@@ -4,7 +4,8 @@ spring:
       - oauth
       - local
       - websocket
-      - h2
+      - mysql
+      - redis
   mvc:
     view:
       prefix: /WEB-INF/views/

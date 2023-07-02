@@ -7,7 +7,7 @@ import com.example.danguen.domain.comment.exception.AlreadyDeletedCommentExcepti
 import com.example.danguen.domain.comment.exception.CommentNotFoundException;
 import com.example.danguen.domain.comment.repository.CommentRepository;
 import com.example.danguen.domain.post.entity.Post;
-import com.example.danguen.domain.post.service.PostService;
+import com.example.danguen.domain.post.service.PostServiceImpl;
 import com.example.danguen.domain.user.entity.User;
 import com.example.danguen.domain.user.service.UserServiceImpl;
 import lombok.RequiredArgsConstructor;
@@ -22,14 +22,14 @@ import java.util.stream.Collectors;
 public class CommentServiceImpl implements CommentService {
 
     private final UserServiceImpl userService;
-    private final PostService postService;
+    private final PostServiceImpl postServiceImpl;
     private final CommentRepository commentRepository;
 
     @Override
     @Transactional
     public Comment saveInPost(RequestCommentSaveDto request, Long postId, Long userId) {
         User user = userService.getUserById(userId);
-        Post post = postService.getPostById(postId);
+        Post post = postServiceImpl.getPostById(postId);
 
         Comment comment = request.toEntity(user, post);
         return commentRepository.save(comment);
@@ -51,7 +51,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional(readOnly = true)
     public List<ResponseCommentDto> getComments(Long postId) {
-        Post post = postService.getPostById(postId);
+        Post post = postServiceImpl.getPostById(postId);
 
         return commentRepository.findAllByPost(post)
                 .map(ResponseCommentDto::toResponse)

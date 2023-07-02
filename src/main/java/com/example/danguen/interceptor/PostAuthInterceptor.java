@@ -1,6 +1,6 @@
 package com.example.danguen.interceptor;
 
-import com.example.danguen.domain.post.service.PostService;
+import com.example.danguen.domain.post.service.PostServiceImpl;
 import com.example.danguen.domain.user.service.UserServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpMethod;
@@ -17,7 +17,7 @@ import javax.servlet.http.HttpServletResponse;
 @Component
 public class PostAuthInterceptor implements HandlerInterceptor, CustomPathCheckInterceptor {
     private final UserServiceImpl userService;
-    private final PostService postService;
+    private final PostServiceImpl postServiceImpl;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
@@ -29,12 +29,12 @@ public class PostAuthInterceptor implements HandlerInterceptor, CustomPathCheckI
                         (path) ->
                                 Long.parseLong(
                                         new AntPathMatcher().extractUriTemplateVariables(
-                                                "/secured/{post}/{id}", path).get("id")
+                                                "/secured/post/{post}/{id}", path).get("id")
                                 )
                 );
 
                 boolean hasAuth = userService.isUsersCreation(
-                        () -> postService.getPostById(postId)
+                        () -> postServiceImpl.getPostById(postId)
                 );
 
                 if (!hasAuth) {

@@ -6,7 +6,6 @@ import com.example.danguen.domain.comment.dto.request.RequestCommentSaveDto;
 import com.example.danguen.domain.comment.dto.response.ResponseCommentDto;
 import com.example.danguen.domain.comment.entity.Comment;
 import com.example.danguen.domain.comment.exception.AlreadyDeletedCommentException;
-import com.example.danguen.domain.post.entity.ArticlePost;
 import com.example.danguen.domain.post.entity.Post;
 import com.example.danguen.domain.post.entity.PostKind;
 import com.example.danguen.domain.user.entity.Role;
@@ -17,7 +16,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -186,7 +184,7 @@ public class SecuredCommentTest extends BaseTest {
 
         assertThat(user.getComments()).isEmpty();
 
-        Post post = postService.getPostById(postId);
+        Post post = postServiceImpl.getPostById(postId);
 
         assertThat(post.getComments()).isNotEmpty();
     }

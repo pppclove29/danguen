@@ -299,7 +299,7 @@ public class SecuredUserApiTest extends BaseTest {
         //then
         assertThat(responseList.size()).isEqualTo(3);
         for (var res : responseList) {
-            assertThat(res.getSeller()).contains("김관심");
+            assertThat(res.getWriter()).contains("김관심");
         }
     }
 

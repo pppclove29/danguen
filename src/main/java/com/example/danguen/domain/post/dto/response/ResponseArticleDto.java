@@ -19,7 +19,7 @@ public class ResponseArticleDto {
     private String content;
     private int price;
     private List<String> imageUrl = new ArrayList<>();
-    private List<ResponseCommentDto> comments = new ArrayList<>();
+    private List<ResponseCommentDto> comments;
     private String category;
 
     private int views;
@@ -52,7 +52,7 @@ public class ResponseArticleDto {
     }
 
     public void addComments(List<ResponseCommentDto> commentDtos) {
-        setComments(commentDtos);
+        this.comments = commentDtos;
     }
 
 }

@@ -1,43 +1,29 @@
 package com.example.danguen.domain.post.service;
 
-import com.example.danguen.config.exception.MissingSessionPrincipalDetailsException;
-import com.example.danguen.config.oauth.PrincipalUserDetails;
-import com.example.danguen.domain.image.exception.ArticleNotFoundException;
+import com.example.danguen.domain.base.Address;
+import com.example.danguen.domain.post.dto.request.RequestArticleSaveOrUpdateDto;
+import com.example.danguen.domain.post.dto.request.RequestPostSaveOrUpdateDto;
+import com.example.danguen.domain.post.dto.response.ResponseArticleDto;
+import com.example.danguen.domain.post.dto.response.ResponseArticleSimpleDto;
+import com.example.danguen.domain.post.dto.response.ResponsePostDto;
+import com.example.danguen.domain.post.dto.response.ResponsePostSimpleDto;
 import com.example.danguen.domain.post.entity.ArticlePost;
 import com.example.danguen.domain.post.entity.Post;
-import com.example.danguen.domain.post.repository.PostRepository;
-import com.example.danguen.domain.user.entity.User;
-import lombok.RequiredArgsConstructor;
+import com.example.danguen.domain.post.entity.PostKind;
+import org.springframework.data.domain.Pageable;
 
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
 
-@RequiredArgsConstructor
-@Service
-public class PostService {
-    //TODO 인터페이스 구현
-    private final PostRepository postRepository;
+public interface PostService {
+    ResponsePostDto getPostDto(Long postId);
 
-    public Post getPostById(Long postId) {
-        return postRepository.findById(postId).orElseThrow(ArticleNotFoundException::new);
-    }
+    void giveLike(Long postId, Long userId);
 
-    @Transactional
-    public void delete(Long postId) {
-        Post post = getPostById(postId);
-        User user = post.getWriter();
+    Long save(RequestPostSaveOrUpdateDto request, Long userId, PostKind.Kind kind);
 
-        if (post instanceof ArticlePost) {
-            user.removeSellArticle((ArticlePost) post);
-        }
+    void update(RequestPostSaveOrUpdateDto request, Long postId);
 
-        post.getComments().stream()
-                .filter(comment -> comment.getWriter().isPresent())
-                .forEach(comment -> comment.getWriter().get().removeComment(comment));
+    void delete(Long postId);
 
-        postRepository.delete(post);
-    }
+    Post getPostById(Long postId);
 }

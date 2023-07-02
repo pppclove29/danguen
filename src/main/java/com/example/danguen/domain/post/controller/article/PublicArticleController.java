@@ -5,12 +5,15 @@ import com.example.danguen.domain.comment.dto.response.ResponseCommentDto;
 import com.example.danguen.domain.comment.service.CommentService;
 import com.example.danguen.domain.post.dto.response.ResponseArticleDto;
 import com.example.danguen.domain.post.dto.response.ResponseArticleSimpleDto;
+import com.example.danguen.domain.post.dto.response.ResponsePostSimpleDto;
 import com.example.danguen.domain.post.service.ArticleServiceImpl;
+import com.example.danguen.domain.post.service.PostServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RequestMapping("/public/post")
@@ -19,18 +22,22 @@ import java.util.List;
 public class PublicArticleController {
 
     private final ArticleServiceImpl articleService;
+    private final PostServiceImpl postService;
     private final CommentService commentService;
 
     @GetMapping("/test")
-    public String publicTest(){
-        return "publicTest";
+    public Temp test(@PageableDefault(size = 6) Pageable pageable) {
+        Temp t = new Temp();
+        t.articleList = articleService.getHotArticlePage(pageable);
+        t.noticeList = postService.getNotices();
+
+        return t;
     }
+
     @GetMapping("/article/{articleId}")
     public ResponseArticleDto getArticle(@PathVariable Long articleId) {
         ResponseArticleDto post = articleService.getArticleDto(articleId);
-        List<ResponseCommentDto> commentDtoStream = commentService.getComments(articleId);
-
-        post.addComments(commentDtoStream);
+        post.addComments(commentService.getComments(articleId));
 
         return post;
     }
@@ -60,4 +67,9 @@ public class PublicArticleController {
                                                         @RequestParam("keyword") String title) {
         return articleService.getSearchArticlePage(pageable, title);
     }
+}
+
+class Temp {
+    List<ResponseArticleSimpleDto> articleList = new ArrayList<>();
+    List<ResponsePostSimpleDto> noticeList = new ArrayList<>();
 }

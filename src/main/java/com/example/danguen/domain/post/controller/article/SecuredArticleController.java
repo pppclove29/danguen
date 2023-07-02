@@ -4,7 +4,7 @@ import com.example.danguen.annotation.SessionUserId;
 import com.example.danguen.domain.image.service.PostImageService;
 import com.example.danguen.domain.post.dto.request.RequestArticleSaveOrUpdateDto;
 import com.example.danguen.domain.post.service.ArticleServiceImpl;
-import com.example.danguen.domain.post.service.PostService;
+import com.example.danguen.domain.post.service.PostServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
@@ -20,13 +20,8 @@ public class SecuredArticleController {
     @Value("${file.article.image.path}")
     private String savePath;
     private final PostImageService postImageService;
-    private final PostService postService;
+    private final PostServiceImpl postServiceImpl;
     private final ArticleServiceImpl articleService;
-
-    @GetMapping("/test")
-    public String secureTest() {
-        return "secureTest";
-    }
 
     @PostMapping("/article")
     public void save(@ModelAttribute("request") RequestArticleSaveOrUpdateDto request,
@@ -46,7 +41,7 @@ public class SecuredArticleController {
 
     @DeleteMapping("/article/{articleId}")
     public void delete(@PathVariable Long articleId) {
-        postService.delete(articleId);
+        postServiceImpl.delete(articleId);
         postImageService.deleteFolder(savePath + articleId);
     }
 

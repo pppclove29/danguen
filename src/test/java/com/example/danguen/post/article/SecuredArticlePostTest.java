@@ -5,6 +5,7 @@ import com.example.danguen.BaseTest;
 import com.example.danguen.config.jwt.JwtProperties;
 import com.example.danguen.domain.base.Address;
 import com.example.danguen.domain.post.dto.request.RequestArticleSaveOrUpdateDto;
+import com.example.danguen.domain.post.dto.request.RequestPostSaveOrUpdateDto;
 import com.example.danguen.domain.post.entity.ArticlePost;
 import com.example.danguen.domain.user.entity.Role;
 import com.example.danguen.domain.user.entity.User;
@@ -27,18 +28,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 //@WebMvcTest(SecuredArticleController.class)
 public class SecuredArticlePostTest extends BaseTest {
 
+    private final String urlPrefix = "/secured/post/article";
+
     @DisplayName("이미지가 포함된 중고물품 등록")
     @Test
     public void successSaveArticleWithImages() throws Exception {
         //given
         //todo local 등 저장소에 저장하는 작업을 막아야함 s3를 사용하던가
-        RequestArticleSaveOrUpdateDto dto = RequestArticleSaveOrUpdateDto.builder()
-                .title(articleTitle)
-                .content(articleContent)
-                .price(articlePrice)
-                .category(articleCategory)
-                .dealHopeAddress(new Address(articleCity, articleStreet, articleZipcode))
-                .build();
+        RequestArticleSaveOrUpdateDto dto = makeArticleDto(0);
 
         MockMultipartFile image1 = new MockMultipartFile(
                 "images",
@@ -59,7 +56,7 @@ public class SecuredArticlePostTest extends BaseTest {
                 new FileInputStream("src/test/java/testImage/input.png"));
 
         //when
-        mockMvc.perform(multipart("/secured/article")
+        mockMvc.perform(multipart(urlPrefix)
                         .file(image1)
                         .file(image2)
                         .file(image3)
@@ -103,16 +100,10 @@ public class SecuredArticlePostTest extends BaseTest {
         //given
         Address dealAddress = new Address(articleCity, articleStreet, articleZipcode);
 
-        RequestArticleSaveOrUpdateDto dto = RequestArticleSaveOrUpdateDto.builder()
-                .title(articleTitle)
-                .content(articleContent)
-                .price(articlePrice)
-                .category(articleCategory)
-                .dealHopeAddress(dealAddress)
-                .build();
+        RequestArticleSaveOrUpdateDto dto = makeArticleDto(0);
 
         //when
-        mockMvc.perform(multipart("/secured/article")
+        mockMvc.perform(multipart(urlPrefix)
                         .flashAttr("request", dto)
                         .contentType(MediaType.MULTIPART_FORM_DATA)
                         .header(JwtProperties.HEADER, makeJwtValue(Role.USER)))
@@ -128,16 +119,20 @@ public class SecuredArticlePostTest extends BaseTest {
         //given
         Long articleId = makeArticle(0, loginUserId);
 
-        RequestArticleSaveOrUpdateDto dto = RequestArticleSaveOrUpdateDto.builder()
-                .title("new" + articleTitle)
-                .content("new" + articleContent)
-                .price(30000)
-                .category("new" + articleCategory)
-                .dealHopeAddress(new Address(
+        RequestArticleSaveOrUpdateDto dto = new RequestArticleSaveOrUpdateDto(
+                new RequestPostSaveOrUpdateDto(
+                        "new" + articleTitle,
+                        "new" + articleContent
+                ),
+                30000,
+                "new" + articleCategory,
+                new Address(
                         "new" + articleCity,
                         "new" + articleStreet,
-                        "new" + articleZipcode))
-                .build();
+                        "new" + articleZipcode
+                )
+        );
+
 
         MockMultipartFile image = new MockMultipartFile(
                 "images",
@@ -147,7 +142,7 @@ public class SecuredArticlePostTest extends BaseTest {
 
 
         //when
-        mockMvc.perform(multipart(HttpMethod.PUT, "/secured/article/" + articleId)
+        mockMvc.perform(multipart(HttpMethod.PUT, urlPrefix + articleId)
                         .file(image)
                         .flashAttr("request", dto)
                         .contentType(MediaType.MULTIPART_FORM_DATA)
@@ -172,7 +167,7 @@ public class SecuredArticlePostTest extends BaseTest {
         Long articleId = makeArticle(0, loginUserId);
 
         //when
-        mockMvc.perform(delete("/secured/article/" + articleId)
+        mockMvc.perform(delete(urlPrefix + articleId)
                         .header(JwtProperties.HEADER, makeJwtValue(Role.USER)))
                 .andExpect(status().isOk());
 
@@ -207,7 +202,7 @@ public class SecuredArticlePostTest extends BaseTest {
 
 
         //when
-        mockMvc.perform(post("/secured/article/" + articleId + "/interest")
+        mockMvc.perform(post(urlPrefix + articleId + "/interest")
                         .header(JwtProperties.HEADER, makeJwtValue(Role.USER)))
                 .andExpect(status().isOk());
 

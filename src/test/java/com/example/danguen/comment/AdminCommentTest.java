@@ -46,7 +46,7 @@ public class AdminCommentTest extends BaseTest {
 
         assertThat(user.getComments()).isEmpty();
 
-        Post post = postService.getPostById(postId);
+        Post post = postServiceImpl.getPostById(postId);
 
         assertThat(post.getComments()).isNotEmpty();
     }
@@ -66,7 +66,7 @@ public class AdminCommentTest extends BaseTest {
         User user = userService.getUserById(otherUserId);
         assertThat(user.getComments()).isNotEmpty();
 
-        Post post = postService.getPostById(postId);
+        Post post = postServiceImpl.getPostById(postId);
         assertThat(post.getComments()).isNotEmpty();
     }
 
@@ -86,7 +86,7 @@ public class AdminCommentTest extends BaseTest {
         User user = userService.getUserById(otherUserId);
         assertThat(user.getComments()).isNotEmpty();
 
-        Post post = postService.getPostById(postId);
+        Post post = postServiceImpl.getPostById(postId);
         assertThat(post.getComments()).isNotEmpty();
     }
 }

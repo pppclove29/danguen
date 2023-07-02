@@ -1,6 +1,6 @@
 package com.example.danguen.config.exception;
 
-import com.example.danguen.domain.image.exception.ArticleNotFoundException;
+import com.example.danguen.domain.image.exception.PostNotFoundException;
 import com.example.danguen.domain.user.exception.UserNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,9 +19,9 @@ public class GlobalExceptionController {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(UserNotFoundException.message);
     }
-    @ExceptionHandler(ArticleNotFoundException.class)
+    @ExceptionHandler(PostNotFoundException.class)
     public ResponseEntity<?> handleArticleNotFound() {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(ArticleNotFoundException.message);
+                .body(PostNotFoundException.message);
     }
 }

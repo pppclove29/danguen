@@ -34,8 +34,7 @@ public class ArticlePost extends Post {
     }
 
     public void updateArticle(RequestArticleSaveOrUpdateDto request) {
-        this.title = request.getTitle();
-        this.content = request.getContent();
+        super.update(request.getPostDto());
         this.price = request.getPrice();
         this.category = request.getCategory();
         this.dealHopeAddress = request.getDealHopeAddress();
@@ -44,7 +43,6 @@ public class ArticlePost extends Post {
     public void sold() {
         isSold = true;
     }
-
 
     public void addInterest(User user) {
         interestingUsers.add(user);
@@ -55,8 +53,6 @@ public class ArticlePost extends Post {
         interestingUsers.remove(user);
         user.removeInterestArticle(this);
     }
-
-
 
     @Override
     public Kind getKind() {

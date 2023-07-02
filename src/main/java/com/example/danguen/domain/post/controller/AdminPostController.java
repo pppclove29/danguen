@@ -1,7 +1,7 @@
 package com.example.danguen.domain.post.controller;
 
 import com.example.danguen.domain.image.service.PostImageService;
-import com.example.danguen.domain.post.service.PostService;
+import com.example.danguen.domain.post.service.PostServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -17,11 +17,11 @@ public class AdminPostController {
     private String savePath;
 
     private final PostImageService postImageService;
-    private final PostService postService;
+    private final PostServiceImpl postServiceImpl;
 
     @DeleteMapping("/*/{postId}")
     public void delete(@PathVariable Long postId) {
-        postService.delete(postId);
+        postServiceImpl.delete(postId);
         postImageService.deleteFolder(savePath + postId);
     }
 }
