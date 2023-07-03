@@ -8,11 +8,14 @@ import com.example.danguen.domain.post.dto.response.ResponseArticleSimpleDto;
 import com.example.danguen.domain.post.dto.response.ResponsePostSimpleDto;
 import com.example.danguen.domain.post.service.ArticleServiceImpl;
 import com.example.danguen.domain.post.service.PostServiceImpl;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -69,7 +72,8 @@ public class PublicArticleController {
     }
 }
 
-class Temp {
+@Getter
+class Temp implements Serializable{
     List<ResponseArticleSimpleDto> articleList = new ArrayList<>();
     List<ResponsePostSimpleDto> noticeList = new ArrayList<>();
 }

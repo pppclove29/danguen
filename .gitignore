@@ -18,15 +18,12 @@ bin/
 !**/src/test/**/bin/
 
 ### IntelliJ IDEA ###
-application-oauth.yml
-application-local.yml
-application-h2.yml
-application-mysql.yml
 JwtProperties.java
 .idea
 *.iws
 *.iml
 *.ipr
+*.yml
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/

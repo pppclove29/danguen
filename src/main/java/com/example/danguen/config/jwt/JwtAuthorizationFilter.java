@@ -32,6 +32,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         }
         String jwtToken = jwtHeader.replace(JwtProperties.PREFIX, "");
 
+        //todo 토큰 만료시 에러표출
         Long userId = Long.valueOf((JWT.require(JwtProperties.ALGORITHM).build()).verify(jwtToken).getClaim("userId").toString());
 
         User user = userService.getUserById(userId);

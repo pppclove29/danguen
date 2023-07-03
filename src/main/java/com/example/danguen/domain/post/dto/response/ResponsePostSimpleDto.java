@@ -5,11 +5,12 @@ import lombok.Data;
 import org.springframework.data.redis.core.RedisHash;
 
 import javax.persistence.Id;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Data
 @RedisHash(value = "post")
-public class ResponsePostSimpleDto {
+public class ResponsePostSimpleDto implements Serializable {
     @Id
     private Long id;
     private String title;

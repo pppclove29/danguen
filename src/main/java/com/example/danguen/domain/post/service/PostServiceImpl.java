@@ -15,13 +15,13 @@ import com.example.danguen.domain.user.entity.User;
 import com.example.danguen.domain.user.service.UserServiceImpl;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
+import org.springframework.data.redis.core.ListOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -43,9 +43,8 @@ public class PostServiceImpl implements PostService {
         return ResponsePostDto.toResponse(post);
     }
 
-    //@Cacheable(key = "'all'")
+    @Cacheable(key = "'all'")
     public List<ResponsePostSimpleDto> getNotices() {
-        System.out.println("!111!!!!");
         return postRepository.findAll().stream().map(ResponsePostSimpleDto::toResponse).collect(Collectors.toList());
     }
 
