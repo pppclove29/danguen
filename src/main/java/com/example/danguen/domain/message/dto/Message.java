@@ -13,4 +13,6 @@ public class Message implements Serializable {
     private String sender;
     private String roomId;
     private String content;
+
+    //todo 클래스 이름 변경
 }

@@ -12,6 +12,7 @@ import java.util.HashMap;
 @Component
 public class CustomStompHandler implements StompSessionHandler {
 
+    //todo 위치변경
     private StompSession session;
     private HashMap<String, String> subList = new HashMap<>();
 

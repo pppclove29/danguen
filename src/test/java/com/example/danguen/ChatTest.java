@@ -25,7 +25,7 @@
 //public class ChatTest extends BaseTest {
 //
 //    private WebSocketStompClient target;
-//
+//    // 참조 https://docs.spring.io/spring-framework/reference/web/websocket/stomp/client.html
 //    @BeforeEach
 //    public void 웹소켓_생성() {
 //        User user = makeUserProc("targetName", "target@mail.com");

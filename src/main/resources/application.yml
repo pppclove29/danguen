@@ -6,6 +6,7 @@ spring:
       - websocket
       - mysql
       - redis
+      - rabbitmq
   mvc:
     view:
       prefix: /WEB-INF/views/
