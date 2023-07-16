@@ -16,57 +16,57 @@ import org.springframework.context.annotation.Configuration;
 @EnableRabbit
 @Configuration
 public class RabbitConfig {
-    private static final String TOPIC_EXCHANGE_NAME = "spring-boot-exchange";
-    private static final String QUEUE_NAME = "queue";
+	private static final String TOPIC_EXCHANGE_NAME = "spring-boot-exchange";
+	private static final String QUEUE_NAME = "queue";
 
-    @Value("${spring.rabbitmq.host}")
-    private String host;
+	@Value("${spring.rabbitmq.host}")
+	private String host;
 
-    @Value("${spring.rabbitmq.username}")
-    private String username;
+	@Value("${spring.rabbitmq.username}")
+	private String username;
 
-    @Value("${spring.rabbitmq.password}")
-    private String password;
+	@Value("${spring.rabbitmq.password}")
+	private String password;
 
-    @Value("${spring.rabbitmq.port}")
-    private int port;
+	@Value("${spring.rabbitmq.port}")
+	private int port;
 
-    //queue 생성
-    @Bean
-    public Queue queue() {
-        return new Queue(QUEUE_NAME, false);
-    }
+	// queue 생성
+	@Bean
+	public Queue queue() {
+		return new Queue(QUEUE_NAME, false);
+	}
 
-    //exchange 생성
-    @Bean
-    public TopicExchange topicExchange() {
-        return new TopicExchange(TOPIC_EXCHANGE_NAME);
-    }
+	// exchange 생성
+	@Bean
+	public TopicExchange topicExchange() {
+		return new TopicExchange(TOPIC_EXCHANGE_NAME);
+	}
 
-    @Bean
-    public Binding binding(TopicExchange topicExchange, Queue queue) {
-        return BindingBuilder.bind(queue).to(topicExchange).with("hello.key.#");
-    }
+	@Bean
+	public Binding binding(TopicExchange topicExchange, Queue queue) {
+		return BindingBuilder.bind(queue).to(topicExchange).with("hello.key.#");
+	}
 
-    @Bean
-    public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
-        RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
-        rabbitTemplate.setMessageConverter(messageConverter());
-        return rabbitTemplate;
-    }
+	@Bean
+	public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
+		RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
+		rabbitTemplate.setMessageConverter(messageConverter());
+		return rabbitTemplate;
+	}
 
-    @Bean
-    public ConnectionFactory connectionFactory() {
-        CachingConnectionFactory connectionFactory = new CachingConnectionFactory();
-        connectionFactory.setHost(host);
-        connectionFactory.setPort(port);
-        connectionFactory.setUsername(username);
-        connectionFactory.setPassword(password);
-        return connectionFactory;
-    }
+	@Bean
+	public ConnectionFactory connectionFactory() {
+		CachingConnectionFactory connectionFactory = new CachingConnectionFactory();
+		connectionFactory.setHost(host);
+		connectionFactory.setPort(port);
+		connectionFactory.setUsername(username);
+		connectionFactory.setPassword(password);
+		return connectionFactory;
+	}
 
-    @Bean
-    public Jackson2JsonMessageConverter messageConverter() {
-        return new Jackson2JsonMessageConverter();
-    }
+	@Bean
+	public Jackson2JsonMessageConverter messageConverter() {
+		return new Jackson2JsonMessageConverter();
+	}
 }

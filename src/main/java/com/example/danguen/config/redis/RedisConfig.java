@@ -6,13 +6,4 @@ import org.springframework.context.annotation.Configuration;
 @EnableCaching
 @Configuration
 public class RedisConfig {
-
-//    @Bean
-//    public CacheManager cacheManager(){
-//        ConcurrentMapCacheManager manager = new ConcurrentMapCacheManager();
-//        manager.setAllowNullValues(false);
-//        manager.setCacheNames(List.of("post"));
-//
-//        return manager;
-//    }
 }

@@ -4,7 +4,6 @@ import com.example.danguen.domain.comment.dto.response.ResponseCommentDto;
 import com.example.danguen.domain.image.entity.Image;
 import com.example.danguen.domain.post.entity.Post;
 import lombok.Data;
-import org.springframework.data.redis.core.RedisHash;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;

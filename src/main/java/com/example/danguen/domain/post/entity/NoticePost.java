@@ -2,8 +2,8 @@ package com.example.danguen.domain.post.entity;
 
 import lombok.Getter;
 
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.Entity;
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
 
 @Getter
 @Entity

@@ -1,7 +1,6 @@
 package com.example.danguen.domain.post.controller.article;
 
 import com.example.danguen.domain.base.Address;
-import com.example.danguen.domain.comment.dto.response.ResponseCommentDto;
 import com.example.danguen.domain.comment.service.CommentService;
 import com.example.danguen.domain.post.dto.response.ResponseArticleDto;
 import com.example.danguen.domain.post.dto.response.ResponseArticleSimpleDto;
@@ -15,7 +14,6 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -74,6 +72,7 @@ public class PublicArticleController {
 
 @Getter
 class Temp implements Serializable{
-    List<ResponseArticleSimpleDto> articleList = new ArrayList<>();
+    private static final long serialVersionUID = 1L;
+	List<ResponseArticleSimpleDto> articleList = new ArrayList<>();
     List<ResponsePostSimpleDto> noticeList = new ArrayList<>();
 }

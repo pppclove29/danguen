@@ -4,7 +4,6 @@ import com.example.danguen.domain.post.entity.FreePost;
 import com.example.danguen.domain.post.entity.NoticePost;
 import com.example.danguen.domain.post.entity.Post;
 import com.example.danguen.domain.post.entity.PostKind;
-import lombok.Builder;
 import lombok.Data;
 
 @Data

@@ -2,7 +2,6 @@ package com.example.danguen.domain.image.dto;
 
 import com.example.danguen.domain.image.entity.PostImage;
 import com.example.danguen.domain.image.entity.UserImage;
-import com.example.danguen.domain.post.entity.ArticlePost;
 import com.example.danguen.domain.post.entity.Post;
 import com.example.danguen.domain.user.entity.User;
 import lombok.Data;

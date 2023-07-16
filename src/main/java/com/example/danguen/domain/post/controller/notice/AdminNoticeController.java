@@ -1,7 +1,6 @@
 package com.example.danguen.domain.post.controller.notice;
 
 import com.example.danguen.annotation.SessionUserId;
-import com.example.danguen.domain.post.dto.request.RequestArticleSaveOrUpdateDto;
 import com.example.danguen.domain.post.dto.request.RequestPostSaveOrUpdateDto;
 import com.example.danguen.domain.post.entity.PostKind;
 import com.example.danguen.domain.post.service.PostServiceImpl;

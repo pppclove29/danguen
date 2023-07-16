@@ -17,8 +17,6 @@ import java.util.List;
 @RequiredArgsConstructor
 @RestController
 public class SecuredFreeController {
-    @Value("${file.article.image.path}")
-    private String savePath;
     private final PostImageService postImageService;
     private final PostServiceImpl postServiceImpl;
     private final ArticleServiceImpl articleService;
@@ -42,7 +40,7 @@ public class SecuredFreeController {
     @DeleteMapping("/article/{articleId}")
     public void delete(@PathVariable Long articleId) {
         postServiceImpl.delete(articleId);
-        postImageService.deleteFolder(savePath + articleId);
+        postImageService.delete(articleId);
     }
 
     @PostMapping("/article/{articleId}/interest")

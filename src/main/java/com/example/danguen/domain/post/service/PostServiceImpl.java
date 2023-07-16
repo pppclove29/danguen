@@ -1,9 +1,15 @@
 package com.example.danguen.domain.post.service;
 
-import com.example.danguen.domain.base.Address;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.example.danguen.domain.image.exception.PostNotFoundException;
 import com.example.danguen.domain.post.dto.request.RequestPostSaveOrUpdateDto;
-import com.example.danguen.domain.post.dto.response.ResponseArticleSimpleDto;
 import com.example.danguen.domain.post.dto.response.ResponsePostDto;
 import com.example.danguen.domain.post.dto.response.ResponsePostSimpleDto;
 import com.example.danguen.domain.post.entity.ArticlePost;
@@ -13,18 +19,8 @@ import com.example.danguen.domain.post.repository.PostRedisRepository;
 import com.example.danguen.domain.post.repository.PostRepository;
 import com.example.danguen.domain.user.entity.User;
 import com.example.danguen.domain.user.service.UserServiceImpl;
+
 import lombok.RequiredArgsConstructor;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheConfig;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.redis.core.ListOperations;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @CacheConfig(cacheNames = "post")
 @Transactional

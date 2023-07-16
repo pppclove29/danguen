@@ -7,7 +7,8 @@ import java.util.Collection;
 
 public class JwtAuthenticationToken extends AbstractAuthenticationToken {
 
-    private final Object credentials;
+	private static final long serialVersionUID = 1L;
+	private final Object credentials;
     private final Object principal;
 
     public JwtAuthenticationToken(Object credentials, Object principal, Collection<? extends GrantedAuthority> authorities) {

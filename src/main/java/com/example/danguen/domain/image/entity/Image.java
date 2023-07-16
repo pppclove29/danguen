@@ -2,7 +2,7 @@ package com.example.danguen.domain.image.entity;
 
 import lombok.Getter;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Getter
 @Entity

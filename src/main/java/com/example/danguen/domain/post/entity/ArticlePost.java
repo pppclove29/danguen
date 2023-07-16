@@ -1,12 +1,11 @@
 package com.example.danguen.domain.post.entity;
 
 import com.example.danguen.domain.base.Address;
-import com.example.danguen.domain.image.entity.PostImage;
 import com.example.danguen.domain.user.entity.User;
 import com.example.danguen.domain.post.dto.request.RequestArticleSaveOrUpdateDto;
 import lombok.Getter;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 

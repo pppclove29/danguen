@@ -1,6 +1,21 @@
 package com.example.danguen.post.article;
 
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.io.File;
+import java.io.FileInputStream;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
+
 import com.example.danguen.BaseTest;
 import com.example.danguen.config.jwt.JwtProperties;
 import com.example.danguen.domain.base.Address;
@@ -9,19 +24,6 @@ import com.example.danguen.domain.post.dto.request.RequestPostSaveOrUpdateDto;
 import com.example.danguen.domain.post.entity.ArticlePost;
 import com.example.danguen.domain.user.entity.Role;
 import com.example.danguen.domain.user.entity.User;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.io.File;
-import java.io.FileInputStream;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 //todo anonymousUser의 secured 접근에 대한 테스트 진행
 //todo admin의 작업에 대한 anonymousUser, normal User, admin User의 접근 테스트 진행
@@ -37,7 +39,7 @@ public class SecuredArticlePostTest extends BaseTest {
         //todo local 등 저장소에 저장하는 작업을 막아야함 s3를 사용하던가
         RequestArticleSaveOrUpdateDto dto = makeArticleDto(0);
 
-        MockMultipartFile image1 = new MockMultipartFile(
+		MockMultipartFile image1 = new MockMultipartFile(
                 "images",
                 "input1.png",
                 "image/png",

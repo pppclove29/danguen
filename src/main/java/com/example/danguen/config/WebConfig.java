@@ -20,8 +20,6 @@ public class WebConfig implements WebMvcConfigurer {
     private final SessionUserIdArgumentResolver sessionUserIdArgumentResolver;
     private final PostAuthInterceptor postAuthInterceptor;
     private final CommentAuthInterceptor commentAuthInterceptor;
-    @Value("${file.article.image.local}")
-    private String articlePath;
 
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
@@ -36,12 +34,6 @@ public class WebConfig implements WebMvcConfigurer {
 
         registry.addInterceptor(commentAuthInterceptor)
                 .addPathPatterns("/secured/comment/*");
-    }
-
-    @Override
-    public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/src/main/resources/articleImage/**")
-                .addResourceLocations(articlePath);
     }
 
     @Override

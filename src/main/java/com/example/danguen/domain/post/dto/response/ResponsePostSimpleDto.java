@@ -4,14 +4,15 @@ import com.example.danguen.domain.post.entity.Post;
 import lombok.Data;
 import org.springframework.data.redis.core.RedisHash;
 
-import javax.persistence.Id;
+import jakarta.persistence.Id;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Data
 @RedisHash(value = "post")
 public class ResponsePostSimpleDto implements Serializable {
-    @Id
+    private static final long serialVersionUID = 1L;
+	@Id
     private Long id;
     private String title;
     private String imageUrl;

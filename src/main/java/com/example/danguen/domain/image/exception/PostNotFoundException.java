@@ -1,5 +1,6 @@
 package com.example.danguen.domain.image.exception;
 
 public class PostNotFoundException extends RuntimeException{
-    public static final String message = "Post not found";
+    private static final long serialVersionUID = 1L;
+	public static final String message = "Post not found";
 }

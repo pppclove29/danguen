@@ -2,7 +2,6 @@ package com.example.danguen.domain.post.dto.request;
 
 import com.example.danguen.domain.base.Address;
 import com.example.danguen.domain.post.entity.ArticlePost;
-import lombok.Builder;
 import lombok.Data;
 
 @Data

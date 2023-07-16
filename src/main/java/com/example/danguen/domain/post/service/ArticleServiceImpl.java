@@ -1,5 +1,13 @@
 package com.example.danguen.domain.post.service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.example.danguen.domain.base.Address;
 import com.example.danguen.domain.image.exception.PostNotFoundException;
 import com.example.danguen.domain.post.dto.request.RequestArticleSaveOrUpdateDto;
@@ -9,18 +17,10 @@ import com.example.danguen.domain.post.entity.ArticlePost;
 import com.example.danguen.domain.post.repository.ArticlePostRepository;
 import com.example.danguen.domain.user.entity.User;
 import com.example.danguen.domain.user.service.UserService;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 
 @Transactional
-@Slf4j
 @RequiredArgsConstructor
 @Service
 public class ArticleServiceImpl implements ArticleService {

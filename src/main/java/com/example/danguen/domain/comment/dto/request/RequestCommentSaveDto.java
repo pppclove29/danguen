@@ -1,7 +1,6 @@
 package com.example.danguen.domain.comment.dto.request;
 
 import com.example.danguen.domain.comment.entity.Comment;
-import com.example.danguen.domain.post.entity.ArticlePost;
 import com.example.danguen.domain.post.entity.Post;
 import com.example.danguen.domain.post.entity.PostKind;
 import com.example.danguen.domain.user.entity.User;

@@ -10,7 +10,8 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Message implements Serializable {
-    private String sender;
+    private static final long serialVersionUID = 1L;
+	private String sender;
     private String roomId;
     private String content;
 

@@ -13,8 +13,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RestController
 public class AdminPostController {
-    @Value("${file.article.image.path}")
-    private String savePath;
 
     private final PostImageService postImageService;
     private final PostServiceImpl postServiceImpl;
@@ -22,6 +20,6 @@ public class AdminPostController {
     @DeleteMapping("/*/{postId}")
     public void delete(@PathVariable Long postId) {
         postServiceImpl.delete(postId);
-        postImageService.deleteFolder(savePath + postId);
+        postImageService.delete(postId);
     }
 }

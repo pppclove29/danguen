@@ -3,7 +3,7 @@ package com.example.danguen.domain.base;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Embeddable;
+import jakarta.persistence.Embeddable;
 
 @NoArgsConstructor
 @Getter
